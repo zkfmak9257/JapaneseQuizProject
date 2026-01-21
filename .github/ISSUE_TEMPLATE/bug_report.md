@@ -1,8 +1,8 @@
 ---
 name: Bug report
 about: Create a report to help us improve
-title: ''
-labels: ''
+title: "[BUG]"
+labels: bug
 assignees: ''
 
 ---
@@ -22,15 +22,15 @@ assignees: ''
 -
 
 ## 영향 범위
-- [   ]  auth  (회원가입 / 로그인 / 로그아웃 / 토근 / 인가)
-- [   ]  quiz  (퀴즈 진행 / 채점 / 결과) 
-- [   ]  content  (문제 데이터 / 필터 / 정답 처리)
-- [   ]  ui  (화면 / UX)
-- [   ]  infra (배포 / 환경설정)
+- [ ]  auth  (회원가입 / 로그인 / 로그아웃 / 토근 / 인가)
+- [ ]  quiz  (퀴즈 진행 / 채점 / 결과) 
+- [ ]  content  (문제 데이터 / 필터 / 정답 처리)
+- [ ]  ui  (화면 / UX)
+- [ ]  infra (배포 / 환경설정)
 
 ## 권한 / 상태
-- [   ] 비회원(Guest)
-- [   ] 회원(User)
+- [ ] 비회원(Guest)
+- [ ] 회원(User)
 
 ## 로그 / 스크린샷
 - 에러 로그 또는 캡처 첨부
