@@ -124,3 +124,44 @@ PR 생성 후 반드시 **1명 이상의 리뷰어(Reviewer)**를 지정합니�
 리뷰어의 **승인(Approve)**을 받은 후, 작성자가 직접 Merge를 수행합니다.
 
 Merge가 완료된 브랜치는 즉시 삭제하여 저장소를 정리합니다.
+
+## 5. 공통 설정 (YML / Swagger / Actuator)
+### 5.1. 아주 쉽게 설명
+- `application.yml`은 **공통 설정**이에요. 모두가 같이 쓰는 기본값만 넣습니다.
+- `application-local.yml`은 **내 컴퓨터 전용 설정**이에요. (비밀번호 등)
+- `application-local.yml.example`는 **예시 파일**이라서 팀원이 복사해서 쓰면 됩니다.
+- `application-dev.yml` / `application-prod.yml`은 **서버용 설정**이에요.
+
+### 5.2. 프로필이 뭔가요?
+- 프로필은 "어떤 설정 파일을 쓸지 고르는 스위치"입니다.
+- 기본은 `local`이라서 로컬에서는 자동으로 `application-local.yml`을 봅니다.
+
+### 5.3. Swagger / Actuator는 왜 나눠요?
+- **로컬/개발**에서는 API 문서와 상태 체크가 필요해서 켜둡니다.
+- **운영**에서는 보안 때문에 끕니다.
+
+### 5.4. 팀원 로컬 설정 가이드 (초보용)
+1) `src/main/resources/application-local.yml.example`을 복사합니다.
+2) 새 파일 이름을 `application-local.yml`로 바꿉니다.
+3) 아래 3줄을 **내 DB 정보**로 바꿉니다.
+   - `spring.datasource.url`
+   - `spring.datasource.username`
+   - `spring.datasource.password`
+4) 이 파일은 Git에 올라가지 않습니다. (비밀번호 보호)
+
+### 5.5. 개발/운영 서버 환경변수 (필수)
+- 서버에서는 아래 값을 환경변수로 넣어야 합니다.
+  - `DB_URL`
+  - `DB_USERNAME`
+  - `DB_PASSWORD`
+
+## 6. 지금까지 진행한 큰 흐름
+1) 프로젝트 초기 구조 세팅
+   - 패키지 구조 및 기본 모듈 구성
+2) 공통 설정 골격 확정
+   - `application.yml` 공통값 정리
+   - `application-local.yml` 개인 설정 분리
+   - `application-local.yml.example`로 팀 공유
+   - `application-dev.yml` / `application-prod.yml` 기본 틀 추가
+3) Swagger / Actuator 정책 정리
+   - 로컬/개발 ON, 운영 OFF 기준 확립

@@ -1,0 +1,39 @@
+spring:
+  datasource:
+    # 로컬 DB URL 예시(본인 환경에 맞게 수정)
+    url: jdbc:mariadb://localhost:3306/jpquiz
+    # 로컬 DB 계정 예시
+    username: root
+    # 로컬 DB 비밀번호로 변경
+    password: CHANGE_ME
+    driver-class-name: org.mariadb.jdbc.Driver
+  jpa:
+    hibernate:
+      # 기본은 테이블 자동 생성 X(엔티티 구현 후 update로 변경)
+      ddl-auto: none
+    properties:
+      hibernate:
+        # 로컬 디버깅용 SQL 보기 좋게
+        format_sql: true
+    # 기본은 SQL 출력 OFF(필요 시 ON)
+    show-sql: false
+
+logging:
+  level:
+    # 로컬 디버깅용 로그 레벨 상향
+    com.team.jpquiz: DEBUG
+
+springdoc:
+  api-docs:
+    # 로컬에서 Swagger 활성화
+    enabled: true
+  swagger-ui:
+    # 로컬에서 Swagger UI 활성화
+    enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        # 로컬에서만 Actuator 전체 노출
+        include: "*"

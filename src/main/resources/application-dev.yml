@@ -1,0 +1,37 @@
+spring:
+  datasource:
+    # 개발 서버에서는 환경변수로 주입
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.mariadb.jdbc.Driver
+  jpa:
+    hibernate:
+      # 개발에서도 자동 생성 없이 스키마 검증만
+      ddl-auto: validate
+    properties:
+      hibernate:
+        # 개발 로그에 SQL 포맷 최소화
+        format_sql: false
+    # 개발 기본은 SQL 출력 OFF
+    show-sql: false
+
+logging:
+  level:
+    # 개발 서버 로그 기본값
+    com.team.jpquiz: INFO
+
+springdoc:
+  api-docs:
+    # 개발에서는 Swagger 활성화
+    enabled: true
+  swagger-ui:
+    # 개발에서는 Swagger UI 활성화
+    enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        # 개발에서는 최소 노출
+        include: health,info
