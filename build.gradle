@@ -1,0 +1,82 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.5.10'
+    id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'com.team'
+version = '0.0.1-SNAPSHOT'
+description = 'jpquiz'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+ext {
+    mybatisStarterVersion = '3.0.5'
+    springdocVersion = '2.4.0'
+}
+
+dependencies {
+    // Web / Validation
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+    // CQRS: Write = JPA, Read = MyBatis
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation "org.mybatis.spring.boot:mybatis-spring-boot-starter:${mybatisStarterVersion}"
+
+    // Security (인증/인가 기본 골격)
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+
+    // JWT (stub only; real implementation removed)
+
+    // Swagger/OpenAPI
+    implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:${springdocVersion}"
+
+    // Actuator
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+    // DB
+    runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
+
+    // Lombok
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    // 설정 메타데이터
+    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+
+    // 유틸
+    implementation 'commons-io:commons-io:2.18.0'
+    implementation 'org.modelmapper:modelmapper:3.2.5'
+
+    // Test
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation "org.mybatis.spring.boot:mybatis-spring-boot-starter-test:${mybatisStarterVersion}"
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
+bootJar {
+    enabled = false
+}
+
+jar {
+    enabled = true
+}
