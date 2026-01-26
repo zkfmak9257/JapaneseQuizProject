@@ -36,3 +36,13 @@ springdoc:
   swagger-ui:
     # 기본은 비활성, 로컬/개발에서 활성
     enabled: false
+
+app:
+  cors:
+    # CORS 기본값(환경별로 덮어쓰기)
+    allowed-origins: ""
+    allowed-methods: GET,POST,PUT,PATCH,DELETE,OPTIONS
+    allowed-headers: "*"
+    exposed-headers: ""
+    allow-credentials: false
+    max-age: 3600

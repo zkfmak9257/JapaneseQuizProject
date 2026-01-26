@@ -124,7 +124,6 @@ PR 생성 후 반드시 **1명 이상의 리뷰어(Reviewer)**를 지정합니�
 리뷰어의 **승인(Approve)**을 받은 후, 작성자가 직접 Merge를 수행합니다.
 
 Merge가 완료된 브랜치는 즉시 삭제하여 저장소를 정리합니다.
-
 ## 5. 공통 설정 (YML / Swagger / Actuator)
 ### 5.1. 아주 쉽게 설명
 - `application.yml`은 **공통 설정**이에요. 모두가 같이 쓰는 기본값만 넣습니다.
@@ -165,3 +164,23 @@ Merge가 완료된 브랜치는 즉시 삭제하여 저장소를 정리합니다
    - `application-dev.yml` / `application-prod.yml` 기본 틀 추가
 3) Swagger / Actuator 정책 정리
    - 로컬/개발 ON, 운영 OFF 기준 확립
+4) CORS 기본 정책 골격 추가
+   - YML에서 `app.cors.*`로 설정값 관리
+   - 로컬 허용 도메인 예시 추가(필요 시 수정)
+
+## 7. CORS 설정 설명 (팀원용)
+### 7.1. 왜 필요한가요?
+- 프론트가 다른 주소(포트 포함)에서 API를 호출하면 기본적으로 브라우저가 막습니다.
+- 그래서 서버에서 "이 주소는 허용"이라고 명시해줘야 합니다.
+
+### 7.2. 어디에 설정하나요?
+- 로컬에서는 `src/main/resources/application-local.yml`에서 설정합니다.
+- 예시 파일은 `src/main/resources/application-local.yml.example`에 있습니다.
+
+### 7.3. 로컬에서 꼭 수정할 값
+- `app.cors.allowed-origins`
+- 예시: `http://localhost:3000,http://localhost:5173`
+
+### 7.4. 언제 수정하면 되나요?
+- 프론트 주소가 정해지면 바로 수정하면 됩니다.
+- 지금 프론트 주소가 없으면 비워둬도 됩니다.

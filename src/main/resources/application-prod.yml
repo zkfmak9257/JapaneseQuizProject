@@ -36,3 +36,8 @@ management:
       exposure:
         # 운영에서는 최소 노출
         include: health,info
+
+app:
+  cors:
+    # 운영 서버 허용 도메인(필요 시 설정)
+    allowed-origins: ""

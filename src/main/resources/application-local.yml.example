@@ -37,3 +37,8 @@ management:
       exposure:
         # 로컬에서만 Actuator 전체 노출
         include: "*"
+
+app:
+  cors:
+    # 로컬 프론트 주소에 맞게 수정 (예: http://localhost:3000, http://localhost:5173)
+    allowed-origins: "http://localhost:3000,http://localhost:5173"
