@@ -1,0 +1,38 @@
+spring:
+  application:
+    name: jpquiz
+  profiles:
+    # 기본 프로필은 local로 고정(운영 설정 실수 방지)
+    default: local
+
+server:
+  # 기본 포트(필요 시 환경변수로 덮어쓸 수 있음)
+  port: 8080
+
+mybatis:
+  # MyBatis mapper XML 경로
+  mapper-locations: classpath:mappers/**/*.xml
+  # DTO/Entity alias 패키지
+  type-aliases-package: com.team.jpquiz
+
+logging:
+  level:
+    # 기본 로그 레벨(노이즈 최소화)
+    root: INFO
+    # 앱 패키지 기본 레벨(로컬에서 더 높게)
+    com.team.jpquiz: INFO
+
+management:
+  endpoints:
+    web:
+      exposure:
+        # 기본은 최소 노출, 로컬에서 확대
+        include: health,info
+
+springdoc:
+  api-docs:
+    # 기본은 비활성, 로컬/개발에서 활성
+    enabled: false
+  swagger-ui:
+    # 기본은 비활성, 로컬/개발에서 활성
+    enabled: false

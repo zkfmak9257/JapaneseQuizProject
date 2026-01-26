@@ -1,0 +1,38 @@
+spring:
+  datasource:
+    # 운영에서는 환경변수로 주입
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.mariadb.jdbc.Driver
+  jpa:
+    hibernate:
+      # 운영은 자동 생성 없이 검증만
+      ddl-auto: validate
+    properties:
+      hibernate:
+        # 운영 로그에 SQL 포맷 최소화
+        format_sql: false
+    # 운영에서는 SQL 출력 금지
+    show-sql: false
+
+logging:
+  level:
+    # 운영 로그 기본값
+    root: INFO
+    com.team.jpquiz: INFO
+
+springdoc:
+  api-docs:
+    # 운영에서는 Swagger 비활성화
+    enabled: false
+  swagger-ui:
+    # 운영에서는 Swagger UI 비활성화
+    enabled: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        # 운영에서는 최소 노출
+        include: health,info
