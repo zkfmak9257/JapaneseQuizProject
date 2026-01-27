@@ -1,3 +1,7 @@
+app:
+  cors:
+    # 개발 서버 허용 도메인(필요 시 설정)
+    allowed-origins: ""
 spring:
   datasource:
     # 개발 서버에서는 환경변수로 주입
