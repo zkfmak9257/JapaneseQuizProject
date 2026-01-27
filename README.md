@@ -167,6 +167,13 @@ Merge가 완료된 브랜치는 즉시 삭제하여 저장소를 정리합니다
 4) CORS 기본 정책 골격 추가
    - YML에서 `app.cors.*`로 설정값 관리
    - 로컬 허용 도메인 예시 추가(필요 시 수정)
+5) Spring Boot 애플리케이션 엔트리포인트 확정
+   - 왜: 각자 기능 개발 전에 앱이 정상 부팅되는 최소 기준선 확보
+   - 어떻게: `JpQuizApplication`에 `@SpringBootApplication` + `main` 추가
+6) MyBatis Mapper 기본 세팅 정리
+   - 왜: 부팅 시 mapper XML 파싱/매핑 오류 방지
+   - 어떻게: mapper XML 최소 뼈대 추가 + namespace를 interface FQCN과 일치
+   - 어떻게: mapper 인터페이스 스캔 설정(@Mapper 또는 @MapperScan) 확인
 
 ## 7. CORS 설정 설명 (팀원용)
 ### 7.1. 왜 필요한가요?
