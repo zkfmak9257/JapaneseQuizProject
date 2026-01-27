@@ -174,6 +174,10 @@ Merge가 완료된 브랜치는 즉시 삭제하여 저장소를 정리합니다
    - 왜: 부팅 시 mapper XML 파싱/매핑 오류 방지
    - 어떻게: mapper XML 최소 뼈대 추가 + namespace를 interface FQCN과 일치
    - 어떻게: mapper 인터페이스 스캔 설정(@Mapper 또는 @MapperScan) 확인
+7) Security 기본 접근 정책 뼈대 확정
+   - 왜: 인증 기능 구현 전에도 "공개/인증 필요" 경계를 명확히 하고, 401/403 응답 흐름을 표준화하기 위해
+   - 어떻게: `SecurityConfig`에서 form/login, basic, CSRF 비활성화 + STATELESS 세션 + 공개 엔드포인트 permitAll + 나머지 authenticated
+   - 어떻게: 401/403 처리를 위한 EntryPoint/AccessDeniedHandler 연결 자리 확보(응답 포맷 구현은 인증 담당자 작업)
 
 ## 7. CORS 설정 설명 (팀원용)
 ### 7.1. 왜 필요한가요?
