@@ -180,3 +180,35 @@ Merge가 완료된 브랜치는 즉시 삭제하여 저장소를 정리합니다
 ### 6.4. 언제 수정하면 되나요?
 - 프론트 주소가 정해지면 바로 수정하면 됩니다.
 - 지금 프론트 주소가 없으면 비워둬도 됩니다.
+
+## 7. 공통 응답 포맷 / 예외 처리
+### 7.1. 왜 필요한가요?
+- 기능별 응답 포맷이 달라지면 프론트 파싱과 에러 핸들링이 복잡해집니다.
+- 그래서 성공/실패 응답을 표준화해 협업 비용을 줄입니다.
+
+### 7.2. 공통 응답 포맷
+- 성공 응답: `ApiResponse<T>`로 통일합니다.
+- 실패 응답: `ErrorResponse`로 통일합니다.
+
+### 7.3. 공통 예외 처리 흐름
+- 서비스/컨트롤러에서 `CustomException(ErrorCode)`를 던집니다.
+- `GlobalExceptionHandler`가 이를 받아 `ErrorResponse`로 변환합니다.
+- 예상치 못한 예외는 `INTERNAL_ERROR`로 처리합니다.
+
+## 8. 보안 401/403 응답 포맷
+### 8.1. 왜 필요한가요?
+- 인증/인가 실패도 동일한 에러 포맷을 유지해야 프론트에서 일관된 처리 가능.
+
+### 8.2. 적용 방식
+- `SecurityConfig`의 `AuthenticationEntryPoint`(401)와 `AccessDeniedHandler`(403)에서
+  `ErrorResponse`를 그대로 내려줍니다.
+
+## 9. JPA / MyBatis 기본 설정
+### 9.1. JPA
+- `@EnableJpaAuditing`으로 엔티티 감사 기능 기본 활성화.
+
+### 9.2. MyBatis
+- `@MapperScan("com.team.jpquiz")`로 mapper 인터페이스 자동 스캔.
+
+## 10. Swagger 기본 설정
+- `local`, `dev` 프로필에서만 Swagger를 활성화합니다.
