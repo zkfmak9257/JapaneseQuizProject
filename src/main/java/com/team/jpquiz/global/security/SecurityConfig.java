@@ -1,8 +1,14 @@
 package com.team.jpquiz.global.security;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.team.jpquiz.common.dto.ErrorResponse;
+import com.team.jpquiz.global.error.ErrorCode;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -10,9 +16,17 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.access.AccessDeniedHandler;
 
+import java.io.IOException;
+
 @Configuration
 @EnableMethodSecurity // @PreAuthorize같은 메서드 단위 인가 어노테이션 쓸 수 있게 해줌
 public class SecurityConfig {
+
+    private final ObjectMapper objectMapper;
+
+    public SecurityConfig(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -48,16 +62,39 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationEntryPoint jwtAuthenticationEntryPoint() {
-        return (request, response, authException) -> {
-            // TODO: 401 응답 포맷(code/message/status/path/timestamp) 작성
-        };
+        return (request, response, authException) -> writeErrorResponse(
+                response,
+                request,
+                ErrorCode.UNAUTHORIZED
+        );
+
     }
 
     @Bean
     public AccessDeniedHandler jwtAccessDeniedHandler() {
-        return (request, response, accessDeniedException) -> {
-            // TODO: 403 응답 포맷(code/message/status/path/timestamp) 작성
-        };
+        return (request, response, accessDeniedException) -> writeErrorResponse(
+                response,
+                request,
+                ErrorCode.FORBIDDEN
+        );
+    }
+
+    private void writeErrorResponse(
+            HttpServletResponse response,
+            HttpServletRequest request,
+            ErrorCode errorCode
+    ) throws IOException {
+        ErrorResponse body = ErrorResponse.of(
+                errorCode.getCode(),
+                errorCode.getMessage(),
+                errorCode.getStatus().value(),
+                request.getRequestURI()
+        );
+
+        response.setStatus(errorCode.getStatus().value());
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.setCharacterEncoding("UTF-8");
+        response.getWriter().write(objectMapper.writeValueAsString(body));
     }
 }
 
