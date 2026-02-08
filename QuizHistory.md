@@ -28,6 +28,7 @@
 ## 결정사항
 - 1단계 Read API는 `attempt` 기반 조회로 확정
 - 사이드프로젝트 범위에서는 attempt 소유자 권한 검증은 제외
+- DTO는 Lombok 기반으로 작성하고, `@Setter`는 사용하지 않음
 
 ## API / DTO 설계 기록
 - [CONFIRMED] 1. 문제/보기 조회 (Read, Attempt 기반)
@@ -77,6 +78,13 @@
     - API 스펙 필드를 1:1로 반영해서 Controller/Service에서 변환 로직 최소화
     - `choices.order` 필드로 `choice_order` 고정 반환 요구사항(QUIZ-A03/A04) 대응
     - `isCorrect/correctAnswer/explanation` 필드를 DTO에서 제외해 QUIZ-A05를 구조적으로 보장
+  - 구현 규칙 (코드 스타일)
+    - Lombok: `@Getter`, `@Builder`, `@NoArgsConstructor`, `@AllArgsConstructor` 사용
+    - `@Setter`는 사용하지 않음 (의도치 않은 값 변경 방지)
+    - 리스트 필드(`choices`)는 `@Builder.Default` + 빈 리스트로 초기화
+  - 스코프 정리
+    - 1단계(Read, Attempt 기반)에서는 `QuizAttemptQuestionResponse`, `QuizSceneResponse`, `QuizChoiceResponse`만 사용
+    - 구 스펙(`GET /api/quiz/questions`)용 DTO(`QuizQuestionResponse`, `QuizQuestionsResponse`)는 혼선 방지를 위해 제거
 
 ## DB 매핑 메모
 - [CONFIRMED] 1-2. MyBatis Mapper/쿼리 설계 (Attempt 기반 조회)

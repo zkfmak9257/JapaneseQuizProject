@@ -1,7 +1,15 @@
 package com.team.jpquiz.quiz.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
+@Getter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class QuizChoiceResponse {
 
     @JsonIgnore
@@ -11,50 +19,4 @@ public class QuizChoiceResponse {
 
     // 스펙 요구 choice_order 기준으로 고정 반환
     private Integer order;
-
-    // Mybatis가 객체 생성할 때 기본 생성자가 필요
-    public QuizChoiceResponse() {
-
-    }
-
-    public QuizChoiceResponse(Long questionId, Long choiceId, String choiceText) {
-        this.questionId = questionId;
-        this.choiceId = choiceId;
-        this.choiceText = choiceText;
-    }
-
-    public Long getQuestionId() {
-        return questionId;
-    }
-
-    public void setQuestionId(Long questionId) {
-        this.questionId = questionId;
-    }
-
-    public Long getChoiceId() {
-        return choiceId;
-    }
-
-    public void setChoiceId(Long choiceId) {
-        this.choiceId = choiceId;
-    }
-
-    public String getChoiceText() {
-        return choiceText;
-    }
-
-    public void setChoiceText(String choiceText) {
-        this.choiceText = choiceText;
-    }
-
-    public Integer getOrder() {
-        return order;
-    }
-
-    public void setOrder(Integer order) {
-        this.order = order;
-    }
-
 }
-
-
