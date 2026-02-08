@@ -62,6 +62,21 @@
     - `404 QUESTION_NOT_FOUND`: 해당 seq 문제 없음
   - 참고:
     - 본 프로젝트 범위에서는 `403 FORBIDDEN (attempt 소유자 검증)`은 이번 단계에서 적용하지 않음
+- [CONFIRMED] 1-1. DTO 설계 (Attempt 기반 조회 응답)
+  - `QuizAttemptQuestionResponse`
+    - `attemptId`, `seq`, `totalQuestions`
+    - `questionId`, `questionText`
+    - `scene: QuizSceneResponse`
+    - `choices: List<QuizChoiceResponse>`
+  - `QuizSceneResponse`
+    - `sceneId`, `name`, `description`
+  - `QuizChoiceResponse`
+    - `questionId` (내부 조립용, `@JsonIgnore`)
+    - `choiceId`, `choiceText`, `order`
+  - 설계 의도:
+    - API 스펙 필드를 1:1로 반영해서 Controller/Service에서 변환 로직 최소화
+    - `choices.order` 필드로 `choice_order` 고정 반환 요구사항(QUIZ-A03/A04) 대응
+    - `isCorrect/correctAnswer/explanation` 필드를 DTO에서 제외해 QUIZ-A05를 구조적으로 보장
 
 ## DB 매핑 메모
 - 아직 없음
