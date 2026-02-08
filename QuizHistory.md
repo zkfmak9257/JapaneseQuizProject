@@ -79,7 +79,30 @@
     - `isCorrect/correctAnswer/explanation` 필드를 DTO에서 제외해 QUIZ-A05를 구조적으로 보장
 
 ## DB 매핑 메모
-- 아직 없음
+- [CONFIRMED] 1-2. MyBatis Mapper/쿼리 설계 (Attempt 기반 조회)
+  - Mapper
+    - `QuizMapper#findAttemptQuestion(attemptId, seq)`
+      - 반환: `QuizAttemptQuestionResponse` (문제 본문 + scene + totalQuestions)
+    - `QuizMapper#findAttemptQuestionChoices(attemptId, seq)`
+      - 반환: `List<QuizChoiceResponse>` (보기 목록)
+  - SQL 설계 포인트
+    - 문제 본문 조회:
+      - `quiz_attempt_questions` + `quiz_questions` + `quiz_scenes` 조인
+      - `attempt_id`, `seq`로 1문제 조회
+      - `total_questions`는 같은 attempt의 문제 수를 COUNT 서브쿼리로 계산
+    - 보기 조회:
+      - `quiz_attempt_questions` + `quiz_choices` 조인
+      - `attempt_id`, `seq`로 현재 문제의 보기 목록 조회
+      - `order`는 `FIND_IN_SET(choice_id, choice_order)`로 계산
+  - 정렬 규칙 (QUIZ-A03/A04)
+    - 기본: `choice_order` 기준 오름차순
+    - 예외: `choice_order`가 비어 있거나, `FIND_IN_SET(...) = 0`인 보기는 뒤(999)로 보냄
+    - 마지막 보조 정렬: `choice_id ASC`
+  - 데이터 전제
+    - `quiz_attempt_questions.choice_order` 형식은 CSV 문자열
+    - 예시: `"1002,1001,1004,1003"`
+  - 보안/노출 규칙 (QUIZ-A05)
+    - Read 조회 SQL에는 정답/해설/정오답 컬럼을 포함하지 않음
 
 ## 구현 체크리스트
 - [ ] 1. 문제/보기 조회 (Read)
