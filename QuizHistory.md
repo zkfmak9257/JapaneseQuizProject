@@ -26,10 +26,42 @@
 - 이유: 제출 데이터 기반으로 화면에 보여줄 결과 정리
 
 ## 결정사항
-- 아직 없음
+- 1단계 Read API는 `attempt` 기반 조회로 확정
+- 사이드프로젝트 범위에서는 attempt 소유자 권한 검증은 제외
 
 ## API / DTO 설계 기록
-- 아직 없음
+- [CONFIRMED] 1. 문제/보기 조회 (Read, Attempt 기반)
+  - Endpoint: `GET /api/quiz/attempts/{attemptId}/questions/{seq}`
+  - Path Variables:
+    - `attemptId`: 퀴즈 시도 ID
+    - `seq`: 현재 문제 번호(1부터 시작)
+  - 동작 규칙:
+    - 해당 `attemptId`의 `seq` 문제 1개를 반환
+    - 보기 순서는 `quiz_attempt_questions.choice_order` 기준으로 고정 반환 (QUIZ-A03/A04)
+    - 제출 전 조회에서는 정답/해설/정오답 필드를 반환하지 않음 (QUIZ-A05)
+  - Response (ApiResponse):
+    - `data.attemptId`
+    - `data.seq`
+    - `data.totalQuestions`
+    - `data.questionId`
+    - `data.questionText` (실제 회화 문제 문장)
+    - `data.scene`:
+      - `sceneId`
+      - `name`
+      - `description`
+    - `data.choices[]`:
+      - `choiceId`
+      - `choiceText`
+      - `order`
+    - 제외 필드:
+      - `isCorrect`
+      - `correctAnswer`
+      - `explanation`
+  - Error Cases:
+    - `404 ATTEMPT_NOT_FOUND`: attempt 없음
+    - `404 QUESTION_NOT_FOUND`: 해당 seq 문제 없음
+  - 참고:
+    - 본 프로젝트 범위에서는 `403 FORBIDDEN (attempt 소유자 검증)`은 이번 단계에서 적용하지 않음
 
 ## DB 매핑 메모
 - 아직 없음
