@@ -112,6 +112,25 @@
   - 보안/노출 규칙 (QUIZ-A05)
     - Read 조회 SQL에는 정답/해설/정오답 컬럼을 포함하지 않음
 
+## Service 설계 메모
+- [IN_PROGRESS] 1-3. QuizQueryService 설계 (Attempt 기반 조회 조립)
+  - 대상 메서드: `findAttemptQuestion(Long attemptId, int seq)`
+  - 처리 순서:
+    1. 입력 검증 (`attemptId`, `seq`)
+    2. 문제 본문 조회 (`quizMapper.findAttemptQuestion`)
+    3. 문제 미존재 시 예외 처리 (`QUESTION_NOT_FOUND`)
+    4. 보기 목록 조회 (`quizMapper.findAttemptQuestionChoices`)
+    5. 문제 본문 + 보기를 `QuizAttemptQuestionResponse`로 조립 반환
+  - 예외 정책:
+    - 유효하지 않은 입력값: `INVALID_REQUEST`
+    - 해당 순번 문제 없음: `QUESTION_NOT_FOUND`
+  - 구현 포인트:
+    - DTO는 `@Setter` 미사용 정책이므로 builder 기반 조립
+    - Query Service는 조회 전용이므로 `@Transactional(readOnly = true)` 적용
+  - 학습 포인트(비유):
+    - `attemptId`는 "시험지 번호", `seq`는 "시험지 내 문제 번호"
+    - 서비스는 DB에서 조각(문제 본문/보기)을 가져와 "완성된 1문제 화면 데이터"로 조립하는 역할
+
 ## 구현 체크리스트
 - [ ] 1. 문제/보기 조회 (Read)
 - [ ] 2. 퀴즈 시작 (세트 생성)
