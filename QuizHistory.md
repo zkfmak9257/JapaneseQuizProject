@@ -28,6 +28,7 @@
 ## 결정사항
 - 1단계 Read API는 `attempt` 기반 조회로 확정
 - 사이드프로젝트 범위에서는 attempt 소유자 권한 검증은 제외
+- DTO는 Lombok 기반으로 작성하고, `@Setter`는 사용하지 않음
 
 ## API / DTO 설계 기록
 - [CONFIRMED] 1. 문제/보기 조회 (Read, Attempt 기반)
@@ -62,12 +63,90 @@
     - `404 QUESTION_NOT_FOUND`: 해당 seq 문제 없음
   - 참고:
     - 본 프로젝트 범위에서는 `403 FORBIDDEN (attempt 소유자 검증)`은 이번 단계에서 적용하지 않음
+- [CONFIRMED] 1-1. DTO 설계 (Attempt 기반 조회 응답)
+  - `QuizAttemptQuestionResponse`
+    - `attemptId`, `seq`, `totalQuestions`
+    - `questionId`, `questionText`
+    - `scene: QuizSceneResponse`
+    - `choices: List<QuizChoiceResponse>`
+  - `QuizSceneResponse`
+    - `sceneId`, `name`, `description`
+  - `QuizChoiceResponse`
+    - `questionId` (내부 조립용, `@JsonIgnore`)
+    - `choiceId`, `choiceText`, `order`
+  - 설계 의도:
+    - API 스펙 필드를 1:1로 반영해서 Controller/Service에서 변환 로직 최소화
+    - `choices.order` 필드로 `choice_order` 고정 반환 요구사항(QUIZ-A03/A04) 대응
+    - `isCorrect/correctAnswer/explanation` 필드를 DTO에서 제외해 QUIZ-A05를 구조적으로 보장
+  - 구현 규칙 (코드 스타일)
+    - Lombok: `@Getter`, `@Builder`, `@NoArgsConstructor`, `@AllArgsConstructor` 사용
+    - `@Setter`는 사용하지 않음 (의도치 않은 값 변경 방지)
+    - 리스트 필드(`choices`)는 `@Builder.Default` + 빈 리스트로 초기화
+  - 스코프 정리
+    - 1단계(Read, Attempt 기반)에서는 `QuizAttemptQuestionResponse`, `QuizSceneResponse`, `QuizChoiceResponse`만 사용
+    - 구 스펙(`GET /api/quiz/questions`)용 DTO(`QuizQuestionResponse`, `QuizQuestionsResponse`)는 혼선 방지를 위해 제거
 
 ## DB 매핑 메모
-- 아직 없음
+- [CONFIRMED] 1-2. MyBatis Mapper/쿼리 설계 (Attempt 기반 조회)
+  - Mapper
+    - `QuizMapper#findAttemptQuestion(attemptId, seq)`
+      - 반환: `QuizAttemptQuestionResponse` (문제 본문 + scene + totalQuestions)
+    - `QuizMapper#findAttemptQuestionChoices(attemptId, seq)`
+      - 반환: `List<QuizChoiceResponse>` (보기 목록)
+  - SQL 설계 포인트
+    - 문제 본문 조회:
+      - `quiz_attempt_questions` + `quiz_questions` + `quiz_scenes` 조인
+      - `attempt_id`, `seq`로 1문제 조회
+      - `total_questions`는 같은 attempt의 문제 수를 COUNT 서브쿼리로 계산
+    - 보기 조회:
+      - `quiz_attempt_questions` + `quiz_choices` 조인
+      - `attempt_id`, `seq`로 현재 문제의 보기 목록 조회
+      - `order`는 `FIND_IN_SET(choice_id, choice_order)`로 계산
+  - 정렬 규칙 (QUIZ-A03/A04)
+    - 기본: `choice_order` 기준 오름차순
+    - 예외: `choice_order`가 비어 있거나, `FIND_IN_SET(...) = 0`인 보기는 뒤(999)로 보냄
+    - 마지막 보조 정렬: `choice_id ASC`
+  - 데이터 전제
+    - `quiz_attempt_questions.choice_order` 형식은 CSV 문자열
+    - 예시: `"1002,1001,1004,1003"`
+  - 보안/노출 규칙 (QUIZ-A05)
+    - Read 조회 SQL에는 정답/해설/정오답 컬럼을 포함하지 않음
+
+## Service 설계 메모
+- [DONE] 1-3. QuizQueryService 구현 (Attempt 기반 조회 조립)
+  - 대상 메서드: `findAttemptQuestion(Long attemptId, int seq)`
+  - 처리 순서:
+    1. 입력 검증 (`attemptId`, `seq`)
+    2. 문제 본문 조회 (`quizMapper.findAttemptQuestion`)
+    3. 문제 미존재 시 예외 처리 (`QUESTION_NOT_FOUND`)
+    4. 보기 목록 조회 (`quizMapper.findAttemptQuestionChoices`)
+    5. 문제 본문 + 보기를 `QuizAttemptQuestionResponse`로 조립 반환
+  - 예외 정책:
+    - 유효하지 않은 입력값: `INVALID_REQUEST`
+    - 해당 순번 문제 없음: `QUESTION_NOT_FOUND`
+  - 구현 포인트:
+    - DTO는 `@Setter` 미사용 정책이므로 builder 기반 조립
+    - Query Service는 조회 전용이므로 `@Transactional(readOnly = true)` 적용
+  - 학습 포인트(비유):
+    - `attemptId`는 "시험지 번호", `seq`는 "시험지 내 문제 번호"
+    - 서비스는 DB에서 조각(문제 본문/보기)을 가져와 "완성된 1문제 화면 데이터"로 조립하는 역할
+
+## Controller 구현 메모
+- [DONE] 1-4. QuizController 구현 (Attempt 기반 Read 엔드포인트 연결)
+  - 클래스: `QuizController`
+  - 베이스 경로: `@RequestMapping("/api/quiz")`
+  - 엔드포인트: `@GetMapping("/attempts/{attemptId}/questions/{seq}")`
+  - 메서드: `getAttemptQuestion(@PathVariable Long attemptId, @PathVariable int seq)`
+  - 처리 순서:
+    1. URL 경로 변수(`attemptId`, `seq`)를 메서드 파라미터로 받음
+    2. `quizQueryService.findAttemptQuestion(attemptId, seq)` 호출
+    3. 서비스 반환 DTO를 `ApiResponse.ok(...)`로 감싸 응답
+  - 응답 규약:
+    - 성공: `ApiResponse<QuizAttemptQuestionResponse>`
+    - 실패: `GlobalExceptionHandler`가 `ErrorResponse`로 변환
 
 ## 구현 체크리스트
-- [ ] 1. 문제/보기 조회 (Read)
+- [x] 1. 문제/보기 조회 (Read)
 - [ ] 2. 퀴즈 시작 (세트 생성)
 - [ ] 3. 답안 제출/채점
 - [ ] 4. 퀴즈 완료 처리
