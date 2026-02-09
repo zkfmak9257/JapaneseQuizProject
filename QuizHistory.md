@@ -113,7 +113,7 @@
     - Read 조회 SQL에는 정답/해설/정오답 컬럼을 포함하지 않음
 
 ## Service 설계 메모
-- [IN_PROGRESS] 1-3. QuizQueryService 설계 (Attempt 기반 조회 조립)
+- [DONE] 1-3. QuizQueryService 구현 (Attempt 기반 조회 조립)
   - 대상 메서드: `findAttemptQuestion(Long attemptId, int seq)`
   - 처리 순서:
     1. 입력 검증 (`attemptId`, `seq`)
@@ -131,8 +131,22 @@
     - `attemptId`는 "시험지 번호", `seq`는 "시험지 내 문제 번호"
     - 서비스는 DB에서 조각(문제 본문/보기)을 가져와 "완성된 1문제 화면 데이터"로 조립하는 역할
 
+## Controller 구현 메모
+- [DONE] 1-4. QuizController 구현 (Attempt 기반 Read 엔드포인트 연결)
+  - 클래스: `QuizController`
+  - 베이스 경로: `@RequestMapping("/api/quiz")`
+  - 엔드포인트: `@GetMapping("/attempts/{attemptId}/questions/{seq}")`
+  - 메서드: `getAttemptQuestion(@PathVariable Long attemptId, @PathVariable int seq)`
+  - 처리 순서:
+    1. URL 경로 변수(`attemptId`, `seq`)를 메서드 파라미터로 받음
+    2. `quizQueryService.findAttemptQuestion(attemptId, seq)` 호출
+    3. 서비스 반환 DTO를 `ApiResponse.ok(...)`로 감싸 응답
+  - 응답 규약:
+    - 성공: `ApiResponse<QuizAttemptQuestionResponse>`
+    - 실패: `GlobalExceptionHandler`가 `ErrorResponse`로 변환
+
 ## 구현 체크리스트
-- [ ] 1. 문제/보기 조회 (Read)
+- [x] 1. 문제/보기 조회 (Read)
 - [ ] 2. 퀴즈 시작 (세트 생성)
 - [ ] 3. 답안 제출/채점
 - [ ] 4. 퀴즈 완료 처리
