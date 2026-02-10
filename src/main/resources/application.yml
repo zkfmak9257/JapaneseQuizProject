@@ -46,3 +46,8 @@ app:
     exposed-headers: ""
     allow-credentials: false
     max-age: 3600
+  jwt:
+    # JWT 기본 설정 (환경별로 덮어쓰기 필수)
+    secret: ""  # Base64 인코딩된 시크릿 키 (최소 256비트, 환경변수로 주입 권장)
+    access-token-expiration: 1800000     # 30분 (밀리초)
+    refresh-token-expiration: 604800000  # 7일 (밀리초)
