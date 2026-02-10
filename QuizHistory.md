@@ -5,7 +5,7 @@
 - 통계(stats) 도메인은 범위에서 제외
 
 ## 개발 순서 (목표)
-1. 문제/보기 조회 (Read)
+1. 문제/보기 조회 (Read) // 260210 완료
 - 테이블: `quiz_questions`, `quiz_choices`, `quiz_scenes`
 - 이유: 데이터 구조 이해 + 화면/API 확인이 가장 쉬움
 
@@ -153,4 +153,8 @@
 - [ ] 5. 결과 조회
 
 ## 이슈 / 배운 점
-- 아직 없음
+- [DONE] 문제/보기 조회 API 구현 및 수동 테스트 완료
+- [PASS] QUIZ-A03/A04: `choice_order` 기준으로 `choices` 순서 고정 반환 확인
+- [PASS] QUIZ-A05: 제출 전 응답에서 `isCorrect`, `correctAnswer`, `explanation` 미노출(null) 확인
+- [DEFER] 페이지네이션/문제 개수 제한: 2단계(퀴즈 시작/세트 생성)에서 정책 확정 및 적용 예정
+- [DEFER] `question_type`별 응답 구조 분리: 문제 유형 확장 시점에 타입별 DTO 분리 설계 예정
