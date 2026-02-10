@@ -47,6 +47,7 @@ public class SecurityConfig {
                         .requestMatchers("/actuator/health").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/", "/favicon.ico").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/quiz/attempts/*/questions/*").permitAll()
                         .anyRequest().authenticated()
 
                 )
