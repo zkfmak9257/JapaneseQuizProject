@@ -85,6 +85,30 @@
   - 스코프 정리
     - 1단계(Read, Attempt 기반)에서는 `QuizAttemptQuestionResponse`, `QuizSceneResponse`, `QuizChoiceResponse`만 사용
     - 구 스펙(`GET /api/quiz/questions`)용 DTO(`QuizQuestionResponse`, `QuizQuestionsResponse`)는 혼선 방지를 위해 제거
+- [CONFIRMED] 2. 퀴즈 시작 API 스펙 (Issue-1)
+  - Endpoint: `POST /api/quiz/attempts/start`
+  - 인증: 필요 (`401 UNAUTHORIZED` 대상)
+  - Request Body:
+    - `count` (Integer, 필수): 생성할 문제 수
+    - 제약: 최소 1, 최대 20
+  - 동작 규칙:
+    - 요청 `count`만큼 랜덤 문제를 선택해 1개의 `quiz_attempts`를 생성한다.
+    - 선택된 각 문제를 `quiz_attempt_questions`에 `seq`(1부터 시작)로 저장한다.
+    - 각 문제의 `choice_order`는 시작 시점에 랜덤으로 고정 저장한다. (QUIZ-A03/A04)
+    - 시작 응답에는 정답/해설/정오답 필드를 포함하지 않는다. (QUIZ-A05)
+  - Success Response (200, `ApiResponse<QuizAttemptResponse>`):
+    - `data.attemptId`: 생성된 시도 ID
+    - `data.totalQuestions`: 실제 배정 문제 수
+  - Error Cases:
+    - `400 INVALID_REQUEST`
+      - `count`가 null/범위(1~20) 밖인 경우
+      - 요청한 `count`보다 문제 풀이 풀(pool) 개수가 부족한 경우
+    - `401 UNAUTHORIZED`
+      - 인증 정보 없음/유효하지 않음
+  - Out of Scope (Issue-1):
+    - attempt 소유자 검증 로직
+    - 문제/보기 상세 반환
+    - 제출/채점/완료 처리
 
 ## DB 매핑 메모
 - [CONFIRMED] 1-2. MyBatis Mapper/쿼리 설계 (Attempt 기반 조회)
