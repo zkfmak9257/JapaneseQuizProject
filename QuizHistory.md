@@ -109,6 +109,14 @@
     - attempt 소유자 검증 로직
     - 문제/보기 상세 반환
     - 제출/채점/완료 처리
+- [CONFIRMED] 2-1. 퀴즈 시작 DTO 확정 (Issue-2)
+  - `StartQuizRequest`
+    - 필드: `count` (Integer)
+    - 검증: `@NotNull`, `@Min(1)`, `@Max(20)`
+    - 의도: 요청 유효성(필수/범위)을 Controller 진입 시점에 빠르게 차단
+  - `QuizAttemptResponse`
+    - 필드: `attemptId` (Long), `totalQuestions` (int)
+    - 의도: 시작 API는 "시도 식별값 + 배정 문제 수"만 반환하고 상세 문제/정답은 포함하지 않음 (QUIZ-A05)
 
 ## DB 매핑 메모
 - [CONFIRMED] 1-2. MyBatis Mapper/쿼리 설계 (Attempt 기반 조회)
