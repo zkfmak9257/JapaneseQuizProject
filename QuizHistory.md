@@ -206,6 +206,18 @@
   - 응답 규약:
     - 성공: `ApiResponse<QuizAttemptQuestionResponse>`
     - 실패: `GlobalExceptionHandler`가 `ErrorResponse`로 변환
+- [DONE] 2-4. QuizController 구현 (Issue-5, 퀴즈 시작 엔드포인트 연결)
+  - 엔드포인트: `POST /api/quiz/attempts/start`
+  - 메서드: `startQuiz(@Valid @RequestBody StartQuizRequest request)`
+  - 처리 순서:
+    1. 요청 DTO 검증(`count` 필수/범위)
+    2. `quizCommandService.startQuiz(userId, request)` 호출
+    3. 결과를 `ApiResponse.ok(...)`로 반환
+  - 응답 규약:
+    - 성공: `ApiResponse<QuizAttemptResponse>`
+    - 실패: `GlobalExceptionHandler` 또는 Security의 401/403 핸들러
+  - 참고:
+    - JWT 연동 전 단계에서는 임시 `userId`를 사용하며, 인증 연동 시 SecurityContext 기반으로 교체 예정
 
 ## 구현 체크리스트
 - [x] 1. 문제/보기 조회 (Read)
