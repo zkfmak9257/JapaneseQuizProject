@@ -143,6 +143,20 @@
     - 예시: `"1002,1001,1004,1003"`
   - 보안/노출 규칙 (QUIZ-A05)
     - Read 조회 SQL에는 정답/해설/정오답 컬럼을 포함하지 않음
+- [CONFIRMED] 2-2. MyBatis Mapper/쿼리 설계 (Issue-3, 퀴즈 시작)
+  - Mapper: `QuizCommandMapper`
+    - `countAllQuestions()`: 문제 pool 전체 수 조회
+    - `findRandomQuestionIds(count)`: 시작 시점 랜덤 문제 ID 추출
+    - `findChoiceOrderCsv(questionId)`: 문제별 보기 순서 CSV 생성
+    - `insertQuizAttempt(params)`: `quiz_attempts` 1건 저장 + 생성 PK 회수
+    - `insertQuizAttemptQuestion(...)`: `quiz_attempt_questions` 배정 행 저장
+  - SQL 설계 포인트:
+    - 문제 추출은 `ORDER BY RAND() LIMIT #{count}`로 구현
+    - `choice_order`는 `GROUP_CONCAT(choice_id ORDER BY RAND())`로 생성해 시작 시점에 고정 저장
+    - `insertQuizAttempt`는 MyBatis `useGeneratedKeys`로 `attempt_id`를 회수
+  - 품질 조건 반영:
+    - QUIZ-A03/A04: 보기 순서를 시작 시점에 DB(`choice_order`)에 확정 저장
+    - QUIZ-A05: 시작 단계 SQL은 정답/해설/정오답 정보를 조회/반환하지 않음
 
 ## Service 설계 메모
 - [DONE] 1-3. QuizQueryService 구현 (Attempt 기반 조회 조립)
