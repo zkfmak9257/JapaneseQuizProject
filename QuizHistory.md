@@ -176,6 +176,22 @@
   - 학습 포인트(비유):
     - `attemptId`는 "시험지 번호", `seq`는 "시험지 내 문제 번호"
     - 서비스는 DB에서 조각(문제 본문/보기)을 가져와 "완성된 1문제 화면 데이터"로 조립하는 역할
+- [DONE] 2-3. QuizCommandService 구현 (Issue-4, 퀴즈 시작)
+  - 대상 메서드: `startQuiz(Long userId, StartQuizRequest request)`
+  - 트랜잭션:
+    - `@Transactional`로 attempt/attempt_questions 저장을 하나의 단위로 묶음
+    - 중간 실패 시 전체 롤백
+  - 처리 순서:
+    1. 입력 검증 (`userId`, `request.count`)
+    2. 문제 pool 수 확인 (`countAllQuestions`)
+    3. 랜덤 문제 ID 추출 (`findRandomQuestionIds`)
+    4. `quiz_attempts` 저장 + 생성 `attemptId` 회수
+    5. 문제별 `choice_order` 생성 후 `quiz_attempt_questions` 저장
+    6. `QuizAttemptResponse(attemptId, totalQuestions)` 반환
+  - 예외 정책:
+    - `INVALID_REQUEST`: 요청 count가 범위를 벗어나거나 pool보다 큰 경우
+    - `UNAUTHORIZED`: userId가 없거나 유효하지 않은 경우
+    - `INTERNAL_ERROR`: generated key/배정 insert 이상 등 서버 내부 불일치
 
 ## Controller 구현 메모
 - [DONE] 1-4. QuizController 구현 (Attempt 기반 Read 엔드포인트 연결)
