@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 @Transactional
+// 오답노트 저장/삭제 도메인 로직을 처리하는 서비스입니다.
 public class WrongAnswerCommandService {
 
   private final WrongAnswerRepository wrongAnswerRepository;

@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 @Mapper
+// 오답노트 조회 전용 SQL을 실행하는 MyBatis 매퍼입니다.
 public interface WrongAnswerMapper {
 
   // 오답 목록 조회(페이징)
@@ -15,5 +16,7 @@ public interface WrongAnswerMapper {
       @Param("offset") int offset,
       @Param("limit") int limit
   );
+
+  // 회원별 오답노트 전체 건수를 조회합니다.
   long countWrongAnswers(@Param("memberId") Long memberId);
 }
