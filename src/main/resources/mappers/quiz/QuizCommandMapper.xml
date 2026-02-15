@@ -53,16 +53,12 @@
             attempt_id,
             seq,
             question_id,
-            choice_order,
-            created_at,
-            updated_at
+            choice_order
         ) VALUES (
             #{attemptId},
             #{seq},
             #{questionId},
-            #{choiceOrder},
-            NOW(),
-            NOW()
+            #{choiceOrder}
         )
     </insert>
 

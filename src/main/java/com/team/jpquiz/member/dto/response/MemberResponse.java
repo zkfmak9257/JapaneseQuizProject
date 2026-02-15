@@ -49,14 +49,14 @@ public class MemberResponse {
      * @return MemberResponse
      */
     public static MemberResponse from(Member member) {
-        return MemberResponse.builder()
-                .userId(member.getUserId())
-                .email(member.getEmail())
-                .nickname(member.getNickname())
-                .role(member.getRole())
-                .status(member.getStatus())
-                .lastLoginAt(member.getLastLoginAt())
-                .createdAt(member.getCreatedAt())
-                .build();
+        return new MemberResponse(
+                member.getUserId(),
+                member.getEmail(),
+                member.getNickname(),
+                member.getRole(),
+                member.getStatus(),
+                member.getLastLoginAt(),
+                member.getCreatedAt()
+        );
     }
 }

@@ -38,11 +38,7 @@ public class TokenResponse {
      * @return TokenResponse
      */
     public static TokenResponse ofAccessToken(String accessToken, Long expiresIn) {
-        return TokenResponse.builder()
-                .accessToken(accessToken)
-                .tokenType("Bearer")
-                .expiresIn(expiresIn)
-                .build();
+        return new TokenResponse(accessToken, null, "Bearer", expiresIn);
     }
 
     /**
@@ -54,11 +50,6 @@ public class TokenResponse {
      * @return TokenResponse
      */
     public static TokenResponse of(String accessToken, String refreshToken, Long expiresIn) {
-        return TokenResponse.builder()
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .tokenType("Bearer")
-                .expiresIn(expiresIn)
-                .build();
+        return new TokenResponse(accessToken, refreshToken, "Bearer", expiresIn);
     }
 }

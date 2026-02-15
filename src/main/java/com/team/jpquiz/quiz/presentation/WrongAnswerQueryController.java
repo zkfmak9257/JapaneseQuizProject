@@ -26,6 +26,6 @@ public class WrongAnswerQueryController {
     Long currentMemberId = 1L;
 
     PageResponse<WrongAnswerResponse> response = wrongAnswerQueryService.getWrongAnswerList(currentMemberId, page, size);
-    return ApiResponse.success(response);
+    return ApiResponse.ok(response);
   }
 }

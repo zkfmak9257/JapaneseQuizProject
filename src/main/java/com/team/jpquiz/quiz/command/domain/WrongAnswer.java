@@ -54,4 +54,15 @@ public class WrongAnswer {
     this.lastWrongAt = LocalDateTime.now();
   }
 
+  public Long getQuestionId() {
+    return questionId;
+  }
+
+  public int getWrongCount() {
+    return wrongCount;
+  }
+
+  public LocalDateTime getLastWrongAt() {
+    return lastWrongAt;
+  }
 }

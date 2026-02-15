@@ -232,3 +232,17 @@
 - [PASS] QUIZ-A05: 제출 전 응답에서 `isCorrect`, `correctAnswer`, `explanation` 미노출(null) 확인
 - [DEFER] 페이지네이션/문제 개수 제한: 2단계(퀴즈 시작/세트 생성)에서 정책 확정 및 적용 예정
 - [DEFER] `question_type`별 응답 구조 분리: 문제 유형 확장 시점에 타입별 DTO 분리 설계 예정
+- [DONE] 2-5. 수동 테스트(200/400/401) 실행 (Issue-6)
+  - 사전 복구:
+    - 기존 컴파일 블로커(`PageResponse`, JWT/DTO/WrongAnswer 일부 코드 불일치) 정리 후 `compileJava` 성공
+    - 실행 블로커(`@EnableJpaAuditing` 중복, MyBatis 스캔/alias 충돌, 로컬 JWT secret 미설정) 정리 후 `bootRun` 성공
+    - 로컬 DB에 `quiz_attempts` 테이블이 없어 테스트용 최소 스키마를 생성
+  - 검증 결과:
+    - `401` (인증 실패): `POST /api/quiz/attempts/start` 무인증 요청 시 `UNAUTHORIZED` 확인
+    - `400` (요청 실패): `POST /api/quiz/attempts/start` + `{"count":2}` 요청 시 문제 pool 부족으로 `INVALID_REQUEST` 확인
+    - `200` (정상): `POST /api/quiz/attempts/start` + `{"count":1}` 요청 시 `attemptId`, `totalQuestions` 반환 확인
+  - 추가 관찰:
+    - `{"count":0}`는 현재 Bean Validation 예외가 공통 핸들링되지 않아 `500`으로 응답됨
+    - 향후 `MethodArgumentNotValidException` 핸들링 추가 시 기대 응답을 `400`으로 통일 가능
+  - 메모:
+    - 400/200 검증을 위해 테스트 중 `POST /api/quiz/attempts/start`를 임시 `permitAll`로 열어 확인 후 원복함

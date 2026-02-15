@@ -14,4 +14,7 @@ public class StartQuizRequest {
     @Max(value = 20, message = "문제 수는 20 이하여야 합니다.")
     private Integer count;
 
+    public Integer getCount() {
+        return count;
+    }
 }

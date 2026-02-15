@@ -23,11 +23,11 @@ public class WrongAnswerResponse {
   // 현재는 WrongAnswer 엔티티만으로 만들 수 있는 정보만 포함
 
   public static WrongAnswerResponse from(WrongAnswer wrongAnswer) {
-    return WrongAnswerResponse.builder()
-        .questionId(wrongAnswer.getQuestionId())
-        .wrongCount(wrongAnswer.getWrongCount())
-        .lastWrongAt(wrongAnswer.getLastWrongAt())
-        .build();
+    return new WrongAnswerResponse(
+        wrongAnswer.getQuestionId(),
+        wrongAnswer.getWrongCount(),
+        wrongAnswer.getLastWrongAt()
+    );
   }
 
 }

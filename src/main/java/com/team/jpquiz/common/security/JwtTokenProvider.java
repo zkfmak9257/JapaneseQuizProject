@@ -3,9 +3,10 @@ package com.team.jpquiz.common.security;
 import com.team.jpquiz.member.command.domain.Member;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.crypto.SecretKey;
 import java.util.Base64;
@@ -15,9 +16,9 @@ import java.util.Date;
  * JWT 토큰 생성 및 검증 유틸리티
  * Access Token, Refresh Token 생성 및 검증 담당
  */
-@Slf4j
 @Component
 public class JwtTokenProvider {
+    private static final Logger log = LoggerFactory.getLogger(JwtTokenProvider.class);
 
     private final SecretKey secretKey;
     private final long accessTokenExpiration;
