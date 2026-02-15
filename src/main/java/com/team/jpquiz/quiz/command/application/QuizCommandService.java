@@ -71,7 +71,7 @@ public class QuizCommandService {
         if (userId == null || userId <= 0) {
             throw new CustomException(ErrorCode.UNAUTHORIZED);
         }
-        if (request == null || request.getCount() == null || request.getCount() < 1 || request.getCount() > 20) {
+        if (request == null || request.getCount() == null || request.getCount() < 1 || request.getCount() > 10) {
             throw new CustomException(ErrorCode.INVALID_REQUEST);
         }
     }
