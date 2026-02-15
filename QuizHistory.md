@@ -90,7 +90,7 @@
   - 인증: 필요 (`401 UNAUTHORIZED` 대상)
   - Request Body:
     - `count` (Integer, 필수): 생성할 문제 수
-    - 제약: 최소 1, 최대 20
+    - 제약: 최소 1, 최대 10
   - 동작 규칙:
     - 요청 `count`만큼 랜덤 문제를 선택해 1개의 `quiz_attempts`를 생성한다.
     - 선택된 각 문제를 `quiz_attempt_questions`에 `seq`(1부터 시작)로 저장한다.
@@ -101,7 +101,7 @@
     - `data.totalQuestions`: 실제 배정 문제 수
   - Error Cases:
     - `400 INVALID_REQUEST`
-      - `count`가 null/범위(1~20) 밖인 경우
+      - `count`가 null/범위(1~10) 밖인 경우
       - 요청한 `count`보다 문제 풀이 풀(pool) 개수가 부족한 경우
     - `401 UNAUTHORIZED`
       - 인증 정보 없음/유효하지 않음
@@ -112,7 +112,7 @@
 - [CONFIRMED] 2-1. 퀴즈 시작 DTO 확정 (Issue-2)
   - `StartQuizRequest`
     - 필드: `count` (Integer)
-    - 검증: `@NotNull`, `@Min(1)`, `@Max(20)`
+    - 검증: `@NotNull`, `@Min(1)`, `@Max(10)`
     - 의도: 요청 유효성(필수/범위)을 Controller 진입 시점에 빠르게 차단
   - `QuizAttemptResponse`
     - 필드: `attemptId` (Long), `totalQuestions` (int)

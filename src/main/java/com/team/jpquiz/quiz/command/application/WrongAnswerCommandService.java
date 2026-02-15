@@ -21,7 +21,10 @@ public class WrongAnswerCommandService {
         .ifPresentOrElse(
             WrongAnswer::increaseWrongCount, // 이미 있으면 카운트 증가
             () -> wrongAnswerRepository.save(
-                new WrongAnswer(memberId, request.getQuestionId())
+                WrongAnswer.builder()
+                    .memberId(memberId)
+                    .questionId(request.getQuestionId())
+                    .build()
             )
         );
   }

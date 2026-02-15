@@ -2,6 +2,7 @@ package com.team.jpquiz.quiz.presentation;
 
 
 import com.team.jpquiz.common.dto.ApiResponse;
+import com.team.jpquiz.common.util.SecurityUtil;
 import com.team.jpquiz.quiz.command.application.QuizCommandService;
 import com.team.jpquiz.quiz.dto.request.StartQuizRequest;
 import com.team.jpquiz.quiz.dto.response.QuizAttemptQuestionResponse;
@@ -27,8 +28,7 @@ public class QuizController {
     public ApiResponse<QuizAttemptResponse> startQuiz(
             @Valid @RequestBody StartQuizRequest request
     ) {
-        // JWT 연동 전까지는 임시 사용자 ID 사용
-        Long userId = 1L;
+        Long userId = SecurityUtil.getCurrentMemberId();
         QuizAttemptResponse response = quizCommandService.startQuiz(userId, request);
         return ApiResponse.ok(response);
     }

@@ -1,9 +1,11 @@
 package com.team.jpquiz.quiz.presentation;
 
+import com.team.jpquiz.common.dto.ApiResponse;
+import com.team.jpquiz.common.util.SecurityUtil;
 import com.team.jpquiz.quiz.command.application.WrongAnswerCommandService;
 import com.team.jpquiz.quiz.dto.request.WrongAnswerSaveRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -15,21 +17,19 @@ public class WrongAnswerCommandController {
 
   // 오답 수동 저장 (테스트용)
   @PostMapping
-  public ResponseEntity<Void> saveWrongAnswer(@RequestBody WrongAnswerSaveRequest request) {
-    // TODO: 추후 인증된 사용자 ID로 변경 필요 (@AuthenticationPrincipal)
-    Long currentMemberId = 1L;
+  public ApiResponse<Void> saveWrongAnswer(@Valid @RequestBody WrongAnswerSaveRequest request) {
+    Long currentMemberId = SecurityUtil.getCurrentMemberId();
 
     wrongAnswerCommandService.saveWrongAnswer(currentMemberId, request);
-    return ResponseEntity.ok().build();
+    return ApiResponse.ok();
   }
 
   // 오답 삭제
   @DeleteMapping("/{questionId}")
-  public ResponseEntity<Void> deleteWrongAnswer(@PathVariable Long questionId) {
-    // TODO: 추후 인증된 사용자 ID로 변경 필요
-    Long currentMemberId = 1L;
+  public ApiResponse<Void> deleteWrongAnswer(@PathVariable Long questionId) {
+    Long currentMemberId = SecurityUtil.getCurrentMemberId();
 
     wrongAnswerCommandService.deleteWrongAnswer(currentMemberId, questionId);
-    return ResponseEntity.noContent().build(); // 204 No Content 반환
+    return ApiResponse.ok();
   }
 }
