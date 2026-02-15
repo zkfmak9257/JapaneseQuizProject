@@ -19,15 +19,15 @@
 ## 구현 체크리스트
 
 ### 1. 오답노트 (Wrong Answer Note)
-- [ ] **quizwr-01**: 틀린 문제 자동 저장 (Upsert 로직)
-- [ ] **quizwr-02**: 오답 목록 조회 (필터링 및 페이징)
+- [ ] **quizwr-01**: 틀린 문제 자동 저장 (Upsert 로직) - 진행중(Upsert 구현 완료, 퀴즈 제출 흐름 자동 연동 미완료)
+- [ ] **quizwr-02**: 오답 목록 조회 (필터링 및 페이징) - 진행중(페이징 구현 완료, 필터링 미완료)
 - [ ] **quizwr-03**: 오답 재학습 세트 생성 (10문제 고정, 부족분 랜덤 채움)
 - [ ] **quizwr-04**: 재학습 정답 시 오답노트에서 자동 제거
 
 ### 2. 즐겨찾기 (Favorites)
-- [ ] **quizfav-01**: 중요 문제 등록 (중복 방지 제약)
+- [x] **quizfav-01**: 중요 문제 등록 (중복 방지 제약)
 - [ ] **quizfav-02**: 즐겨찾기 목록 조회 (카테고리 필터링)
-- [ ] **quizfav-03**: 즐겨찾기 해제 (토글 방식)
+- [ ] **quizfav-03**: 즐겨찾기 해제 (토글 방식) - 진행중(해제 API 구현 완료, 단일 토글 API 미적용)
 
 ### 3. 문제 신고 (Problem Report)
 - [ ] **quizrep-01**: 오류 신고 제출 (회원/게스트 구분)
@@ -43,8 +43,8 @@
 - [ ] **quizstat-06**: [마이페이지] 개인 학습 통계 조회
 
 ## DB 매핑 메모
-- `wrong_answers`: `user_id`, `question_id` (Unique), `wrong_count`, `last_wrong_at`
-- `favorites`: `user_id`, `question_id` (Unique), `created_at`
+- `wrong_answers`: `member_id`, `question_id` (Unique), `wrong_count`, `last_wrong_at`
+- `favorites`: `member_id`, `question_id` (Unique), `created_at`
 - `problem_reports`: `question_id`, `reporter_id`, `report_type`, `status`, `action`
 - `attempt_answers`: 통계 집계의 기준이 되는 원천 데이터 테이블
 
@@ -55,7 +55,7 @@
 ## 이슈 / 배운 점
 - (구현 진행 시 기록 예정)
 
-## 진행상황 브리핑 (2026-02-14 기준)
+## 진행상황 브리핑 (2026-02-15 기준)
 
 ### 1) 오답노트
 - **quizwr-01 (틀린 문제 자동 저장 / Upsert)**: `진행중`
@@ -69,9 +69,13 @@
   - 참고: 수동 삭제 API는 존재하나, "정답 시 자동 제거" 비즈니스 연동은 미구현.
 
 ### 2) 즐겨찾기
-- **quizfav-01**: `미착수`
-- **quizfav-02**: `미착수`
-- **quizfav-03**: `미착수`
+- **quizfav-01 (등록 + 중복 방지 제약)**: `완료`
+  - 현재: `FavoriteCommandService.saveFavorite` 구현됨.
+  - 현재: `favorites(member_id, question_id)` 유니크 제약으로 중복 저장 방지됨.
+- **quizfav-02 (목록 조회 + 카테고리 필터링)**: `미착수`
+- **quizfav-03 (해제 + 토글 방식)**: `진행중`
+  - 현재: `DELETE /api/favorites/{questionId}` 해제 API 구현됨.
+  - 미완료: 단일 토글 API 설계/적용 및 목록 조회 기반 상태 연동.
 
 ### 3) 문제 신고
 - **quizrep-01**: `미착수`
@@ -87,11 +91,13 @@
 - **quizstat-06**: `미착수`
 
 ## 다음 한 단계 (Step 1)
-- 목표: **오답노트 기능을 "수동 테스트용"에서 "실사용 가능한 최소 단위"로 전환**
+- 목표: **오답노트/즐겨찾기를 "실사용 가능한 최소 단위"로 전환**
 - 작업 범위:
-  1. `quizwr-01`을 우선 마무리: 오답 저장 API의 사용자 식별 하드코딩 제거
-  2. `quizwr-02` 보강: 목록 조회에 최소 1개 필터 조건 추가(예: 최근 오답순 고정 외 조건)
-  3. 완료 후 체크리스트 업데이트 및 간단 API 검증 시나리오 기록
+  1. `quizwr-01` 마무리: 퀴즈 제출/채점 로직과 오답 Upsert 자동 연동
+  2. `quizwr-02` 보강: 오답 목록 조회 필터 1종 이상 추가
+  3. `quizfav-02` 착수: 즐겨찾기 목록 조회 API + 기본 페이징 구현
+  4. 인증 연동: `X-Member-Id` 임시 헤더 제거, 인증 사용자 주입으로 전환
 - 완료 기준:
-  - 하드코딩 사용자 ID 없이 요청 사용자 기준으로 동작
-  - 오답 목록 조회에서 페이징 + 필터가 모두 동작
+  - 수동 호출 없이 오답 저장/삭제가 채점 결과에 따라 자동 반영
+  - 오답/즐겨찾기 목록 조회 API가 모두 동작
+  - 하드코딩 사용자 식별 없이 요청 사용자 기준으로 동작

@@ -16,10 +16,10 @@
 
 ### 요구사항
 #### 필수
-- [ ] **API 정의**: 오답 저장(Upsert), 목록 조회(검색/필터), 삭제(해제) API 설계
-- [ ] **DTO 설계**: `WrongAnswerRequest`, `WrongAnswerResponse` 등 데이터 구조 설계
-- [ ] **Mapper/Repository**: `WrongAnswerMapper` (MyBatis) XML 및 인터페이스 구현
-- [ ] **Service 구현**: 오답 저장(중복 시 갱신), 조회, 삭제 비즈니스 로직 구현
+- [ ] **API 정의**: 오답 저장(Upsert), 목록 조회(검색/필터), 삭제(해제) API 설계 - 진행중(저장/조회/삭제 API 구현, 검색/필터 미완료)
+- [x] **DTO 설계**: `WrongAnswerSaveRequest`, `WrongAnswerResponse` 데이터 구조 구현
+- [x] **Mapper/Repository**: `WrongAnswerMapper`(MyBatis) XML/인터페이스, `WrongAnswerRepository` 구현
+- [x] **Service 구현**: 오답 저장(중복 시 갱신), 조회, 삭제 비즈니스 로직 구현
 
 #### 선택(있으면 좋음)
 - [ ] 오답 노트 내 검색 기능 (키워드 검색)
@@ -36,7 +36,7 @@
 - [ ] 이동 흐름 : 마이페이지 -> 오답노트
 
 ### API / DB 변경(선택)
-- API : `POST /api/wrong-answers`, `GET /api/wrong-answers`, `DELETE /api/wrong-answers/{questionId}`
+- API : `POST /api/quiz/wrong-answers`, `GET /api/quiz/wrong-answers`, `DELETE /api/quiz/wrong-answers/{questionId}`
 - DB : `wrong_answers` 테이블 활용
 
 ### 완료 조건
@@ -61,10 +61,10 @@
 
 ### 요구사항
 #### 필수
-- [ ] **API 정의**: 즐겨찾기 등록/해제(토글), 목록 조회 API
-- [ ] **DTO 설계**: `FavoriteRequest`, `FavoriteResponse`
-- [ ] **Mapper/Repository**: `FavoriteMapper` 구현
-- [ ] **Service 구현**: 등록/해제 로직, 목록 조회 로직
+- [ ] **API 정의**: 즐겨찾기 등록/해제(토글), 목록 조회 API - 진행중(등록/해제 API 구현, 목록/토글 단일 API 미완료)
+- [ ] **DTO 설계**: `FavoriteRequest`, `FavoriteResponse` - 미착수(현재 Path Variable + Void 응답 기반)
+- [ ] **Mapper/Repository**: `FavoriteMapper` 구현 - 진행중(`FavoriteRepository` 구현, 조회용 Mapper 미구현)
+- [ ] **Service 구현**: 등록/해제 로직, 목록 조회 로직 - 진행중(등록/해제 구현, 목록 조회 미구현)
 
 #### 선택(있으면 좋음)
 - [ ] 카테고리별 즐겨찾기 필터링
@@ -83,7 +83,7 @@
 - DB : `favorites` 테이블 활용
 
 ### 완료 조건
-- [ ] 즐겨찾기 등록 및 해제가 정상 동작하는지 확인
+- [x] 즐겨찾기 등록 및 해제가 정상 동작하는지 확인
 - [ ] 목록 조회 시 등록한 문제만 나오는지 확인
 
 ---
@@ -174,7 +174,7 @@
 
 ---
 
-## 현재 구현 상태 브리핑 (2026-02-14 기준)
+## 현재 구현 상태 브리핑 (2026-02-15 기준)
 
 ### 오답노트
 - `WrongAnswer` Entity / Repository / Service / Mapper / Controller 기본 골격은 존재
@@ -187,7 +187,14 @@
   - 정답 시 자동 제거(퀴즈 제출/채점 로직 연동)
 
 ### 즐겨찾기
-- 도메인/DTO/Mapper/Service/Controller 모두 미구현
+- `Favorite` Entity / Repository / Service / Controller 기본 CUD 구현 완료
+- 등록 API(`POST /api/favorites/{questionId}`), 해제 API(`DELETE /api/favorites/{questionId}`) 구현됨
+- `favorites(member_id, question_id)` 유니크 제약으로 중복 등록 방지 적용됨
+- 미완료:
+  - 목록 조회 API(`GET /api/favorites`) 미구현
+  - 카테고리 필터링 미구현
+  - 단일 토글 API 설계 여부 결정 및 적용 필요
+  - 인증 사용자 연동(`X-Member-Id` 임시 헤더 제거) 필요
 
 ### 문제 신고
 - 도메인/DTO/Mapper/Service/Controller 모두 미구현
@@ -197,15 +204,17 @@
 
 ## 다음 단계 실행 계획 (한 단계씩)
 
-### Step 1. 오답노트 실사용 전환 (현재 우선순위)
-- 목표: 오답노트를 테스트용 API에서 실제 사용자 동작 기준으로 전환
+### Step 1. 오답노트/즐겨찾기 실사용 전환 (현재 우선순위)
+- 목표: 수동 테스트용 API를 실제 사용자 동작 기준으로 전환
 - 작업:
-  1. 오답 저장/조회/삭제 API에서 하드코딩 사용자 ID 제거
-  2. 조회 API 필터 1종 추가(예: 최근 오답일 기준)
-  3. 동작 확인 시나리오 문서화
+  1. 오답 저장/조회/삭제 API와 즐겨찾기 API에서 `X-Member-Id` 임시 헤더 제거
+  2. 오답 조회 API 필터 1종 추가(예: 최근 오답일 기준)
+  3. 즐겨찾기 목록 조회 API(`GET /api/favorites`) 구현
+  4. 동작 확인 시나리오 문서화
 - 완료 기준:
-  - 로그인 사용자 기준으로 오답노트 CUD 동작
-  - 페이징 + 필터 조건 동시 동작 확인
+  - 로그인 사용자 기준으로 오답노트/즐겨찾기 API 동작
+  - 오답 목록은 페이징 + 필터 조건 동시 동작
+  - 즐겨찾기 목록 조회가 정상 동작
 
 ### Step 2. 퀴즈 채점 연동 자동화
 - 목표: 오답 저장/삭제를 수동 API 호출 없이 자동 처리
