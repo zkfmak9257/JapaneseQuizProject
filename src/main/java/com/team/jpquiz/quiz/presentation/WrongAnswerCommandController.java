@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/quiz/wrong-answers")
 @RequiredArgsConstructor
+// 오답노트 저장/삭제를 처리하는 커맨드 API입니다.
 public class WrongAnswerCommandController {
 
   private final WrongAnswerCommandService wrongAnswerCommandService;
