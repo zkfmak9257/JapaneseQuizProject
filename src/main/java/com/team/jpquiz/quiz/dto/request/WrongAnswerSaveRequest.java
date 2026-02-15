@@ -14,4 +14,8 @@ public class WrongAnswerSaveRequest {
   public WrongAnswerSaveRequest(Long questionId) {
     this.questionId = questionId;
   }
+
+  public Long getQuestionId() {
+    return questionId;
+  }
 }

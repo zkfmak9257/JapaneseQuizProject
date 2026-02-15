@@ -85,6 +85,38 @@
   - 스코프 정리
     - 1단계(Read, Attempt 기반)에서는 `QuizAttemptQuestionResponse`, `QuizSceneResponse`, `QuizChoiceResponse`만 사용
     - 구 스펙(`GET /api/quiz/questions`)용 DTO(`QuizQuestionResponse`, `QuizQuestionsResponse`)는 혼선 방지를 위해 제거
+- [CONFIRMED] 2. 퀴즈 시작 API 스펙 (Issue-1)
+  - Endpoint: `POST /api/quiz/attempts/start`
+  - 인증: 필요 (`401 UNAUTHORIZED` 대상)
+  - Request Body:
+    - `count` (Integer, 필수): 생성할 문제 수
+    - 제약: 최소 1, 최대 10
+  - 동작 규칙:
+    - 요청 `count`만큼 랜덤 문제를 선택해 1개의 `quiz_attempts`를 생성한다.
+    - 선택된 각 문제를 `quiz_attempt_questions`에 `seq`(1부터 시작)로 저장한다.
+    - 각 문제의 `choice_order`는 시작 시점에 랜덤으로 고정 저장한다. (QUIZ-A03/A04)
+    - 시작 응답에는 정답/해설/정오답 필드를 포함하지 않는다. (QUIZ-A05)
+  - Success Response (200, `ApiResponse<QuizAttemptResponse>`):
+    - `data.attemptId`: 생성된 시도 ID
+    - `data.totalQuestions`: 실제 배정 문제 수
+  - Error Cases:
+    - `400 INVALID_REQUEST`
+      - `count`가 null/범위(1~10) 밖인 경우
+      - 요청한 `count`보다 문제 풀이 풀(pool) 개수가 부족한 경우
+    - `401 UNAUTHORIZED`
+      - 인증 정보 없음/유효하지 않음
+  - Out of Scope (Issue-1):
+    - attempt 소유자 검증 로직
+    - 문제/보기 상세 반환
+    - 제출/채점/완료 처리
+- [CONFIRMED] 2-1. 퀴즈 시작 DTO 확정 (Issue-2)
+  - `StartQuizRequest`
+    - 필드: `count` (Integer)
+    - 검증: `@NotNull`, `@Min(1)`, `@Max(10)`
+    - 의도: 요청 유효성(필수/범위)을 Controller 진입 시점에 빠르게 차단
+  - `QuizAttemptResponse`
+    - 필드: `attemptId` (Long), `totalQuestions` (int)
+    - 의도: 시작 API는 "시도 식별값 + 배정 문제 수"만 반환하고 상세 문제/정답은 포함하지 않음 (QUIZ-A05)
 
 ## DB 매핑 메모
 - [CONFIRMED] 1-2. MyBatis Mapper/쿼리 설계 (Attempt 기반 조회)
@@ -111,6 +143,20 @@
     - 예시: `"1002,1001,1004,1003"`
   - 보안/노출 규칙 (QUIZ-A05)
     - Read 조회 SQL에는 정답/해설/정오답 컬럼을 포함하지 않음
+- [CONFIRMED] 2-2. MyBatis Mapper/쿼리 설계 (Issue-3, 퀴즈 시작)
+  - Mapper: `QuizCommandMapper`
+    - `countAllQuestions()`: 문제 pool 전체 수 조회
+    - `findRandomQuestionIds(count)`: 시작 시점 랜덤 문제 ID 추출
+    - `findChoiceOrderCsv(questionId)`: 문제별 보기 순서 CSV 생성
+    - `insertQuizAttempt(params)`: `quiz_attempts` 1건 저장 + 생성 PK 회수
+    - `insertQuizAttemptQuestion(...)`: `quiz_attempt_questions` 배정 행 저장
+  - SQL 설계 포인트:
+    - 문제 추출은 `ORDER BY RAND() LIMIT #{count}`로 구현
+    - `choice_order`는 `GROUP_CONCAT(choice_id ORDER BY RAND())`로 생성해 시작 시점에 고정 저장
+    - `insertQuizAttempt`는 MyBatis `useGeneratedKeys`로 `attempt_id`를 회수
+  - 품질 조건 반영:
+    - QUIZ-A03/A04: 보기 순서를 시작 시점에 DB(`choice_order`)에 확정 저장
+    - QUIZ-A05: 시작 단계 SQL은 정답/해설/정오답 정보를 조회/반환하지 않음
 
 ## Service 설계 메모
 - [DONE] 1-3. QuizQueryService 구현 (Attempt 기반 조회 조립)
@@ -130,6 +176,22 @@
   - 학습 포인트(비유):
     - `attemptId`는 "시험지 번호", `seq`는 "시험지 내 문제 번호"
     - 서비스는 DB에서 조각(문제 본문/보기)을 가져와 "완성된 1문제 화면 데이터"로 조립하는 역할
+- [DONE] 2-3. QuizCommandService 구현 (Issue-4, 퀴즈 시작)
+  - 대상 메서드: `startQuiz(Long userId, StartQuizRequest request)`
+  - 트랜잭션:
+    - `@Transactional`로 attempt/attempt_questions 저장을 하나의 단위로 묶음
+    - 중간 실패 시 전체 롤백
+  - 처리 순서:
+    1. 입력 검증 (`userId`, `request.count`)
+    2. 문제 pool 수 확인 (`countAllQuestions`)
+    3. 랜덤 문제 ID 추출 (`findRandomQuestionIds`)
+    4. `quiz_attempts` 저장 + 생성 `attemptId` 회수
+    5. 문제별 `choice_order` 생성 후 `quiz_attempt_questions` 저장
+    6. `QuizAttemptResponse(attemptId, totalQuestions)` 반환
+  - 예외 정책:
+    - `INVALID_REQUEST`: 요청 count가 범위를 벗어나거나 pool보다 큰 경우
+    - `UNAUTHORIZED`: userId가 없거나 유효하지 않은 경우
+    - `INTERNAL_ERROR`: generated key/배정 insert 이상 등 서버 내부 불일치
 
 ## Controller 구현 메모
 - [DONE] 1-4. QuizController 구현 (Attempt 기반 Read 엔드포인트 연결)
@@ -144,6 +206,18 @@
   - 응답 규약:
     - 성공: `ApiResponse<QuizAttemptQuestionResponse>`
     - 실패: `GlobalExceptionHandler`가 `ErrorResponse`로 변환
+- [DONE] 2-4. QuizController 구현 (Issue-5, 퀴즈 시작 엔드포인트 연결)
+  - 엔드포인트: `POST /api/quiz/attempts/start`
+  - 메서드: `startQuiz(@Valid @RequestBody StartQuizRequest request)`
+  - 처리 순서:
+    1. 요청 DTO 검증(`count` 필수/범위)
+    2. `quizCommandService.startQuiz(userId, request)` 호출
+    3. 결과를 `ApiResponse.ok(...)`로 반환
+  - 응답 규약:
+    - 성공: `ApiResponse<QuizAttemptResponse>`
+    - 실패: `GlobalExceptionHandler` 또는 Security의 401/403 핸들러
+  - 참고:
+    - JWT 연동 전 단계에서는 임시 `userId`를 사용하며, 인증 연동 시 SecurityContext 기반으로 교체 예정
 
 ## 구현 체크리스트
 - [x] 1. 문제/보기 조회 (Read)
@@ -158,3 +232,17 @@
 - [PASS] QUIZ-A05: 제출 전 응답에서 `isCorrect`, `correctAnswer`, `explanation` 미노출(null) 확인
 - [DEFER] 페이지네이션/문제 개수 제한: 2단계(퀴즈 시작/세트 생성)에서 정책 확정 및 적용 예정
 - [DEFER] `question_type`별 응답 구조 분리: 문제 유형 확장 시점에 타입별 DTO 분리 설계 예정
+- [DONE] 2-5. 수동 테스트(200/400/401) 실행 (Issue-6)
+  - 사전 복구:
+    - 기존 컴파일 블로커(`PageResponse`, JWT/DTO/WrongAnswer 일부 코드 불일치) 정리 후 `compileJava` 성공
+    - 실행 블로커(`@EnableJpaAuditing` 중복, MyBatis 스캔/alias 충돌, 로컬 JWT secret 미설정) 정리 후 `bootRun` 성공
+    - 로컬 DB에 `quiz_attempts` 테이블이 없어 테스트용 최소 스키마를 생성
+  - 검증 결과:
+    - `401` (인증 실패): `POST /api/quiz/attempts/start` 무인증 요청 시 `UNAUTHORIZED` 확인
+    - `400` (요청 실패): `POST /api/quiz/attempts/start` + `{"count":2}` 요청 시 문제 pool 부족으로 `INVALID_REQUEST` 확인
+    - `200` (정상): `POST /api/quiz/attempts/start` + `{"count":1}` 요청 시 `attemptId`, `totalQuestions` 반환 확인
+  - 추가 관찰:
+    - `{"count":0}`는 현재 Bean Validation 예외가 공통 핸들링되지 않아 `500`으로 응답됨
+    - 향후 `MethodArgumentNotValidException` 핸들링 추가 시 기대 응답을 `400`으로 통일 가능
+  - 메모:
+    - 400/200 검증을 위해 테스트 중 `POST /api/quiz/attempts/start`를 임시 `permitAll`로 열어 확인 후 원복함
