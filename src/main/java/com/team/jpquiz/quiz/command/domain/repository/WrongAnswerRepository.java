@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
+// 오답노트 커맨드용 데이터 접근을 담당하는 JPA 리포지토리입니다.
 public interface WrongAnswerRepository extends JpaRepository<WrongAnswer, Long> {
 
   // 특정 유저가 특정 문제를 틀린 기록이 있는지 조회(Upsert 로직에서 사용)

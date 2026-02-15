@@ -30,6 +30,7 @@ import java.time.LocalDateTime;
         )
     }
 )
+// 회원별 문제 즐겨찾기 관계를 저장하는 엔티티입니다.
 public class Favorite {
 
   @Id

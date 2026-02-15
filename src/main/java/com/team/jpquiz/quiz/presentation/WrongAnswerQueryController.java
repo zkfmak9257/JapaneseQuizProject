@@ -14,10 +14,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/quiz/wrong-answers")
 @RequiredArgsConstructor
+// 오답노트 목록 조회를 처리하는 쿼리 API입니다.
 public class WrongAnswerQueryController {
 
   private final WrongAnswerQueryService wrongAnswerQueryService;
 
+  // 회원별 오답노트를 페이징으로 조회합니다.
   @GetMapping
   public ApiResponse<PageResponse<WrongAnswerResponse>> getWrongAnswerList(
       // 임시 학습용 사용자 식별 방식입니다.
