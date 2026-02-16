@@ -38,4 +38,13 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
      * @return 회원 Optional
      */
     Optional<Member> findByNickname(String nickname);
+
+    /**
+     * 닉네임 중복 확인 (본인 제외)
+     *
+     * @param nickname 닉네임
+     * @param userId   본인 ID
+     * @return 존재하면 true
+     */
+    boolean existsByNicknameAndUserIdNot(String nickname, Long userId);
 }

@@ -4,6 +4,7 @@ import com.team.jpquiz.common.dto.ApiResponse;
 import com.team.jpquiz.member.command.application.MemberCommandService;
 import com.team.jpquiz.member.dto.request.MemberLoginRequest;
 import com.team.jpquiz.member.dto.request.MemberRegisterRequest;
+import com.team.jpquiz.member.dto.request.RefreshTokenRequest;
 import com.team.jpquiz.member.dto.response.TokenResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -96,5 +97,40 @@ public class AuthController {
         TokenResponse tokenResponse = memberCommandService.login(request);
         return ResponseEntity
                 .ok(ApiResponse.ok("로그인이 완료되었습니다.", tokenResponse));
+    }
+
+    /**
+     * 토큰 갱신 API
+     *
+     * @param request 리프레시 토큰 요청 DTO
+     * @return 새로운 Access Token 응답
+     */
+    @Operation(summary = "토큰 갱신", description = "리프레시 토큰으로 새로운 액세스 토큰을 발급합니다.")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "토큰 갱신 성공",
+                    content = @Content(schema = @Schema(implementation = TokenResponse.class))
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "400",
+                    description = "잘못된 요청 (리프레시 토큰 누락)"
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "401",
+                    description = "유효하지 않은 리프레시 토큰"
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "403",
+                    description = "비활성화된 계정"
+            )
+    })
+    @PostMapping("/refresh")
+    public ResponseEntity<ApiResponse<TokenResponse>> refresh(
+            @Valid @RequestBody RefreshTokenRequest request
+    ) {
+        TokenResponse tokenResponse = memberCommandService.refreshToken(request);
+        return ResponseEntity
+                .ok(ApiResponse.ok("토큰이 갱신되었습니다.", tokenResponse));
     }
 }
