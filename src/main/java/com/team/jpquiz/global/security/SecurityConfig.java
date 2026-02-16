@@ -57,12 +57,29 @@ public class SecurityConfig {
 
                 // 접근 정책 공개 엔드포인트는 통과 그 외는 인증 필요로 묶어두는 정책
                 .authorizeHttpRequests(auth -> auth
+                        // Swagger, Actuator
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/actuator/health").permitAll()
-                        .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/", "/favicon.ico").permitAll()
-                        .anyRequest().authenticated()
 
+                        // 인증 API - 공개
+                        .requestMatchers("/api/auth/**").permitAll()
+
+                        // 퀴즈 API - 비회원도 접근 가능 (횟수 제한은 서비스 레이어에서 처리)
+                        .requestMatchers(HttpMethod.GET, "/api/quizzes/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/quizzes/*/submit").permitAll()
+
+                        // 통계 API - 로그인 필수
+                        .requestMatchers("/api/stats/**").authenticated()
+
+                        // 랭킹 API - 로그인 필수
+                        .requestMatchers("/api/rankings/**").authenticated()
+
+                        // 회원 API - 로그인 필수
+                        .requestMatchers("/api/members/**").authenticated()
+
+                        // 그 외 모든 요청 - 로그인 필수
+                        .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(jwtAuthenticationEntryPoint())

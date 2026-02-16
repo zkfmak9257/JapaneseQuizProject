@@ -21,7 +21,10 @@ public enum ErrorCode {
     CURRENT_PASSWORD_REQUIRED(HttpStatus.BAD_REQUEST, "CURRENT_PASSWORD_REQUIRED", "현재 비밀번호를 입력해주세요."),
     REFRESH_TOKEN_REQUIRED(HttpStatus.BAD_REQUEST, "REFRESH_TOKEN_REQUIRED", "리프레시 토큰은 필수입니다."),
     INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "INVALID_REFRESH_TOKEN", "유효하지 않은 리프레시 토큰입니다."),
-    ALREADY_WITHDRAWN(HttpStatus.BAD_REQUEST, "ALREADY_WITHDRAWN", "이미 탈퇴한 회원입니다.");
+    ALREADY_WITHDRAWN(HttpStatus.BAD_REQUEST, "ALREADY_WITHDRAWN", "이미 탈퇴한 회원입니다."),
+
+    // Quiz
+    GUEST_QUIZ_LIMIT_EXCEEDED(HttpStatus.FORBIDDEN, "GUEST_QUIZ_LIMIT_EXCEEDED", "비회원은 퀴즈를 1개만 풀 수 있습니다. 로그인 후 이용해주세요.");
 
     private final HttpStatus status;
     private final String code;

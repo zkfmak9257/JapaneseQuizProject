@@ -33,6 +33,7 @@ public class MemberController {
     private final MemberCommandService memberCommandService;
     private final MemberQueryService memberQueryService;
 
+
     /**
      * 내 정보 조회 API
      *
