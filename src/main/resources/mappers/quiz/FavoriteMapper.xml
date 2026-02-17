@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.team.jpquiz.quiz.query.infrastructure.FavoriteMapper">
+
+    <select id="findFavorites" resultType="com.team.jpquiz.quiz.dto.response.FavoriteResponse">
+        SELECT
+            f.question_id AS questionId,
+            f.created_at AS createdAt
+        FROM favorites f
+        WHERE f.member_id = #{memberId}
+        ORDER BY f.created_at DESC
+            LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="countFavorites" resultType="long">
+        SELECT COUNT(*)
+        FROM favorites
+        WHERE member_id = #{memberId}
+    </select>
+
+</mapper>

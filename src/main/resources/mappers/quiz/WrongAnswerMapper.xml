@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.team.jpquiz.quiz.query.infrastructure.WrongAnswerMapper">
+
+    <!-- 오답 목록 조회 (페이징) -->
+    <select id="findWrongAnswers" resultType="com.team.jpquiz.quiz.dto.response.WrongAnswerResponse">
+        SELECT
+            wa.question_id AS questionId,
+            wa.wrong_count AS wrongCount,
+            wa.last_wrong_at AS lastWrongAt
+        FROM wrong_answers wa
+        WHERE wa.member_id = #{memberId}
+        ORDER BY wa.last_wrong_at DESC
+            LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <!-- 전체 오답 개수 조회 -->
+    <select id="countWrongAnswers" resultType="long">
+        SELECT COUNT(*)
+        FROM wrong_answers
+        WHERE member_id = #{memberId}
+    </select>
+
+</mapper>

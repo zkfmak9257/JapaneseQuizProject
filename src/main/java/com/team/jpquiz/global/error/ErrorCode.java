@@ -7,6 +7,8 @@ public enum ErrorCode {
     INVALID_REQUEST(HttpStatus.BAD_REQUEST, "INVALID_REQUEST", "요청이 올바르지 않습니다."),
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "UNAUTHORIZED", "인증이 필요합니다."),
     FORBIDDEN(HttpStatus.FORBIDDEN, "FORBIDDEN", "접근 권한이 없습니다."),
+    ATTEMPT_NOT_FOUND(HttpStatus.NOT_FOUND, "ATTEMPT_NOT_FOUND", "퀴즈 시도를 찾을 수 없습니다."),
+    QUESTION_NOT_FOUND(HttpStatus.NOT_FOUND, "QUESTION_NOT_FOUND", "해당 순번의 문제를 찾을 수 없습니다."),
     NOT_FOUND(HttpStatus.NOT_FOUND, "NOT_FOUND", "요청한 리소스를 찾을 수 없습니다."),
     INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_ERROR", "서버 오류가 발생했습니다."),
 
@@ -25,6 +27,8 @@ public enum ErrorCode {
 
     // Quiz
     GUEST_QUIZ_LIMIT_EXCEEDED(HttpStatus.FORBIDDEN, "GUEST_QUIZ_LIMIT_EXCEEDED", "비회원은 퀴즈를 1개만 풀 수 있습니다. 로그인 후 이용해주세요.");
+
+
 
     private final HttpStatus status;
     private final String code;

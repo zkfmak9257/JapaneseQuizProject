@@ -2,5 +2,74 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
 <mapper namespace="com.team.jpquiz.quiz.query.infrastructure.QuizMapper">
+
+    <!--
+      QuizAttemptQuestionResponse 매핑
+      - scene은 중첩 객체라 association으로 매핑
+    -->
+    <resultMap id="AttemptQuestionMap" type="com.team.jpquiz.quiz.dto.response.QuizAttemptQuestionResponse">
+        <result property="attemptId" column="attempt_id"/>
+        <result property="seq" column="seq"/>
+        <result property="totalQuestions" column="total_questions"/>
+        <result property="questionId" column="question_id"/>
+        <result property="questionText" column="question_text"/>
+
+        <association property="scene" javaType="com.team.jpquiz.quiz.dto.response.QuizSceneResponse">
+            <result property="sceneId" column="scene_id"/>
+            <result property="name" column="scene_name"/>
+            <result property="description" column="scene_description"/>
+        </association>
+    </resultMap>
+
+    <!--
+      attempt + seq에 해당하는 문제 1개 조회
+      total_questions는 같은 attempt에 배정된 문제 개수
+    -->
+    <select id="findAttemptQuestion" resultMap="AttemptQuestionMap">
+        SELECT
+        qaq.attempt_id,
+        qaq.seq,
+        (
+        SELECT COUNT(*)
+        FROM quiz_attempt_questions x
+        WHERE x.attempt_id = #{attemptId}
+        ) AS total_questions,
+        qq.question_id,
+        qq.question_text,
+        qs.scene_id,
+        qs.name AS scene_name,
+        qs.description AS scene_description
+        FROM quiz_attempt_questions qaq
+        JOIN quiz_questions qq ON qq.question_id = qaq.question_id
+        LEFT JOIN quiz_scenes qs ON qs.scene_id = qq.scene_id
+        WHERE qaq.attempt_id = #{attemptId}
+        AND qaq.seq = #{seq}
+    </select>
+
+    <!--
+      보기 목록 조회
+      핵심: quiz_attempt_questions.choice_order(CSV: "3,1,4,2" 형태 가정) 순서대로 정렬
+      FIND_IN_SET는 MariaDB에서 CSV 내 위치(1,2,3...)를 반환
+    -->
+    <select id="findAttemptQuestionChoices" resultType="com.team.jpquiz.quiz.dto.response.QuizChoiceResponse">
+        SELECT
+        qc.question_id AS questionId,
+        qc.choice_id AS choiceId,
+        qc.choice_text AS choiceText,
+        FIND_IN_SET(CAST(qc.choice_id AS CHAR), qaq.choice_order) AS `order`
+        FROM quiz_attempt_questions qaq
+        JOIN quiz_choices qc ON qc.question_id = qaq.question_id
+        WHERE qaq.attempt_id = #{attemptId}
+        AND qaq.seq = #{seq}
+        ORDER BY
+        CASE
+        WHEN qaq.choice_order IS NULL OR qaq.choice_order = '' THEN 999
+        WHEN FIND_IN_SET(CAST(qc.choice_id AS CHAR), qaq.choice_order) = 0 THEN 999
+        ELSE FIND_IN_SET(CAST(qc.choice_id AS CHAR), qaq.choice_order)
+        END ASC,
+        qc.choice_id ASC
+    </select>
+
 </mapper>
