@@ -113,6 +113,14 @@
         )
     </insert>
 
+    <!-- 동일 attempt 문항 중복 제출 여부 -->
+    <select id="countSubmittedAnswer" resultType="int">
+        SELECT COUNT(*)
+        FROM quiz_attempt_answers
+        WHERE attempt_id = #{attemptId}
+          AND seq = #{seq}
+    </select>
+
     <!-- 제출 완료 문항 수 -->
     <select id="countSolvedQuestions" resultType="int">
         SELECT COUNT(*)

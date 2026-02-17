@@ -44,5 +44,10 @@ public interface QuizCommandMapper {
             @Param("correct") boolean correct
     );
 
+    int countSubmittedAnswer(
+            @Param("attemptId") Long attemptId,
+            @Param("seq") int seq
+    );
+
     int countSolvedQuestions(@Param("attemptId") Long attemptId);
 }

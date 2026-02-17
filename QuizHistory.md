@@ -208,6 +208,7 @@
     - `findAttemptQuestionForSubmit(attemptId, seq)`: 제출 대상 문제/소유자/총문항 조회
     - `findChoiceCorrectFlag(questionId, choiceId)`: 선택 보기의 정답 여부 조회
     - `insertQuizAttemptAnswer(...)`: 채점 결과 저장
+    - `countSubmittedAnswer(attemptId, seq)`: 동일 문항 중복 제출 여부 확인
     - `countSolvedQuestions(attemptId)`: 제출 완료 문항 수 집계
   - SQL 구현 포인트:
     - 제출 시점 검증을 위해 attempt + seq 매핑을 선조회
@@ -256,15 +257,17 @@
     3. attempt 미존재/seq 미존재 분기 처리
     4. attempt 소유자 검증 (`ownerId == userId`)
     5. 선택 보기 정답 여부 확인 (`findChoiceCorrectFlag`)
-    6. 채점 결과 저장 (`insertQuizAttemptAnswer`)
-    7. 제출 완료 수 집계 (`countSolvedQuestions`)
-    8. `QuizAnswerResultResponse` 반환
+    6. 동일 문항 중복 제출 차단 (`countSubmittedAnswer`)
+    7. 채점 결과 저장 (`insertQuizAttemptAnswer`)
+    8. 제출 완료 수 집계 (`countSolvedQuestions`)
+    9. `QuizAnswerResultResponse` 반환
   - 예외 정책:
     - `UNAUTHORIZED`: 인증 사용자 식별 불가
     - `INVALID_REQUEST`: 입력값 오류, 문제-보기 불일치
     - `FORBIDDEN`: 타인 attempt 제출 시도
     - `ATTEMPT_NOT_FOUND`: attempt 없음
     - `QUESTION_NOT_FOUND`: attempt 내 해당 seq 문제 없음
+    - `INVALID_REQUEST`: 이미 제출한 문항 재제출 시도
     - `INTERNAL_ERROR`: 조회값 타입/저장 결과 불일치
 
 ## Controller 구현 메모

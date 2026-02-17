@@ -98,6 +98,11 @@ public class QuizCommandService {
         }
         boolean correct = correctFlag == 1;
 
+        int submittedCount = quizCommandMapper.countSubmittedAnswer(attemptId, request.getSeq());
+        if (submittedCount > 0) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST);
+        }
+
         int inserted = quizCommandMapper.insertQuizAttemptAnswer(
                 attemptId,
                 request.getSeq(),
