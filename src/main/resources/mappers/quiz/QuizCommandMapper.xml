@@ -62,4 +62,55 @@
         )
     </insert>
 
+    <!-- 제출 대상 문제 조회 (attempt 소유자/문제/전체 문항 수 확인용) -->
+    <select id="findAttemptQuestionForSubmit" resultType="map">
+        SELECT
+            qa.user_id AS userId,
+            qaq.question_id AS questionId,
+            qa.total_questions AS totalQuestions
+        FROM quiz_attempts qa
+        JOIN quiz_attempt_questions qaq ON qaq.attempt_id = qa.attempt_id
+        WHERE qa.attempt_id = #{attemptId}
+          AND qaq.seq = #{seq}
+    </select>
+
+    <!-- choice가 해당 문제의 정답인지 확인 (문제에 속하지 않으면 null) -->
+    <select id="findChoiceCorrectFlag" resultType="int">
+        SELECT
+            qc.is_correct
+        FROM quiz_choices qc
+        WHERE qc.question_id = #{questionId}
+          AND qc.choice_id = #{choiceId}
+    </select>
+
+    <!-- 채점 결과 저장 -->
+    <insert id="insertQuizAttemptAnswer">
+        INSERT INTO quiz_attempt_answers (
+            attempt_id,
+            seq,
+            question_id,
+            selected_choice_id,
+            is_correct,
+            answered_at,
+            created_at,
+            updated_at
+        ) VALUES (
+            #{attemptId},
+            #{seq},
+            #{questionId},
+            #{selectedChoiceId},
+            #{correct},
+            NOW(),
+            NOW(),
+            NOW()
+        )
+    </insert>
+
+    <!-- 제출 완료 문항 수 -->
+    <select id="countSolvedQuestions" resultType="int">
+        SELECT COUNT(*)
+        FROM quiz_attempt_answers
+        WHERE attempt_id = #{attemptId}
+    </select>
+
 </mapper>
