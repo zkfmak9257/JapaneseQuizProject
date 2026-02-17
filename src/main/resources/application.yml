@@ -12,8 +12,6 @@ server:
 mybatis:
   # MyBatis mapper XML 경로
   mapper-locations: classpath:mappers/**/*.xml
-  # DTO/Entity alias 패키지
-  type-aliases-package: com.team.jpquiz
 
 logging:
   level:
