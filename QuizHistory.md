@@ -153,6 +153,15 @@
   - 품질 조건:
     - QUIZ-A03/A04: 시작 시 고정된 문제/보기 집합 기준으로만 제출 허용
     - QUIZ-A05: 제출 응답에서 해설/정답 문구 등 과다 정보는 기본 미노출(정오답 boolean만 반환)
+- [DONE] 3-2. 답안 제출/채점 DTO 구현
+  - `QuizSubmitRequest`
+    - 필드: `seq` (Integer), `choiceId` (Long)
+    - 검증: `@NotNull`, `@Min(1)` 적용
+  - `QuizAnswerResultResponse`
+    - 필드: `attemptId`, `seq`, `selectedChoiceId`, `correct`, `solvedCount`, `totalQuestions`
+  - 구현 의도:
+    - 요청은 필수값/범위 검증을 DTO에서 1차 차단
+    - 응답은 제출 결과 판단에 필요한 최소 필드만 제공
 
 ## DB 매핑 메모
 - [CONFIRMED] 1-2. MyBatis Mapper/쿼리 설계 (Attempt 기반 조회)
@@ -193,6 +202,17 @@
   - 품질 조건 반영:
     - QUIZ-A03/A04: 보기 순서를 시작 시점에 DB(`choice_order`)에 확정 저장
     - QUIZ-A05: 시작 단계 SQL은 정답/해설/정오답 정보를 조회/반환하지 않음
+- [DONE] 3-3. MyBatis Mapper/쿼리 구현 (Issue-3, 답안 제출/채점)
+  - Mapper: `QuizCommandMapper`
+    - `countAttemptById(attemptId)`: attempt 존재 여부 확인
+    - `findAttemptQuestionForSubmit(attemptId, seq)`: 제출 대상 문제/소유자/총문항 조회
+    - `findChoiceCorrectFlag(questionId, choiceId)`: 선택 보기의 정답 여부 조회
+    - `insertQuizAttemptAnswer(...)`: 채점 결과 저장
+    - `countSolvedQuestions(attemptId)`: 제출 완료 문항 수 집계
+  - SQL 구현 포인트:
+    - 제출 시점 검증을 위해 attempt + seq 매핑을 선조회
+    - 선택한 `choiceId`가 해당 문제에 속하지 않으면 `null`로 판단 가능하게 구성
+    - 채점 결과는 `quiz_attempt_answers`에 insert 저장
 
 ## Service 설계 메모
 - [DONE] 1-3. QuizQueryService 구현 (Attempt 기반 조회 조립)
@@ -228,6 +248,24 @@
     - `INVALID_REQUEST`: 요청 count가 범위를 벗어나거나 pool보다 큰 경우
     - `UNAUTHORIZED`: userId가 없거나 유효하지 않은 경우
     - `INTERNAL_ERROR`: generated key/배정 insert 이상 등 서버 내부 불일치
+- [DONE] 3-4. QuizCommandService 구현 (Issue-3, 답안 제출/채점)
+  - 대상 메서드: `submitAnswer(Long userId, Long attemptId, QuizSubmitRequest request)`
+  - 처리 순서:
+    1. 입력 검증 (`userId`, `attemptId`, `seq`, `choiceId`)
+    2. 제출 대상 문제 조회 (`findAttemptQuestionForSubmit`)
+    3. attempt 미존재/seq 미존재 분기 처리
+    4. attempt 소유자 검증 (`ownerId == userId`)
+    5. 선택 보기 정답 여부 확인 (`findChoiceCorrectFlag`)
+    6. 채점 결과 저장 (`insertQuizAttemptAnswer`)
+    7. 제출 완료 수 집계 (`countSolvedQuestions`)
+    8. `QuizAnswerResultResponse` 반환
+  - 예외 정책:
+    - `UNAUTHORIZED`: 인증 사용자 식별 불가
+    - `INVALID_REQUEST`: 입력값 오류, 문제-보기 불일치
+    - `FORBIDDEN`: 타인 attempt 제출 시도
+    - `ATTEMPT_NOT_FOUND`: attempt 없음
+    - `QUESTION_NOT_FOUND`: attempt 내 해당 seq 문제 없음
+    - `INTERNAL_ERROR`: 조회값 타입/저장 결과 불일치
 
 ## Controller 구현 메모
 - [DONE] 1-4. QuizController 구현 (Attempt 기반 Read 엔드포인트 연결)

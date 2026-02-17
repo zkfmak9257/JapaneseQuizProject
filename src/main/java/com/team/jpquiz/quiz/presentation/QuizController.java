@@ -4,7 +4,9 @@ package com.team.jpquiz.quiz.presentation;
 import com.team.jpquiz.common.dto.ApiResponse;
 import com.team.jpquiz.common.util.SecurityUtil;
 import com.team.jpquiz.quiz.command.application.QuizCommandService;
+import com.team.jpquiz.quiz.dto.request.QuizSubmitRequest;
 import com.team.jpquiz.quiz.dto.request.StartQuizRequest;
+import com.team.jpquiz.quiz.dto.response.QuizAnswerResultResponse;
 import com.team.jpquiz.quiz.dto.response.QuizAttemptQuestionResponse;
 import com.team.jpquiz.quiz.dto.response.QuizAttemptResponse;
 import com.team.jpquiz.quiz.query.application.QuizQueryService;
@@ -39,6 +41,16 @@ public class QuizController {
             @PathVariable int seq
     ) {
         QuizAttemptQuestionResponse response = quizQueryService.findAttemptQuestion(attemptId, seq);
+        return ApiResponse.ok(response);
+    }
+
+    @PostMapping("/attempts/{attemptId}/answers")
+    public ApiResponse<QuizAnswerResultResponse> submitAnswer(
+            @PathVariable Long attemptId,
+            @Valid @RequestBody QuizSubmitRequest request
+    ) {
+        Long userId = SecurityUtil.getCurrentMemberId();
+        QuizAnswerResultResponse response = quizCommandService.submitAnswer(userId, attemptId, request);
         return ApiResponse.ok(response);
     }
 
