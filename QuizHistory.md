@@ -117,6 +117,42 @@
   - `QuizAttemptResponse`
     - 필드: `attemptId` (Long), `totalQuestions` (int)
     - 의도: 시작 API는 "시도 식별값 + 배정 문제 수"만 반환하고 상세 문제/정답은 포함하지 않음 (QUIZ-A05)
+- [CONFIRMED] 3-1. 답안 제출/채점 API 스펙 (Issue-3)
+  - Endpoint: `POST /api/quiz/attempts/{attemptId}/answers`
+  - 인증: 필요 (`401 UNAUTHORIZED` 대상)
+  - Request:
+    - Path Variable
+      - `attemptId` (Long, 필수): 제출 대상 퀴즈 시도 ID
+    - Body
+      - `seq` (Integer, 필수): 현재 문제 순번(1부터 시작)
+      - `choiceId` (Long, 필수): 사용자가 선택한 보기 ID
+  - 동작 규칙:
+    - `attemptId + seq`에 해당하는 문제 배정(`quiz_attempt_questions`)이 있어야 제출 가능
+    - 제출 `choiceId`는 해당 문제의 보기(`quiz_choices`)에 속해야 함
+    - 정답 여부는 서버가 판정해 `quiz_attempt_answers`에 저장
+    - 동일 문항 재제출 정책은 3단계 구현 중 확정(현재는 out of scope)
+  - Success Response (200, `ApiResponse<QuizAnswerResultResponse>`):
+    - `data.attemptId`: 제출 대상 시도 ID
+    - `data.seq`: 제출한 문제 순번
+    - `data.selectedChoiceId`: 사용자가 제출한 보기 ID
+    - `data.correct`: 정답 여부
+    - `data.solvedCount`: 현재 attempt 기준 제출 완료 문항 수
+    - `data.totalQuestions`: 전체 문항 수
+  - Error Cases:
+    - `400 INVALID_REQUEST`
+      - `seq`, `choiceId` 누락/형식 오류/범위 오류
+      - 제출 `choiceId`가 해당 문제 보기에 속하지 않는 경우
+    - `401 UNAUTHORIZED`
+      - 인증 정보 없음/유효하지 않음
+    - `403 FORBIDDEN`
+      - 타인 attempt 제출 시도
+    - `404 ATTEMPT_NOT_FOUND`
+      - attempt 없음
+    - `404 QUESTION_NOT_FOUND`
+      - 해당 attempt의 `seq` 문제 없음
+  - 품질 조건:
+    - QUIZ-A03/A04: 시작 시 고정된 문제/보기 집합 기준으로만 제출 허용
+    - QUIZ-A05: 제출 응답에서 해설/정답 문구 등 과다 정보는 기본 미노출(정오답 boolean만 반환)
 
 ## DB 매핑 메모
 - [CONFIRMED] 1-2. MyBatis Mapper/쿼리 설계 (Attempt 기반 조회)
@@ -221,7 +257,7 @@
 
 ## 구현 체크리스트
 - [x] 1. 문제/보기 조회 (Read)
-- [ ] 2. 퀴즈 시작 (세트 생성)
+- [x] 2. 퀴즈 시작 (세트 생성)
 - [ ] 3. 답안 제출/채점
 - [ ] 4. 퀴즈 완료 처리
 - [ ] 5. 결과 조회
