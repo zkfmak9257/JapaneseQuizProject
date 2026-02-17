@@ -7,6 +7,9 @@ import com.team.jpquiz.member.command.domain.Member;
 import com.team.jpquiz.member.command.infrastructure.MemberRepository;
 import com.team.jpquiz.member.dto.request.MemberLoginRequest;
 import com.team.jpquiz.member.dto.request.MemberRegisterRequest;
+import com.team.jpquiz.member.dto.request.MemberUpdateRequest;
+import com.team.jpquiz.member.dto.request.RefreshTokenRequest;
+import com.team.jpquiz.member.dto.request.WithdrawRequest;
 import com.team.jpquiz.member.dto.response.TokenResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -104,5 +107,113 @@ public class MemberCommandService {
                 refreshToken,
                 jwtTokenProvider.getAccessTokenExpirationInSeconds()
         );
+    }
+
+    /**
+     * 회원 정보 수정
+     *
+     * @param userId  회원 ID
+     * @param request 회원 정보 수정 요청 DTO
+     */
+    public void updateMember(Long userId, MemberUpdateRequest request) {
+        // 1. 회원 조회
+        Member member = memberRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+
+        // 2. 닉네임 변경
+        if (request.hasNicknameChange()) {
+            // 닉네임 중복 검사 (본인 제외)
+            if (memberRepository.existsByNicknameAndUserIdNot(request.getNickname(), userId)) {
+                throw new CustomException(ErrorCode.DUPLICATE_NICKNAME);
+            }
+            member.updateNickname(request.getNickname());
+            log.info("닉네임 변경 완료: userId={}, newNickname={}", userId, request.getNickname());
+        }
+
+        // 3. 비밀번호 변경
+        if (request.hasPasswordChange()) {
+            // 현재 비밀번호 필수 확인
+            if (request.getCurrentPassword() == null || request.getCurrentPassword().isBlank()) {
+                throw new CustomException(ErrorCode.CURRENT_PASSWORD_REQUIRED);
+            }
+
+            // 현재 비밀번호 검증
+            if (!passwordEncoder.matches(request.getCurrentPassword(), member.getPassword())) {
+                throw new CustomException(ErrorCode.INVALID_PASSWORD);
+            }
+
+            // 새 비밀번호 암호화 및 저장
+            String encodedNewPassword = passwordEncoder.encode(request.getNewPassword());
+            member.updatePassword(encodedNewPassword);
+            log.info("비밀번호 변경 완료: userId={}", userId);
+        }
+    }
+
+    /**
+     * 토큰 갱신
+     *
+     * @param request 리프레시 토큰 요청 DTO
+     * @return 새로운 JWT 토큰 응답
+     */
+    @Transactional(readOnly = true)
+    public TokenResponse refreshToken(RefreshTokenRequest request) {
+        String refreshToken = request.getRefreshToken();
+
+        // 1. 리프레시 토큰 유효성 검증
+        if (!jwtTokenProvider.validateToken(refreshToken)) {
+            throw new CustomException(ErrorCode.INVALID_REFRESH_TOKEN);
+        }
+
+        // 2. 리프레시 토큰 타입 확인
+        if (!jwtTokenProvider.isRefreshToken(refreshToken)) {
+            throw new CustomException(ErrorCode.INVALID_REFRESH_TOKEN);
+        }
+
+        // 3. 토큰에서 사용자 ID 추출
+        Long userId = jwtTokenProvider.getUserIdFromToken(refreshToken);
+
+        // 4. 회원 조회
+        Member member = memberRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+
+        // 5. 계정 상태 확인
+        if (!member.isActive()) {
+            throw new CustomException(ErrorCode.INACTIVE_MEMBER);
+        }
+
+        // 6. 새로운 Access Token 발급
+        String newAccessToken = jwtTokenProvider.generateAccessToken(member);
+        log.info("토큰 갱신 완료: userId={}", userId);
+
+        return TokenResponse.ofAccessToken(
+                newAccessToken,
+                jwtTokenProvider.getAccessTokenExpirationInSeconds()
+        );
+    }
+
+    /**
+     * 회원 탈퇴
+     *
+     * @param userId  회원 ID
+     * @param request 탈퇴 요청 DTO
+     */
+    public void withdraw(Long userId, WithdrawRequest request) {
+        // 1. 회원 조회
+        Member member = memberRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+
+        // 2. 이미 탈퇴한 회원인지 확인
+        if (!member.isActive()) {
+            throw new CustomException(ErrorCode.ALREADY_WITHDRAWN);
+        }
+
+        // 3. 비밀번호 검증 (본인 확인)
+        if (!passwordEncoder.matches(request.getPassword(), member.getPassword())) {
+            throw new CustomException(ErrorCode.INVALID_PASSWORD);
+        }
+
+        // 4. 회원 탈퇴 처리
+        member.withdraw();
+        log.info("회원 탈퇴 완료: userId={}, email={}", userId, member.getEmail());
     }
 }
