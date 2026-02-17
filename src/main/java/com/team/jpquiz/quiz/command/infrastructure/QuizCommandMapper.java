@@ -24,6 +24,8 @@ public interface QuizCommandMapper {
             @Param("choiceOrder") String choiceOrder
     );
 
+    int countAttemptById(@Param("attemptId") Long attemptId);
+
     Map<String, Object> findAttemptQuestionForSubmit(
             @Param("attemptId") Long attemptId,
             @Param("seq") int seq

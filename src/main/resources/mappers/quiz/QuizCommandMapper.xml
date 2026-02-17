@@ -62,6 +62,13 @@
         )
     </insert>
 
+    <!-- attempt 존재 여부 확인 -->
+    <select id="countAttemptById" resultType="int">
+        SELECT COUNT(*)
+        FROM quiz_attempts
+        WHERE attempt_id = #{attemptId}
+    </select>
+
     <!-- 제출 대상 문제 조회 (attempt 소유자/문제/전체 문항 수 확인용) -->
     <select id="findAttemptQuestionForSubmit" resultType="map">
         SELECT
