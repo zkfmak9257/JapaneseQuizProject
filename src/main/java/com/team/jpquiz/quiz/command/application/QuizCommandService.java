@@ -5,6 +5,7 @@ import com.team.jpquiz.global.error.ErrorCode;
 import com.team.jpquiz.quiz.command.infrastructure.QuizCommandMapper;
 import com.team.jpquiz.quiz.dto.request.QuizSubmitRequest;
 import com.team.jpquiz.quiz.dto.request.StartQuizRequest;
+import com.team.jpquiz.quiz.dto.request.WrongAnswerSaveRequest;
 import com.team.jpquiz.quiz.dto.response.QuizAnswerResultResponse;
 import com.team.jpquiz.quiz.dto.response.QuizAttemptResponse;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ import java.util.Map;
 public class QuizCommandService {
 
     private final QuizCommandMapper quizCommandMapper;
+    private final WrongAnswerCommandService wrongAnswerCommandService;
 
     public QuizAttemptResponse startQuiz(Long userId, StartQuizRequest request) {
         validateInput(userId, request);
@@ -114,6 +116,8 @@ public class QuizCommandService {
             throw new CustomException(ErrorCode.INTERNAL_ERROR);
         }
 
+        updateWrongAnswerNote(userId, questionId, correct);
+
         int solvedCount = quizCommandMapper.countSolvedQuestions(attemptId);
 
         return QuizAnswerResultResponse.builder()
@@ -159,5 +163,14 @@ public class QuizCommandService {
             return number.intValue();
         }
         return null;
+    }
+
+    private void updateWrongAnswerNote(Long userId, Long questionId, boolean correct) {
+        if (correct) {
+            wrongAnswerCommandService.deleteWrongAnswer(userId, questionId);
+            return;
+        }
+
+        wrongAnswerCommandService.saveWrongAnswer(userId, new WrongAnswerSaveRequest(questionId));
     }
 }
