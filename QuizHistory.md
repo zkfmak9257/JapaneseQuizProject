@@ -249,6 +249,13 @@
     - 제출 시점 검증을 위해 attempt + seq 매핑을 선조회
     - 선택한 `choiceId`가 해당 문제에 속하지 않으면 `null`로 판단 가능하게 구성
     - 채점 결과는 `quiz_attempt_answers`에 insert 저장
+- [DONE] 4-3. MyBatis Mapper/쿼리 구현 (Issue-4, 퀴즈 완료 처리)
+  - Mapper: `QuizCommandMapper`
+    - `findAttemptForComplete(attemptId)`: 완료 전 검증용 attempt 정보(소유자/총문항/완료시각) 조회
+    - `completeAttempt(attemptId)`: 미완료 attempt를 완료 처리(`completed_at`)로 전환
+  - SQL 구현 포인트:
+    - 완료 처리 전 `attempt` 존재/상태 검증에 필요한 최소 컬럼만 조회
+    - `completeAttempt`는 `completed_at IS NULL` 조건으로 재완료 요청을 DB 레벨에서 차단 가능하게 설계
 
 ## Service 설계 메모
 - [DONE] 1-3. QuizQueryService 구현 (Attempt 기반 조회 조립)
