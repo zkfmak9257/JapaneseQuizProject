@@ -224,6 +224,12 @@
       - 타인 attempt 결과 조회 시도
     - `404 ATTEMPT_NOT_FOUND`
       - attempt 없음
+- [DONE] 5-2. 결과 조회 DTO 구현
+  - `QuizResultResponse`
+    - 필드: `attemptId`, `totalQuestions`, `solvedCount`, `correctCount`, `accuracy`, `completedAt`
+  - 구현 의도:
+    - 결과 조회 API는 요약 통계 중심으로 반환
+    - 문항별 상세 결과는 필요 시 후속 DTO로 분리 확장
 
 ## DB 매핑 메모
 - [CONFIRMED] 1-2. MyBatis Mapper/쿼리 설계 (Attempt 기반 조회)
