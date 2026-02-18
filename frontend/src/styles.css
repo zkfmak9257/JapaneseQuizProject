@@ -133,6 +133,11 @@ button {
   background: #334155;
 }
 
+.result-list {
+  padding-left: 18px;
+  margin-bottom: 16px;
+}
+
 .quiz-top {
   display: flex;
   justify-content: space-between;
