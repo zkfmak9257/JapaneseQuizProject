@@ -14,6 +14,9 @@
 <script setup>
 import { onMounted, ref } from "vue";
 import { getWrongAnswers } from "../api/wrongAnswerApi";
+import LoadingState from "../components/ui/LoadingState.vue";
+import ErrorState from "../components/ui/ErrorState.vue";
+import EmptyState from "../components/ui/EmptyState.vue";
 
 const items = ref([]);
 const loading = ref(false);
