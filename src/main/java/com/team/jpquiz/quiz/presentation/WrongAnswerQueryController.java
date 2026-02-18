@@ -28,10 +28,19 @@ public class WrongAnswerQueryController {
       @AuthenticationPrincipal UserPrincipal userPrincipal,
       @RequestParam(defaultValue = "1") int page,
       @RequestParam(defaultValue = "10") int size,
-      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate
+      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
+      @RequestParam(required = false) String keyword,
+      @RequestParam(required = false) String category
   ) {
     PageResponse<WrongAnswerResponse> response =
-        wrongAnswerQueryService.getWrongAnswerList(userPrincipal.getUserId(), page, size, fromDate);
+        wrongAnswerQueryService.getWrongAnswerList(
+            userPrincipal.getUserId(),
+            page,
+            size,
+            fromDate,
+            keyword,
+            category
+        );
     return ApiResponse.ok(response);
   }
 }

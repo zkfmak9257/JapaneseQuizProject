@@ -3,7 +3,9 @@ package com.team.jpquiz.quiz.presentation;
 import com.team.jpquiz.common.dto.ApiResponse;
 import com.team.jpquiz.common.util.SecurityUtil;
 import com.team.jpquiz.quiz.command.application.WrongAnswerCommandService;
+import com.team.jpquiz.quiz.command.application.WrongAnswerReviewCommandService;
 import com.team.jpquiz.quiz.dto.request.WrongAnswerSaveRequest;
+import com.team.jpquiz.quiz.dto.response.QuizAttemptResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 public class WrongAnswerCommandController {
 
   private final WrongAnswerCommandService wrongAnswerCommandService;
+  private final WrongAnswerReviewCommandService wrongAnswerReviewCommandService;
 
   // 오답 수동 저장 (테스트용)
   @PostMapping
@@ -32,5 +35,14 @@ public class WrongAnswerCommandController {
 
     wrongAnswerCommandService.deleteWrongAnswer(currentMemberId, questionId);
     return ApiResponse.ok();
+  }
+
+  // 오답노트 재학습 세트 생성 (10문제 고정, 부족분 랜덤 보충)
+  @PostMapping("/review-set")
+  public ApiResponse<QuizAttemptResponse> createReviewSet() {
+    Long currentMemberId = SecurityUtil.getCurrentMemberId();
+
+    QuizAttemptResponse response = wrongAnswerReviewCommandService.createReviewSet(currentMemberId);
+    return ApiResponse.ok(response);
   }
 }

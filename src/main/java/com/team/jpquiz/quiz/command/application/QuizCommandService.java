@@ -226,4 +226,13 @@ public class QuizCommandService {
         }
         return null;
     }
+
+    private void updateWrongAnswerNote(Long userId, Long questionId, boolean correct) {
+        if (correct) {
+            wrongAnswerCommandService.deleteWrongAnswer(userId, questionId);
+            return;
+        }
+
+        wrongAnswerCommandService.saveWrongAnswer(userId, new WrongAnswerSaveRequest(questionId));
+    }
 }

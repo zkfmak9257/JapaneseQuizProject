@@ -13,6 +13,16 @@ public interface QuizCommandMapper {
 
     List<Long> findRandomQuestionIds(@Param("count") int count);
 
+    List<Long> findRecentWrongQuestionIds(
+            @Param("memberId") Long memberId,
+            @Param("limit") int limit
+    );
+
+    List<Long> findRandomQuestionIdsExcept(
+            @Param("count") int count,
+            @Param("excludeIds") List<Long> excludeIds
+    );
+
     String findChoiceOrderCsv(@Param("questionId") Long questionId);
 
     void insertQuizAttempt(Map<String, Object> params);

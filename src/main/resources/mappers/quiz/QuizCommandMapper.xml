@@ -19,6 +19,32 @@
         LIMIT #{count}
     </select>
 
+    <!-- 오답노트 최신순 문제 ID를 limit개 추출 -->
+    <select id="findRecentWrongQuestionIds" resultType="long">
+        SELECT wa.question_id
+        FROM wrong_answers wa
+        JOIN quiz_questions qq ON qq.question_id = wa.question_id
+        WHERE wa.member_id = #{memberId}
+        ORDER BY COALESCE(wa.last_wrong_at, wa.created_at) DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 제외 목록을 뺀 랜덤 문제 ID 추출 -->
+    <select id="findRandomQuestionIdsExcept" resultType="long">
+        SELECT qq.question_id
+        FROM quiz_questions qq
+        <where>
+            <if test="excludeIds != null and excludeIds.size() > 0">
+                qq.question_id NOT IN
+                <foreach collection="excludeIds" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+        ORDER BY RAND()
+        LIMIT #{count}
+    </select>
+
     <!-- 문제별 보기 순서를 CSV로 고정 저장하기 위한 값 생성 -->
     <select id="findChoiceOrderCsv" resultType="string">
         SELECT GROUP_CONCAT(qc.choice_id ORDER BY RAND() SEPARATOR ',')

@@ -7,12 +7,22 @@
     <select id="findWrongAnswers" resultType="com.team.jpquiz.quiz.dto.response.WrongAnswerResponse">
         SELECT
             wa.question_id AS questionId,
+            qq.question_text AS questionText,
+            qs.name AS category,
             wa.wrong_count AS wrongCount,
             wa.last_wrong_at AS lastWrongAt
         FROM wrong_answers wa
+        JOIN quiz_questions qq ON qq.question_id = wa.question_id
+        LEFT JOIN quiz_scenes qs ON qs.scene_id = qq.scene_id
         WHERE wa.member_id = #{memberId}
         <if test="fromDateTime != null">
             AND COALESCE(wa.last_wrong_at, wa.created_at) &gt;= #{fromDateTime}
+        </if>
+        <if test="keyword != null and keyword != ''">
+            AND qq.question_text LIKE CONCAT('%', #{keyword}, '%')
+        </if>
+        <if test="category != null and category != ''">
+            AND qs.name = #{category}
         </if>
         ORDER BY COALESCE(wa.last_wrong_at, wa.created_at) DESC
             LIMIT #{limit} OFFSET #{offset}
@@ -21,10 +31,18 @@
     <!-- 전체 오답 개수 조회 -->
     <select id="countWrongAnswers" resultType="long">
         SELECT COUNT(*)
-        FROM wrong_answers
-        WHERE member_id = #{memberId}
+        FROM wrong_answers wa
+        JOIN quiz_questions qq ON qq.question_id = wa.question_id
+        LEFT JOIN quiz_scenes qs ON qs.scene_id = qq.scene_id
+        WHERE wa.member_id = #{memberId}
         <if test="fromDateTime != null">
-            AND COALESCE(last_wrong_at, created_at) &gt;= #{fromDateTime}
+            AND COALESCE(wa.last_wrong_at, wa.created_at) &gt;= #{fromDateTime}
+        </if>
+        <if test="keyword != null and keyword != ''">
+            AND qq.question_text LIKE CONCAT('%', #{keyword}, '%')
+        </if>
+        <if test="category != null and category != ''">
+            AND qs.name = #{category}
         </if>
     </select>
 
