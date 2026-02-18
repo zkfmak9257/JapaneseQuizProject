@@ -4,6 +4,7 @@ import com.team.jpquiz.quiz.dto.response.WrongAnswerResponse;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Mapper
@@ -14,9 +15,13 @@ public interface WrongAnswerMapper {
   List<WrongAnswerResponse> findWrongAnswers(
       @Param("memberId") Long memberId,
       @Param("offset") int offset,
-      @Param("limit") int limit
+      @Param("limit") int limit,
+      @Param("fromDateTime") LocalDateTime fromDateTime
   );
 
   // 회원별 오답노트 전체 건수를 조회합니다.
-  long countWrongAnswers(@Param("memberId") Long memberId);
+  long countWrongAnswers(
+      @Param("memberId") Long memberId,
+      @Param("fromDateTime") LocalDateTime fromDateTime
+  );
 }
