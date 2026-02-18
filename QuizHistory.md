@@ -352,6 +352,16 @@
     - 실패: `GlobalExceptionHandler` 또는 Security의 401/403 핸들러
   - 참고:
     - JWT 연동 전 단계에서는 임시 `userId`를 사용하며, 인증 연동 시 SecurityContext 기반으로 교체 예정
+- [DONE] 4-5. QuizController 구현 (Issue-4, 퀴즈 완료 처리 엔드포인트 연결)
+  - 엔드포인트: `POST /api/quiz/attempts/{attemptId}/complete`
+  - 메서드: `completeQuiz(@PathVariable Long attemptId)`
+  - 처리 순서:
+    1. `SecurityUtil.getCurrentMemberId()`로 인증 사용자 식별
+    2. `quizCommandService.completeQuiz(userId, attemptId)` 호출
+    3. 결과를 `ApiResponse.ok(...)`로 반환
+  - 응답 규약:
+    - 성공: `ApiResponse<QuizCompleteResponse>`
+    - 실패: `GlobalExceptionHandler` 또는 Security의 401/403 핸들러
 
 ## 구현 체크리스트
 - [x] 1. 문제/보기 조회 (Read)
