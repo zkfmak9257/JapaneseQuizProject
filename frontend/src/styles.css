@@ -107,6 +107,10 @@ button {
   gap: 10px;
 }
 
+.actions-left {
+  justify-content: flex-start;
+}
+
 .muted {
   color: #475569;
 }
@@ -180,4 +184,64 @@ button {
 .ghost {
   background: #e2e8f0;
   color: #0f172a;
+}
+
+.state-box {
+  display: grid;
+  gap: 10px;
+  padding: 12px 0;
+}
+
+.list-view {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.list-item {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 12px;
+  background: #f8fafc;
+}
+
+.list-item p {
+  margin: 4px 0;
+}
+
+.pager {
+  align-items: center;
+  margin-top: 12px;
+}
+
+.mypage-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 14px;
+  margin: 14px 0;
+}
+
+.panel {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 14px;
+}
+
+.panel h3 {
+  margin-top: 0;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+}
+
+.stat-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 12px;
+  background: #f8fafc;
 }
