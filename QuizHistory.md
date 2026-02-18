@@ -311,6 +311,21 @@
     - `QUESTION_NOT_FOUND`: attempt 내 해당 seq 문제 없음
     - `INVALID_REQUEST`: 이미 제출한 문항 재제출 시도
     - `INTERNAL_ERROR`: 조회값 타입/저장 결과 불일치
+- [DONE] 4-4. QuizCommandService 구현 (Issue-4, 퀴즈 완료 처리)
+  - 대상 메서드: `completeQuiz(Long userId, Long attemptId)`
+  - 처리 순서:
+    1. 입력 검증 (`userId`, `attemptId`)
+    2. 완료 대상 attempt 조회 (`findAttemptForComplete`)
+    3. attempt 존재/소유권/기완료 상태 검증
+    4. 제출 완료 문항 수 검증 (`countSolvedQuestions >= totalQuestions`)
+    5. 완료 처리 업데이트 (`completeAttempt`)
+    6. `QuizCompleteResponse` 반환
+  - 예외 정책:
+    - `UNAUTHORIZED`: 인증 사용자 식별 불가
+    - `INVALID_REQUEST`: 입력값 오류, 미제출 문항 존재, 기완료 재요청
+    - `FORBIDDEN`: 타인 attempt 완료 시도
+    - `ATTEMPT_NOT_FOUND`: attempt 없음
+    - `INTERNAL_ERROR`: 조회값 타입 불일치
 
 ## Controller 구현 메모
 - [DONE] 1-4. QuizController 구현 (Attempt 기반 Read 엔드포인트 연결)
