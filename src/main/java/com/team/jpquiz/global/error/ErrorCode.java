@@ -26,7 +26,12 @@ public enum ErrorCode {
     ALREADY_WITHDRAWN(HttpStatus.BAD_REQUEST, "ALREADY_WITHDRAWN", "이미 탈퇴한 회원입니다."),
 
     // Quiz
-    GUEST_QUIZ_LIMIT_EXCEEDED(HttpStatus.FORBIDDEN, "GUEST_QUIZ_LIMIT_EXCEEDED", "비회원은 퀴즈를 1개만 풀 수 있습니다. 로그인 후 이용해주세요.");
+    GUEST_QUIZ_LIMIT_EXCEEDED(HttpStatus.FORBIDDEN, "GUEST_QUIZ_LIMIT_EXCEEDED", "비회원은 퀴즈를 1개만 풀 수 있습니다. 로그인 후 이용해주세요."),
+
+    // Problem Report
+    REPORT_NOT_FOUND(HttpStatus.NOT_FOUND, "REPORT_NOT_FOUND", "신고 내역을 찾을 수 없습니다."),
+    INVALID_REPORT_STATUS_TRANSITION(HttpStatus.BAD_REQUEST, "INVALID_REPORT_STATUS_TRANSITION", "신고 상태 전이가 올바르지 않습니다."),
+    REPORT_TARGET_QUESTION_NOT_FOUND(HttpStatus.NOT_FOUND, "REPORT_TARGET_QUESTION_NOT_FOUND", "신고 대상 문제를 찾을 수 없습니다.");
 
 
 

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.team.jpquiz.report.query.infrastructure.ProblemReportMapper">
+
+    <select id="findReports" resultType="com.team.jpquiz.report.dto.response.ProblemReportAdminResponse">
+        SELECT
+            pr.report_id AS reportId,
+            pr.question_id AS questionId,
+            pr.reporter_id AS reporterId,
+            pr.report_type AS reportType,
+            pr.content AS content,
+            pr.status AS status,
+            pr.action AS action,
+            pr.created_at AS createdAt,
+            pr.updated_at AS updatedAt
+        FROM problem_reports pr
+        <where>
+            <if test="status != null and status != ''">
+                pr.status = #{status}
+            </if>
+        </where>
+        ORDER BY pr.created_at DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="countReports" resultType="long">
+        SELECT COUNT(*)
+        FROM problem_reports pr
+        <where>
+            <if test="status != null and status != ''">
+                pr.status = #{status}
+            </if>
+        </where>
+    </select>
+
+</mapper>
