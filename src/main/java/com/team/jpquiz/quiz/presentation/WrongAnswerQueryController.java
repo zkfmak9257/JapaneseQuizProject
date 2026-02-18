@@ -5,7 +5,9 @@ import com.team.jpquiz.common.dto.PageResponse;
 import com.team.jpquiz.global.security.UserPrincipal;
 import com.team.jpquiz.quiz.dto.response.WrongAnswerResponse;
 import com.team.jpquiz.quiz.query.application.WrongAnswerQueryService;
+import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,10 +27,11 @@ public class WrongAnswerQueryController {
   public ApiResponse<PageResponse<WrongAnswerResponse>> getWrongAnswerList(
       @AuthenticationPrincipal UserPrincipal userPrincipal,
       @RequestParam(defaultValue = "1") int page,
-      @RequestParam(defaultValue = "10") int size
+      @RequestParam(defaultValue = "10") int size,
+      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate
   ) {
     PageResponse<WrongAnswerResponse> response =
-        wrongAnswerQueryService.getWrongAnswerList(userPrincipal.getUserId(), page, size);
+        wrongAnswerQueryService.getWrongAnswerList(userPrincipal.getUserId(), page, size, fromDate);
     return ApiResponse.ok(response);
   }
 }
