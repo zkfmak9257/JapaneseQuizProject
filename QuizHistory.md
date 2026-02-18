@@ -289,6 +289,14 @@
   - SQL 구현 포인트:
     - 완료 처리 전 `attempt` 존재/상태 검증에 필요한 최소 컬럼만 조회
     - `completeAttempt`는 `completed_at IS NULL` 조건으로 재완료 요청을 DB 레벨에서 차단 가능하게 설계
+- [DONE] 5-3. MyBatis Mapper/쿼리 구현 (Issue-5, 결과 조회)
+  - Mapper: `QuizCommandMapper`
+    - `findAttemptForResult(attemptId)`: 결과 조회 전 검증/응답 조립용 attempt 정보 조회
+    - `countSolvedQuestions(attemptId)`: 제출 완료 문항 수 집계(기존 재사용)
+    - `countCorrectAnswers(attemptId)`: 정답 문항 수 집계
+  - SQL 구현 포인트:
+    - 결과 조회 시 소유권/완료 상태 검증을 위해 `user_id`, `total_questions`, `completed_at` 조회
+    - 정답 수는 `quiz_attempt_answers.is_correct = 1` 조건으로 집계
 
 ## Service 설계 메모
 - [DONE] 1-3. QuizQueryService 구현 (Attempt 기반 조회 조립)
@@ -359,6 +367,21 @@
     - `FORBIDDEN`: 타인 attempt 완료 시도
     - `ATTEMPT_NOT_FOUND`: attempt 없음
     - `INTERNAL_ERROR`: 조회값 타입 불일치
+- [DONE] 5-4. QuizCommandService 구현 (Issue-5, 결과 조회)
+  - 대상 메서드: `getQuizResult(Long userId, Long attemptId)`
+  - 처리 순서:
+    1. 입력 검증 (`userId`, `attemptId`)
+    2. 결과 대상 attempt 조회 (`findAttemptForResult`)
+    3. attempt 존재/소유권/완료 상태 검증
+    4. 제출 완료 수 집계 (`countSolvedQuestions`)
+    5. 정답 수 집계 (`countCorrectAnswers`)
+    6. 정답률 계산 후 `QuizResultResponse` 반환
+  - 예외 정책:
+    - `UNAUTHORIZED`: 인증 사용자 식별 불가
+    - `INVALID_REQUEST`: 입력값 오류, 완료 전 attempt 결과 조회
+    - `FORBIDDEN`: 타인 attempt 결과 조회 시도
+    - `ATTEMPT_NOT_FOUND`: attempt 없음
+    - `INTERNAL_ERROR`: 조회값 타입 불일치
 
 ## Controller 구현 메모
 - [DONE] 1-4. QuizController 구현 (Attempt 기반 Read 엔드포인트 연결)
@@ -394,6 +417,16 @@
     3. 결과를 `ApiResponse.ok(...)`로 반환
   - 응답 규약:
     - 성공: `ApiResponse<QuizCompleteResponse>`
+    - 실패: `GlobalExceptionHandler` 또는 Security의 401/403 핸들러
+- [DONE] 5-5. QuizController 구현 (Issue-5, 결과 조회 엔드포인트 연결)
+  - 엔드포인트: `GET /api/quiz/attempts/{attemptId}/result`
+  - 메서드: `getQuizResult(@PathVariable Long attemptId)`
+  - 처리 순서:
+    1. `SecurityUtil.getCurrentMemberId()`로 인증 사용자 식별
+    2. `quizCommandService.getQuizResult(userId, attemptId)` 호출
+    3. 결과를 `ApiResponse.ok(...)`로 반환
+  - 응답 규약:
+    - 성공: `ApiResponse<QuizResultResponse>`
     - 실패: `GlobalExceptionHandler` 또는 Security의 401/403 핸들러
 
 ## 구현 체크리스트

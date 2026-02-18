@@ -64,4 +64,8 @@ public interface QuizCommandMapper {
     Map<String, Object> findAttemptForComplete(@Param("attemptId") Long attemptId);
 
     int completeAttempt(@Param("attemptId") Long attemptId);
+
+    Map<String, Object> findAttemptForResult(@Param("attemptId") Long attemptId);
+
+    int countCorrectAnswers(@Param("attemptId") Long attemptId);
 }

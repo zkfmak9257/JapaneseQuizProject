@@ -9,6 +9,7 @@ import com.team.jpquiz.quiz.dto.request.WrongAnswerSaveRequest;
 import com.team.jpquiz.quiz.dto.response.QuizAnswerResultResponse;
 import com.team.jpquiz.quiz.dto.response.QuizAttemptResponse;
 import com.team.jpquiz.quiz.dto.response.QuizCompleteResponse;
+import com.team.jpquiz.quiz.dto.response.QuizResultResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -173,6 +174,42 @@ public class QuizCommandService {
                 .build();
     }
 
+    public QuizResultResponse getQuizResult(Long userId, Long attemptId) {
+        validateResultInput(userId, attemptId);
+
+        Map<String, Object> attempt = quizCommandMapper.findAttemptForResult(attemptId);
+        if (attempt == null) {
+            throw new CustomException(ErrorCode.ATTEMPT_NOT_FOUND);
+        }
+
+        Long ownerId = castToLong(attempt.get("userId"));
+        Integer totalQuestions = castToInteger(attempt.get("totalQuestions"));
+        LocalDateTime completedAt = castToLocalDateTime(attempt.get("completedAt"));
+
+        if (ownerId == null || totalQuestions == null) {
+            throw new CustomException(ErrorCode.INTERNAL_ERROR);
+        }
+        if (!ownerId.equals(userId)) {
+            throw new CustomException(ErrorCode.FORBIDDEN);
+        }
+        if (completedAt == null) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST);
+        }
+
+        int solvedCount = quizCommandMapper.countSolvedQuestions(attemptId);
+        int correctCount = quizCommandMapper.countCorrectAnswers(attemptId);
+        int accuracy = totalQuestions > 0 ? (correctCount * 100) / totalQuestions : 0;
+
+        return QuizResultResponse.builder()
+                .attemptId(attemptId)
+                .totalQuestions(totalQuestions)
+                .solvedCount(solvedCount)
+                .correctCount(correctCount)
+                .accuracy(accuracy)
+                .completedAt(completedAt)
+                .build();
+    }
+
     private void validateInput(Long userId, StartQuizRequest request) {
         if (userId == null || userId <= 0) {
             throw new CustomException(ErrorCode.UNAUTHORIZED);
@@ -195,6 +232,15 @@ public class QuizCommandService {
     }
 
     private void validateCompleteInput(Long userId, Long attemptId) {
+        if (userId == null || userId <= 0) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED);
+        }
+        if (attemptId == null || attemptId <= 0) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST);
+        }
+    }
+
+    private void validateResultInput(Long userId, Long attemptId) {
         if (userId == null || userId <= 0) {
             throw new CustomException(ErrorCode.UNAUTHORIZED);
         }

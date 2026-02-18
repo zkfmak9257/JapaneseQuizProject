@@ -173,4 +173,22 @@
           AND completed_at IS NULL
     </update>
 
+    <!-- 결과 조회 전 검증/응답 조립용 attempt 정보 조회 -->
+    <select id="findAttemptForResult" resultType="map">
+        SELECT
+            qa.user_id AS userId,
+            qa.total_questions AS totalQuestions,
+            qa.completed_at AS completedAt
+        FROM quiz_attempts qa
+        WHERE qa.attempt_id = #{attemptId}
+    </select>
+
+    <!-- 결과 조회용 정답 문항 수 집계 -->
+    <select id="countCorrectAnswers" resultType="int">
+        SELECT COUNT(*)
+        FROM quiz_attempt_answers qaa
+        WHERE qaa.attempt_id = #{attemptId}
+          AND qaa.is_correct = 1
+    </select>
+
 </mapper>
