@@ -23,4 +23,31 @@ public interface QuizCommandMapper {
             @Param("questionId") Long questionId,
             @Param("choiceOrder") String choiceOrder
     );
+
+    int countAttemptById(@Param("attemptId") Long attemptId);
+
+    Map<String, Object> findAttemptQuestionForSubmit(
+            @Param("attemptId") Long attemptId,
+            @Param("seq") int seq
+    );
+
+    Integer findChoiceCorrectFlag(
+            @Param("questionId") Long questionId,
+            @Param("choiceId") Long choiceId
+    );
+
+    int insertQuizAttemptAnswer(
+            @Param("attemptId") Long attemptId,
+            @Param("seq") int seq,
+            @Param("questionId") Long questionId,
+            @Param("selectedChoiceId") Long selectedChoiceId,
+            @Param("correct") boolean correct
+    );
+
+    int countSubmittedAnswer(
+            @Param("attemptId") Long attemptId,
+            @Param("seq") int seq
+    );
+
+    int countSolvedQuestions(@Param("attemptId") Long attemptId);
 }
