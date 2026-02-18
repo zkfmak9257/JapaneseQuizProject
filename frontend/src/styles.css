@@ -181,3 +181,18 @@ button {
   background: #e2e8f0;
   color: #0f172a;
 }
+
+.mypage-panel + .mypage-panel {
+  margin-top: 18px;
+}
+
+.mypage-actions {
+  justify-content: flex-start;
+}
+
+.stats-list {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 6px;
+}

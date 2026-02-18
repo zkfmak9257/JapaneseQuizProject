@@ -4,8 +4,9 @@
       <h1><RouterLink class="brand" to="/">Japanese Quiz</RouterLink></h1>
       <nav>
         <RouterLink to="/quiz/start">퀴즈 시작</RouterLink>
-        <RouterLink to="/quiz/favorites">즐겨찾기</RouterLink>
-        <RouterLink to="/quiz/wrong-answers">오답노트</RouterLink>
+        <RouterLink v-if="isLoggedIn" to="/mypage">마이페이지</RouterLink>
+        <RouterLink v-if="isLoggedIn" to="/quiz/favorites">즐겨찾기</RouterLink>
+        <RouterLink v-if="isLoggedIn" to="/quiz/wrong-answers">오답노트</RouterLink>
         <template v-if="!isLoggedIn">
           <RouterLink to="/login">로그인</RouterLink>
           <RouterLink to="/signup">회원가입</RouterLink>

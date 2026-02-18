@@ -4,6 +4,7 @@ import { useAuthStore } from "../stores/authStore";
 import LoginView from "../views/LoginView.vue";
 import SignupView from "../views/SignupView.vue";
 import MainView from "../views/MainView.vue";
+import MyPageView from "../views/MyPageView.vue";
 import QuizStartView from "../views/QuizStartView.vue";
 import QuizSolveView from "../views/QuizSolveView.vue";
 import QuizResultView from "../views/QuizResultView.vue";
@@ -14,6 +15,7 @@ const routes = [
   { path: "/", component: MainView },
   { path: "/login", component: LoginView },
   { path: "/signup", component: SignupView },
+  { path: "/mypage", component: MyPageView, meta: { requiresAuth: true } },
   { path: "/quiz/start", component: QuizStartView },
   { path: "/quiz/attempts/:attemptId/questions/:seq", component: QuizSolveView, props: true },
   { path: "/quiz/attempts/:attemptId/result", component: QuizResultView, props: true },
@@ -29,6 +31,10 @@ const router = createRouter({
 router.beforeEach((to) => {
   const authStore = useAuthStore();
   const { isLoggedIn } = storeToRefs(authStore);
+
+  if ((to.path === "/login" || to.path === "/signup") && isLoggedIn.value) {
+    return { path: "/mypage" };
+  }
 
   if (to.meta.requiresAuth && !isLoggedIn.value) {
     return { path: "/login", query: { redirect: to.fullPath } };
