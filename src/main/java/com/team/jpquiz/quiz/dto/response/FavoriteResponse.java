@@ -14,5 +14,7 @@ import java.time.LocalDateTime;
 public class FavoriteResponse {
 
   private Long questionId;
+  private String questionText;
+  private String category;
   private LocalDateTime createdAt;
 }
