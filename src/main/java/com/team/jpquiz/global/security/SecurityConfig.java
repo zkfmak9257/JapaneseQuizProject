@@ -7,6 +7,7 @@ import com.team.jpquiz.global.error.ErrorCode;
 import com.team.jpquiz.member.command.infrastructure.MemberRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -26,16 +27,47 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Configuration
 @EnableMethodSecurity // @PreAuthorize같은 메서드 단위 인가 어노테이션 쓸 수 있게 해줌
 public class SecurityConfig {
 
     private final ObjectMapper objectMapper;
+    private final List<String> allowedOrigins;
+    private final List<String> allowedMethods;
+    private final List<String> allowedHeaders;
+    private final List<String> exposedHeaders;
+    private final boolean allowCredentials;
+    private final long maxAge;
 
-    public SecurityConfig(ObjectMapper objectMapper) {
+    public SecurityConfig(
+            ObjectMapper objectMapper,
+            @Value("${app.cors.allowed-origins:}") String allowedOrigins,
+            @Value("${app.cors.allowed-methods:GET,POST,PUT,PATCH,DELETE,OPTIONS}") String allowedMethods,
+            @Value("${app.cors.allowed-headers:*}") String allowedHeaders,
+            @Value("${app.cors.exposed-headers:Authorization,Content-Type,X-Total-Count}") String exposedHeaders,
+            @Value("${app.cors.allow-credentials:true}") boolean allowCredentials,
+            @Value("${app.cors.max-age:3600}") long maxAge) {
         this.objectMapper = objectMapper;
+        this.allowedOrigins = splitCsv(allowedOrigins);
+        this.allowedMethods = splitCsv(allowedMethods);
+        this.allowedHeaders = splitCsv(allowedHeaders);
+        this.exposedHeaders = splitCsv(exposedHeaders);
+        this.allowCredentials = allowCredentials;
+        this.maxAge = maxAge;
+    }
+
+    private List<String> splitCsv(String value) {
+        if (value == null || value.isBlank()) {
+            return Collections.emptyList();
+        }
+        return Arrays.stream(value.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .collect(Collectors.toList());
     }
 
     @Bean
@@ -115,43 +147,34 @@ public class SecurityConfig {
 
     /**
      * CORS 설정
-     * 프론트엔드에서 API 호출 허용
+     * application.yml의 app.cors.* 값을 사용
      */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // 허용할 Origin (프론트엔드 주소)
-        // TODO: 운영 환경에서는 실제 도메인으로 변경 필요
-        configuration.setAllowedOrigins(List.of(
-                "http://localhost:3000",    // React 개발 서버
-                "http://localhost:5173",    // Vite 개발 서버
-                "http://localhost:8080"     // 로컬 테스트
-        ));
+        // yml에서 주입받은 값 사용
+        if (!allowedOrigins.isEmpty()) {
+            configuration.setAllowedOriginPatterns(allowedOrigins);
+        }
 
-        // 허용할 HTTP 메서드
-        configuration.setAllowedMethods(Arrays.asList(
-                "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"
-        ));
+        if (!allowedMethods.isEmpty()) {
+            configuration.setAllowedMethods(allowedMethods);
+        }
 
-        // 허용할 헤더
-        configuration.setAllowedHeaders(List.of("*"));
+        if (!allowedHeaders.isEmpty()) {
+            configuration.setAllowedHeaders(allowedHeaders);
+        }
 
-        // 브라우저에 노출할 헤더 (Authorization 헤더 등)
-        configuration.setExposedHeaders(List.of(
-                "Authorization",
-                "Content-Type",
-                "X-Total-Count"
-        ));
+        if (!exposedHeaders.isEmpty()) {
+            configuration.setExposedHeaders(exposedHeaders);
+        }
 
-        // 인증 정보 포함 여부 (쿠키, Authorization 헤더 등)
-        configuration.setAllowCredentials(true);
-
-        // Preflight 요청 캐시 시간 (초)
-        configuration.setMaxAge(3600L);
+        configuration.setAllowCredentials(allowCredentials);
+        configuration.setMaxAge(maxAge);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);  // 모든 경로에 적용
+        source.registerCorsConfiguration("/**", configuration);
 
         return source;
     }
