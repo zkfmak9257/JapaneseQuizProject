@@ -191,6 +191,12 @@
       - 타인 attempt 완료 시도
     - `404 ATTEMPT_NOT_FOUND`
       - attempt 없음
+- [DONE] 4-2. 퀴즈 완료 처리 DTO 구현
+  - `QuizCompleteResponse`
+    - 필드: `attemptId`, `totalQuestions`, `solvedCount`, `completedAt`
+  - 구현 의도:
+    - 완료 API는 "완료 식별값 + 완료 시점 상태 요약"만 반환
+    - 결과 상세(문항별 정오답/해설)는 5단계 결과 조회에서 분리 처리
 
 ## DB 매핑 메모
 - [CONFIRMED] 1-2. MyBatis Mapper/쿼리 설계 (Attempt 기반 조회)
