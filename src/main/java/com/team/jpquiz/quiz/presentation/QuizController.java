@@ -30,7 +30,7 @@ public class QuizController {
 
     @PostMapping("/attempts/start")
     public ApiResponse<QuizAttemptResponse> startQuiz(
-            @Valid @RequestBody StartQuizRequest request
+            @RequestBody(required = false) StartQuizRequest request
     ) {
         Long userId = SecurityUtil.getCurrentMemberIdOrNull();
         QuizAttemptResponse response = quizCommandService.startQuiz(userId, request);
