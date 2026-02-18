@@ -4,7 +4,9 @@ import com.team.jpquiz.common.security.JwtTokenProvider;
 import com.team.jpquiz.global.error.CustomException;
 import com.team.jpquiz.global.error.ErrorCode;
 import com.team.jpquiz.member.command.domain.Member;
+import com.team.jpquiz.member.command.domain.RefreshToken;
 import com.team.jpquiz.member.command.infrastructure.MemberRepository;
+import com.team.jpquiz.member.command.infrastructure.RefreshTokenRepository;
 import com.team.jpquiz.member.dto.request.MemberLoginRequest;
 import com.team.jpquiz.member.dto.request.MemberRegisterRequest;
 import com.team.jpquiz.member.dto.request.MemberUpdateRequest;
@@ -17,6 +19,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.time.LocalDateTime;
+import java.util.Base64;
+
 /**
  * 회원 Command 서비스
  * 회원가입, 정보 수정, 탈퇴 등 상태 변경 작업 담당
@@ -28,6 +36,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class MemberCommandService {
 
     private final MemberRepository memberRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
 
@@ -62,9 +71,12 @@ public class MemberCommandService {
         Member savedMember = memberRepository.save(member);
         log.info("회원가입 완료: userId={}, email={}", savedMember.getUserId(), savedMember.getEmail());
 
-        // 6. JWT 토큰 생성 및 반환
+        // 6. JWT 토큰 생성
         String accessToken = jwtTokenProvider.generateAccessToken(savedMember);
         String refreshToken = jwtTokenProvider.generateRefreshToken(savedMember);
+
+        // 7. Refresh Token을 DB에 저장 (폐기 가능하도록)
+        saveRefreshToken(savedMember.getUserId(), refreshToken);
 
         return TokenResponse.of(
                 accessToken,
@@ -98,9 +110,12 @@ public class MemberCommandService {
         member.updateLastLoginAt();
         log.info("로그인 성공: userId={}, email={}", member.getUserId(), member.getEmail());
 
-        // 5. JWT 토큰 생성 및 반환
+        // 5. JWT 토큰 생성
         String accessToken = jwtTokenProvider.generateAccessToken(member);
         String refreshToken = jwtTokenProvider.generateRefreshToken(member);
+
+        // 6. Refresh Token을 DB에 저장 (폐기 가능하도록)
+        saveRefreshToken(member.getUserId(), refreshToken);
 
         return TokenResponse.of(
                 accessToken,
@@ -145,7 +160,10 @@ public class MemberCommandService {
             // 새 비밀번호 암호화 및 저장
             String encodedNewPassword = passwordEncoder.encode(request.getNewPassword());
             member.updatePassword(encodedNewPassword);
-            log.info("비밀번호 변경 완료: userId={}", userId);
+
+            // 비밀번호 변경 시 모든 Refresh Token 폐기 (보안 강화)
+            refreshTokenRepository.revokeAllByUserId(userId, LocalDateTime.now());
+            log.info("비밀번호 변경 완료, 모든 세션 무효화: userId={}", userId);
         }
     }
 
@@ -155,11 +173,10 @@ public class MemberCommandService {
      * @param request 리프레시 토큰 요청 DTO
      * @return 새로운 JWT 토큰 응답
      */
-    @Transactional(readOnly = true)
     public TokenResponse refreshToken(RefreshTokenRequest request) {
         String refreshToken = request.getRefreshToken();
 
-        // 1. 리프레시 토큰 유효성 검증
+        // 1. 리프레시 토큰 유효성 검증 (JWT 서명 및 만료)
         if (!jwtTokenProvider.validateToken(refreshToken)) {
             throw new CustomException(ErrorCode.INVALID_REFRESH_TOKEN);
         }
@@ -169,24 +186,42 @@ public class MemberCommandService {
             throw new CustomException(ErrorCode.INVALID_REFRESH_TOKEN);
         }
 
-        // 3. 토큰에서 사용자 ID 추출
+        // 3. DB에서 Refresh Token 존재 여부 확인 (폐기된 토큰인지 검증)
+        String tokenHash = hashToken(refreshToken);
+        RefreshToken storedToken = refreshTokenRepository.findByRefreshTokenHashAndRevokedFalse(tokenHash)
+                .orElseThrow(() -> new CustomException(ErrorCode.INVALID_REFRESH_TOKEN));
+
+        // 4. 저장된 토큰의 유효성 확인
+        if (!storedToken.isValid()) {
+            throw new CustomException(ErrorCode.INVALID_REFRESH_TOKEN);
+        }
+
+        // 5. 토큰에서 사용자 ID 추출
         Long userId = jwtTokenProvider.getUserIdFromToken(refreshToken);
 
-        // 4. 회원 조회
+        // 6. 회원 조회
         Member member = memberRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
-        // 5. 계정 상태 확인
+        // 7. 계정 상태 확인
         if (!member.isActive()) {
+            // 비활성 회원의 토큰은 모두 폐기
+            refreshTokenRepository.revokeAllByUserId(userId, LocalDateTime.now());
             throw new CustomException(ErrorCode.INACTIVE_MEMBER);
         }
 
-        // 6. 새로운 Access Token 발급
+        // 8. 기존 Refresh Token 폐기 후 새로 발급 (Refresh Token Rotation)
+        storedToken.revoke();
+        String newRefreshToken = jwtTokenProvider.generateRefreshToken(member);
+        saveRefreshToken(userId, newRefreshToken);
+
+        // 9. 새로운 Access Token 발급
         String newAccessToken = jwtTokenProvider.generateAccessToken(member);
         log.info("토큰 갱신 완료: userId={}", userId);
 
-        return TokenResponse.ofAccessToken(
+        return TokenResponse.of(
                 newAccessToken,
+                newRefreshToken,
                 jwtTokenProvider.getAccessTokenExpirationInSeconds()
         );
     }
@@ -212,8 +247,42 @@ public class MemberCommandService {
             throw new CustomException(ErrorCode.INVALID_PASSWORD);
         }
 
-        // 4. 회원 탈퇴 처리
+        // 4. 모든 Refresh Token 폐기
+        refreshTokenRepository.revokeAllByUserId(userId, LocalDateTime.now());
+
+        // 5. 회원 탈퇴 처리
         member.withdraw();
         log.info("회원 탈퇴 완료: userId={}, email={}", userId, member.getEmail());
+    }
+
+    /**
+     * Refresh Token을 해시하여 DB에 저장
+     *
+     * @param userId       사용자 ID
+     * @param refreshToken Refresh Token 문자열
+     */
+    private void saveRefreshToken(Long userId, String refreshToken) {
+        LocalDateTime expiresAt = LocalDateTime.now()
+                .plusSeconds(jwtTokenProvider.getRefreshTokenExpirationInMillis() / 1000);
+
+        String tokenHash = hashToken(refreshToken);
+        RefreshToken token = RefreshToken.create(userId, tokenHash, expiresAt);
+        refreshTokenRepository.save(token);
+    }
+
+    /**
+     * 토큰을 SHA-256으로 해시
+     *
+     * @param token 원본 토큰
+     * @return Base64 인코딩된 해시값
+     */
+    private String hashToken(String token) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(token.getBytes(StandardCharsets.UTF_8));
+            return Base64.getEncoder().encodeToString(hash);
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("SHA-256 algorithm not available", e);
+        }
     }
 }

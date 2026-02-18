@@ -3,8 +3,8 @@ app:
     # 개발 서버 허용 도메인(필요 시 설정)
     allowed-origins: ""
   jwt:
-    # JWT Secret (환경변수로 주입 또는 개발용 고정값)
-    secret: ${JWT_SECRET:dGhpc2lzYXZlcnlzZWN1cmVzZWNyZXRrZXlmb3JqcHF1aXpkZXZlbG9wbWVudGVudmlyb25tZW50MTIzNDU2Nzg5MA==}
+    # JWT Secret (환경변수로 주입 필수 - 기본값 없음)
+    secret: ${JWT_SECRET}
 spring:
   datasource:
     # 개발 서버에서는 환경변수로 주입

@@ -227,4 +227,13 @@ public class JwtTokenProvider {
     public long getRefreshTokenExpirationInSeconds() {
         return refreshTokenExpiration / 1000;
     }
+
+    /**
+     * Refresh Token 만료 시간 조회 (밀리초 단위)
+     *
+     * @return Refresh Token 만료 시간 (밀리초)
+     */
+    public long getRefreshTokenExpirationInMillis() {
+        return refreshTokenExpiration;
+    }
 }

@@ -61,8 +61,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 Member member = memberRepository.findById(userId)
                         .orElse(null);
 
-                // 6. 사용자가 존재하는 경우 인증 정보 설정
-                if (member != null) {
+                // 6. 사용자가 존재하고 활성 상태인 경우에만 인증 정보 설정
+                if (member != null && member.isActive()) {
                     // UserPrincipal 생성 (UserDetails 구현체)
                     UserPrincipal userPrincipal = UserPrincipal.from(member);
 
