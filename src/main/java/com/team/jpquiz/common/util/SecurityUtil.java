@@ -27,4 +27,20 @@ public class SecurityUtil {
 
         return userPrincipal.getUserId();
     }
+
+    public static Long getCurrentMemberIdOrNull() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !authentication.isAuthenticated()
+                || authentication instanceof AnonymousAuthenticationToken) {
+            return null;
+        }
+
+        Object principal = authentication.getPrincipal();
+        if (!(principal instanceof UserPrincipal userPrincipal)) {
+            return null;
+        }
+
+        return userPrincipal.getUserId();
+    }
 }

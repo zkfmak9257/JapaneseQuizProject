@@ -99,9 +99,11 @@ public class SecurityConfig {
                         // 신고 등록 API - 게스트 포함 공개
                         .requestMatchers(HttpMethod.POST, "/api/reports").permitAll()
 
-                        // 퀴즈 API - 비회원도 접근 가능 (횟수 제한은 서비스 레이어에서 처리)
-                        .requestMatchers(HttpMethod.GET, "/api/quizzes/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/quizzes/*/submit").permitAll()
+                        // 퀴즈 API - 비회원도 풀이 가능 (시작/문제조회/제출/완료)
+                        .requestMatchers(HttpMethod.POST, "/api/quiz/attempts/start").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/quiz/attempts/*/questions/*").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/quiz/attempts/*/answers").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/quiz/attempts/*/complete").permitAll()
 
                         // 통계 API - 로그인 필수
                         .requestMatchers("/api/stats/**").authenticated()
