@@ -1,6 +1,6 @@
 import { computed, ref } from "vue";
 import { defineStore } from "pinia";
-import { login as loginApi } from "../api/authApi";
+import { login as loginApi, register as registerApi } from "../api/authApi";
 
 export const useAuthStore = defineStore("auth", () => {
   const accessToken = ref(localStorage.getItem("accessToken") || "");
@@ -20,9 +20,14 @@ export const useAuthStore = defineStore("auth", () => {
     setToken(token.accessToken);
   }
 
+  async function register(email, nickname, password) {
+    const token = await registerApi({ email, nickname, password });
+    setToken(token.accessToken);
+  }
+
   function logout() {
     setToken("");
   }
 
-  return { accessToken, isLoggedIn, login, logout, setToken };
+  return { accessToken, isLoggedIn, login, register, logout, setToken };
 });
