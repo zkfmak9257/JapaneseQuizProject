@@ -456,3 +456,32 @@
     - 향후 `MethodArgumentNotValidException` 핸들링 추가 시 기대 응답을 `400`으로 통일 가능
   - 메모:
     - 400/200 검증을 위해 테스트 중 `POST /api/quiz/attempts/start`를 임시 `permitAll`로 열어 확인 후 원복함
+
+## 최근 작업 로그 (2026-02-18)
+- [DONE] 비회원 퀴즈 풀이 정책 반영 (백엔드)
+  - 공개 허용:
+    - `POST /api/quiz/attempts/start`
+    - `GET /api/quiz/attempts/{attemptId}/questions/{seq}`
+    - `POST /api/quiz/attempts/{attemptId}/answers`
+    - `POST /api/quiz/attempts/{attemptId}/complete`
+  - 로그인 필수 유지:
+    - `GET /api/quiz/attempts/{attemptId}/result`
+  - `SecurityUtil.getCurrentMemberIdOrNull()` 추가로 게스트/회원 공용 처리
+  - 게스트 attempt(`owner_id = null`) 소유권 검증 로직 보정
+- [DONE] 퀴즈 시작 문제 수 10개 고정
+  - 시작 로직에서 요청 `count` 제거, 서비스 상수(`10`) 고정 적용
+  - `StartQuizRequest`의 `count` 필드/검증 제거
+  - 시작 API 요청 바디 optional 처리
+- [DONE] 프론트 시작/풀이 UX 보강
+  - 시작 화면:
+    - 문제 수 입력 제거, "10문제 고정" 안내 문구 적용
+    - 시작 API 연동 유지, 400/401/403/404 메시지 분기 추가
+  - 풀이 화면:
+    - 진행률 바 추가 (`seq / totalQuestions` 기반)
+    - 우측 상단 `신고하기` 버튼 + 신고 모달 UI 추가
+    - 답안 제출 후 다음 문제 자동 이동, 마지막 문제는 완료 API 호출 후 결과 화면 이동
+    - 400/401/403/404 메시지 분기 추가
+  - 신고 API:
+    - `POST /api/reports` 연동용 `reportApi` 추가
+  - 401 처리 보정:
+    - 퀴즈 풀이 경로(`/quiz/attempts/*`)는 전역 강제 로그인 리다이렉트 제외
