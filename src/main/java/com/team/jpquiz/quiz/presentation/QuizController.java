@@ -32,7 +32,7 @@ public class QuizController {
     public ApiResponse<QuizAttemptResponse> startQuiz(
             @Valid @RequestBody StartQuizRequest request
     ) {
-        Long userId = SecurityUtil.getCurrentMemberId();
+        Long userId = SecurityUtil.getCurrentMemberIdOrNull();
         QuizAttemptResponse response = quizCommandService.startQuiz(userId, request);
         return ApiResponse.ok(response);
     }
@@ -51,7 +51,7 @@ public class QuizController {
             @PathVariable Long attemptId,
             @Valid @RequestBody QuizSubmitRequest request
     ) {
-        Long userId = SecurityUtil.getCurrentMemberId();
+        Long userId = SecurityUtil.getCurrentMemberIdOrNull();
         QuizAnswerResultResponse response = quizCommandService.submitAnswer(userId, attemptId, request);
         return ApiResponse.ok(response);
     }
@@ -60,7 +60,7 @@ public class QuizController {
     public ApiResponse<QuizCompleteResponse> completeQuiz(
             @PathVariable Long attemptId
     ) {
-        Long userId = SecurityUtil.getCurrentMemberId();
+        Long userId = SecurityUtil.getCurrentMemberIdOrNull();
         QuizCompleteResponse response = quizCommandService.completeQuiz(userId, attemptId);
         return ApiResponse.ok(response);
     }

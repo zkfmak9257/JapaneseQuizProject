@@ -29,7 +29,7 @@ public class QuizCommandService {
     private final WrongAnswerCommandService wrongAnswerCommandService;
 
     public QuizAttemptResponse startQuiz(Long userId, StartQuizRequest request) {
-        validateInput(userId, request);
+        validateInput(request);
 
         int count = request.getCount();
         int totalQuestions = quizCommandMapper.countAllQuestions();
@@ -91,10 +91,10 @@ public class QuizCommandService {
         Long questionId = castToLong(attemptQuestion.get("questionId"));
         Integer totalQuestions = castToInteger(attemptQuestion.get("totalQuestions"));
 
-        if (ownerId == null || questionId == null || totalQuestions == null) {
+        if (questionId == null || totalQuestions == null) {
             throw new CustomException(ErrorCode.INTERNAL_ERROR);
         }
-        if (!ownerId.equals(userId)) {
+        if (!isAllowedOwner(ownerId, userId)) {
             throw new CustomException(ErrorCode.FORBIDDEN);
         }
 
@@ -120,7 +120,9 @@ public class QuizCommandService {
             throw new CustomException(ErrorCode.INTERNAL_ERROR);
         }
 
-        updateWrongAnswerNote(userId, questionId, correct);
+        if (userId != null) {
+            updateWrongAnswerNote(userId, questionId, correct);
+        }
 
         int solvedCount = quizCommandMapper.countSolvedQuestions(attemptId);
 
@@ -146,10 +148,10 @@ public class QuizCommandService {
         Integer totalQuestions = castToInteger(attempt.get("totalQuestions"));
         LocalDateTime completedAt = castToLocalDateTime(attempt.get("completedAt"));
 
-        if (ownerId == null || totalQuestions == null) {
+        if (totalQuestions == null) {
             throw new CustomException(ErrorCode.INTERNAL_ERROR);
         }
-        if (!ownerId.equals(userId)) {
+        if (!isAllowedOwner(ownerId, userId)) {
             throw new CustomException(ErrorCode.FORBIDDEN);
         }
         if (completedAt != null) {
@@ -186,10 +188,10 @@ public class QuizCommandService {
         Integer totalQuestions = castToInteger(attempt.get("totalQuestions"));
         LocalDateTime completedAt = castToLocalDateTime(attempt.get("completedAt"));
 
-        if (ownerId == null || totalQuestions == null) {
+        if (totalQuestions == null) {
             throw new CustomException(ErrorCode.INTERNAL_ERROR);
         }
-        if (!ownerId.equals(userId)) {
+        if (!isAllowedOwner(ownerId, userId)) {
             throw new CustomException(ErrorCode.FORBIDDEN);
         }
         if (completedAt == null) {
@@ -210,17 +212,14 @@ public class QuizCommandService {
                 .build();
     }
 
-    private void validateInput(Long userId, StartQuizRequest request) {
-        if (userId == null || userId <= 0) {
-            throw new CustomException(ErrorCode.UNAUTHORIZED);
-        }
+    private void validateInput(StartQuizRequest request) {
         if (request == null || request.getCount() == null || request.getCount() < 1 || request.getCount() > 10) {
             throw new CustomException(ErrorCode.INVALID_REQUEST);
         }
     }
 
     private void validateSubmitInput(Long userId, Long attemptId, QuizSubmitRequest request) {
-        if (userId == null || userId <= 0) {
+        if (userId != null && userId <= 0) {
             throw new CustomException(ErrorCode.UNAUTHORIZED);
         }
         if (attemptId == null || attemptId <= 0) {
@@ -232,7 +231,7 @@ public class QuizCommandService {
     }
 
     private void validateCompleteInput(Long userId, Long attemptId) {
-        if (userId == null || userId <= 0) {
+        if (userId != null && userId <= 0) {
             throw new CustomException(ErrorCode.UNAUTHORIZED);
         }
         if (attemptId == null || attemptId <= 0) {
@@ -280,5 +279,12 @@ public class QuizCommandService {
         }
 
         wrongAnswerCommandService.saveWrongAnswer(userId, new WrongAnswerSaveRequest(questionId));
+    }
+
+    private boolean isAllowedOwner(Long ownerId, Long currentUserId) {
+        if (ownerId == null) {
+            return currentUserId == null;
+        }
+        return ownerId.equals(currentUserId);
     }
 }
