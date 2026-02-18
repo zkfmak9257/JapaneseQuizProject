@@ -6,17 +6,29 @@
     <select id="findFavorites" resultType="com.team.jpquiz.quiz.dto.response.FavoriteResponse">
         SELECT
             f.question_id AS questionId,
+            qq.question_text AS questionText,
+            qs.name AS category,
             f.created_at AS createdAt
         FROM favorites f
+        JOIN quiz_questions qq ON qq.question_id = f.question_id
+        LEFT JOIN quiz_scenes qs ON qs.scene_id = qq.scene_id
         WHERE f.member_id = #{memberId}
+        <if test="category != null and category != ''">
+            AND qs.name = #{category}
+        </if>
         ORDER BY f.created_at DESC
             LIMIT #{limit} OFFSET #{offset}
     </select>
 
     <select id="countFavorites" resultType="long">
         SELECT COUNT(*)
-        FROM favorites
-        WHERE member_id = #{memberId}
+        FROM favorites f
+        JOIN quiz_questions qq ON qq.question_id = f.question_id
+        LEFT JOIN quiz_scenes qs ON qs.scene_id = qq.scene_id
+        WHERE f.member_id = #{memberId}
+        <if test="category != null and category != ''">
+            AND qs.name = #{category}
+        </if>
     </select>
 
 </mapper>

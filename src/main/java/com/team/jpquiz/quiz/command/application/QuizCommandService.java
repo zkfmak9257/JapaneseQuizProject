@@ -5,6 +5,7 @@ import com.team.jpquiz.global.error.ErrorCode;
 import com.team.jpquiz.quiz.command.infrastructure.QuizCommandMapper;
 import com.team.jpquiz.quiz.dto.request.QuizSubmitRequest;
 import com.team.jpquiz.quiz.dto.request.StartQuizRequest;
+import com.team.jpquiz.quiz.dto.request.WrongAnswerSaveRequest;
 import com.team.jpquiz.quiz.dto.response.QuizAnswerResultResponse;
 import com.team.jpquiz.quiz.dto.response.QuizAttemptResponse;
 import com.team.jpquiz.quiz.dto.response.QuizCompleteResponse;
@@ -24,6 +25,7 @@ import java.util.Map;
 public class QuizCommandService {
 
     private final QuizCommandMapper quizCommandMapper;
+    private final WrongAnswerCommandService wrongAnswerCommandService;
 
     public QuizAttemptResponse startQuiz(Long userId, StartQuizRequest request) {
         validateInput(userId, request);
@@ -116,6 +118,8 @@ public class QuizCommandService {
         if (inserted != 1) {
             throw new CustomException(ErrorCode.INTERNAL_ERROR);
         }
+
+        updateWrongAnswerNote(userId, questionId, correct);
 
         int solvedCount = quizCommandMapper.countSolvedQuestions(attemptId);
 
