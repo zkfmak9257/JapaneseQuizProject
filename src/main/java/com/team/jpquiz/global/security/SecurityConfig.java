@@ -216,4 +216,3 @@ public class SecurityConfig {
         response.getWriter().write(objectMapper.writeValueAsString(body));
     }
 }
-

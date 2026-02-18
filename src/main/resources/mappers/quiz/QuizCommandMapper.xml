@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.team.jpquiz.quiz.command.infrastructure.QuizCommandMapper">
+
+    <!-- 문제 pool 전체 개수 -->
+    <select id="countAllQuestions" resultType="int">
+        SELECT COUNT(*)
+        FROM quiz_questions
+    </select>
+
+    <!-- 시작 시점에 랜덤 문제 ID를 count개 추출 -->
+    <select id="findRandomQuestionIds" resultType="long">
+        SELECT qq.question_id
+        FROM quiz_questions qq
+        ORDER BY RAND()
+        LIMIT #{count}
+    </select>
+
+    <!-- 문제별 보기 순서를 CSV로 고정 저장하기 위한 값 생성 -->
+    <select id="findChoiceOrderCsv" resultType="string">
+        SELECT GROUP_CONCAT(qc.choice_id ORDER BY RAND() SEPARATOR ',')
+        FROM quiz_choices qc
+        WHERE qc.question_id = #{questionId}
+    </select>
+
+    <!-- 퀴즈 시도 생성 (생성 PK는 keyProperty=attemptId로 회수) -->
+    <insert id="insertQuizAttempt"
+            parameterType="map"
+            useGeneratedKeys="true"
+            keyProperty="attemptId"
+            keyColumn="attempt_id">
+        INSERT INTO quiz_attempts (
+            user_id,
+            total_questions,
+            started_at,
+            created_at,
+            updated_at
+        ) VALUES (
+            #{userId},
+            #{totalQuestions},
+            NOW(),
+            NOW(),
+            NOW()
+        )
+    </insert>
+
+    <!-- attempt의 각 문제 배정/순서/보기순서(choice_order) 저장 -->
+    <insert id="insertQuizAttemptQuestion">
+        INSERT INTO quiz_attempt_questions (
+            attempt_id,
+            seq,
+            question_id,
+            choice_order
+        ) VALUES (
+            #{attemptId},
+            #{seq},
+            #{questionId},
+            #{choiceOrder}
+        )
+    </insert>
+
+    <!-- attempt 존재 여부 확인 -->
+    <select id="countAttemptById" resultType="int">
+        SELECT COUNT(*)
+        FROM quiz_attempts
+        WHERE attempt_id = #{attemptId}
+    </select>
+
+    <!-- 제출 대상 문제 조회 (attempt 소유자/문제/전체 문항 수 확인용) -->
+    <select id="findAttemptQuestionForSubmit" resultType="map">
+        SELECT
+            qa.user_id AS userId,
+            qaq.question_id AS questionId,
+            qa.total_questions AS totalQuestions
+        FROM quiz_attempts qa
+        JOIN quiz_attempt_questions qaq ON qaq.attempt_id = qa.attempt_id
+        WHERE qa.attempt_id = #{attemptId}
+          AND qaq.seq = #{seq}
+    </select>
+
+    <!-- choice가 해당 문제의 정답인지 확인 (문제에 속하지 않으면 null) -->
+    <select id="findChoiceCorrectFlag" resultType="int">
+        SELECT
+            qc.is_correct
+        FROM quiz_choices qc
+        WHERE qc.question_id = #{questionId}
+          AND qc.choice_id = #{choiceId}
+    </select>
+
+    <!-- 채점 결과 저장 -->
+    <insert id="insertQuizAttemptAnswer">
+        INSERT INTO quiz_attempt_answers (
+            attempt_id,
+            seq,
+            question_id,
+            selected_choice_id,
+            is_correct,
+            answered_at,
+            created_at,
+            updated_at
+        ) VALUES (
+            #{attemptId},
+            #{seq},
+            #{questionId},
+            #{selectedChoiceId},
+            #{correct},
+            NOW(),
+            NOW(),
+            NOW()
+        )
+    </insert>
+
+    <!-- 동일 attempt 문항 중복 제출 여부 -->
+    <select id="countSubmittedAnswer" resultType="int">
+        SELECT COUNT(*)
+        FROM quiz_attempt_answers
+        WHERE attempt_id = #{attemptId}
+          AND seq = #{seq}
+    </select>
+
+    <!-- 제출 완료 문항 수 -->
+    <select id="countSolvedQuestions" resultType="int">
+        SELECT COUNT(*)
+        FROM quiz_attempt_answers
+        WHERE attempt_id = #{attemptId}
+    </select>
+
+    <!-- 완료 처리 전 검증용 attempt 정보 조회 -->
+    <select id="findAttemptForComplete" resultType="map">
+        SELECT
+            qa.user_id AS userId,
+            qa.total_questions AS totalQuestions,
+            qa.completed_at AS completedAt
+        FROM quiz_attempts qa
+        WHERE qa.attempt_id = #{attemptId}
+    </select>
+
+    <!-- 완료 시각 기록 (이미 완료된 시도는 업데이트하지 않음) -->
+    <update id="completeAttempt">
+        UPDATE quiz_attempts
+        SET completed_at = NOW(),
+            updated_at = NOW()
+        WHERE attempt_id = #{attemptId}
+          AND completed_at IS NULL
+    </update>
+
+</mapper>

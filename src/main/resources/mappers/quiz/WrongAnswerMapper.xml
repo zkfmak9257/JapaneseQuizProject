@@ -11,7 +11,10 @@
             wa.last_wrong_at AS lastWrongAt
         FROM wrong_answers wa
         WHERE wa.member_id = #{memberId}
-        ORDER BY wa.last_wrong_at DESC
+        <if test="fromDateTime != null">
+            AND COALESCE(wa.last_wrong_at, wa.created_at) &gt;= #{fromDateTime}
+        </if>
+        ORDER BY COALESCE(wa.last_wrong_at, wa.created_at) DESC
             LIMIT #{limit} OFFSET #{offset}
     </select>
 
@@ -20,6 +23,9 @@
         SELECT COUNT(*)
         FROM wrong_answers
         WHERE member_id = #{memberId}
+        <if test="fromDateTime != null">
+            AND COALESCE(last_wrong_at, created_at) &gt;= #{fromDateTime}
+        </if>
     </select>
 
 </mapper>

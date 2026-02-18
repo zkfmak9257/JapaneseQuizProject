@@ -9,9 +9,12 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class QuizAttemptResponse {
+public class QuizAnswerResultResponse {
+
     private Long attemptId;
+    private int seq;
+    private Long selectedChoiceId;
+    private boolean correct;
+    private int solvedCount;
     private int totalQuestions;
-
-
 }
