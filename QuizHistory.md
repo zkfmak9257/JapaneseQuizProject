@@ -418,6 +418,16 @@
   - 응답 규약:
     - 성공: `ApiResponse<QuizCompleteResponse>`
     - 실패: `GlobalExceptionHandler` 또는 Security의 401/403 핸들러
+- [DONE] 5-5. QuizController 구현 (Issue-5, 결과 조회 엔드포인트 연결)
+  - 엔드포인트: `GET /api/quiz/attempts/{attemptId}/result`
+  - 메서드: `getQuizResult(@PathVariable Long attemptId)`
+  - 처리 순서:
+    1. `SecurityUtil.getCurrentMemberId()`로 인증 사용자 식별
+    2. `quizCommandService.getQuizResult(userId, attemptId)` 호출
+    3. 결과를 `ApiResponse.ok(...)`로 반환
+  - 응답 규약:
+    - 성공: `ApiResponse<QuizResultResponse>`
+    - 실패: `GlobalExceptionHandler` 또는 Security의 401/403 핸들러
 
 ## 구현 체크리스트
 - [x] 1. 문제/보기 조회 (Read)

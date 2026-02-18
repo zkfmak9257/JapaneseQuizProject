@@ -10,6 +10,7 @@ import com.team.jpquiz.quiz.dto.response.QuizAnswerResultResponse;
 import com.team.jpquiz.quiz.dto.response.QuizAttemptQuestionResponse;
 import com.team.jpquiz.quiz.dto.response.QuizAttemptResponse;
 import com.team.jpquiz.quiz.dto.response.QuizCompleteResponse;
+import com.team.jpquiz.quiz.dto.response.QuizResultResponse;
 import com.team.jpquiz.quiz.query.application.QuizQueryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -61,6 +62,15 @@ public class QuizController {
     ) {
         Long userId = SecurityUtil.getCurrentMemberId();
         QuizCompleteResponse response = quizCommandService.completeQuiz(userId, attemptId);
+        return ApiResponse.ok(response);
+    }
+
+    @GetMapping("/attempts/{attemptId}/result")
+    public ApiResponse<QuizResultResponse> getQuizResult(
+            @PathVariable Long attemptId
+    ) {
+        Long userId = SecurityUtil.getCurrentMemberId();
+        QuizResultResponse response = quizCommandService.getQuizResult(userId, attemptId);
         return ApiResponse.ok(response);
     }
 
