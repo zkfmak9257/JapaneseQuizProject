@@ -1,6 +1,8 @@
 package com.team.jpquiz.quiz.query.application;
 
 import com.team.jpquiz.common.dto.PageResponse;
+import com.team.jpquiz.global.error.CustomException;
+import com.team.jpquiz.global.error.ErrorCode;
 import com.team.jpquiz.quiz.dto.response.WrongAnswerResponse;
 import com.team.jpquiz.quiz.query.infrastructure.WrongAnswerMapper; // 패키지 경로 주의 (infrastructure 바로 아래인지, mapper 폴더 안인지)
 import java.time.LocalDate;
@@ -24,15 +26,27 @@ public class WrongAnswerQueryService {
       Long memberId,
       int page,
       int size,
-      LocalDate fromDate
+      LocalDate fromDate,
+      String keyword,
+      String category
   ) {
+    validateInput(memberId, page, size);
     int offset = (page - 1) * size; // 1-based page -> 0-based offset
     LocalDateTime fromDateTime = fromDate != null ? fromDate.atStartOfDay() : null;
 
     List<WrongAnswerResponse> content =
-        wrongAnswerMapper.findWrongAnswers(memberId, offset, size, fromDateTime);
-    long totalElements = wrongAnswerMapper.countWrongAnswers(memberId, fromDateTime);
+        wrongAnswerMapper.findWrongAnswers(memberId, offset, size, fromDateTime, keyword, category);
+    long totalElements = wrongAnswerMapper.countWrongAnswers(memberId, fromDateTime, keyword, category);
 
     return PageResponse.of(content, page, size, totalElements);
+  }
+
+  private void validateInput(Long memberId, int page, int size) {
+    if (memberId == null || memberId <= 0) {
+      throw new CustomException(ErrorCode.UNAUTHORIZED);
+    }
+    if (page < 1 || size < 1 || size > 100) {
+      throw new CustomException(ErrorCode.INVALID_REQUEST);
+    }
   }
 }

@@ -16,6 +16,8 @@ import java.time.LocalDateTime;
 public class WrongAnswerResponse {
 
   private Long questionId;
+  private String questionText;
+  private String category;
   private int wrongCount;
   private LocalDateTime lastWrongAt;
 

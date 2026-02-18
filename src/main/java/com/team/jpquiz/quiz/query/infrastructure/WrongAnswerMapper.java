@@ -16,12 +16,16 @@ public interface WrongAnswerMapper {
       @Param("memberId") Long memberId,
       @Param("offset") int offset,
       @Param("limit") int limit,
-      @Param("fromDateTime") LocalDateTime fromDateTime
+      @Param("fromDateTime") LocalDateTime fromDateTime,
+      @Param("keyword") String keyword,
+      @Param("category") String category
   );
 
   // 회원별 오답노트 전체 건수를 조회합니다.
   long countWrongAnswers(
       @Param("memberId") Long memberId,
-      @Param("fromDateTime") LocalDateTime fromDateTime
+      @Param("fromDateTime") LocalDateTime fromDateTime,
+      @Param("keyword") String keyword,
+      @Param("category") String category
   );
 }
