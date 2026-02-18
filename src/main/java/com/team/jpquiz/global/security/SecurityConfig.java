@@ -96,6 +96,8 @@ public class SecurityConfig {
 
                         // 인증 API - 공개
                         .requestMatchers("/api/auth/**").permitAll()
+                        // 신고 등록 API - 게스트 포함 공개
+                        .requestMatchers(HttpMethod.POST, "/api/reports").permitAll()
 
                         // 퀴즈 API - 비회원도 접근 가능 (횟수 제한은 서비스 레이어에서 처리)
                         .requestMatchers(HttpMethod.GET, "/api/quizzes/**").permitAll()
