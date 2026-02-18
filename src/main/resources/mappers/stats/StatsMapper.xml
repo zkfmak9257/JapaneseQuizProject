@@ -3,4 +3,47 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.team.jpquiz.stats.query.infrastructure.StatsMapper">
+
+    <select id="findMyStats" resultType="com.team.jpquiz.stats.dto.response.StatsResponse$MyStats">
+        SELECT
+            #{memberId} AS memberId,
+            (SELECT COUNT(*)
+             FROM quiz_attempts qa
+             WHERE qa.user_id = #{memberId}) AS totalAttempts,
+            (SELECT COUNT(*)
+             FROM quiz_attempts qa
+             WHERE qa.user_id = #{memberId}
+               AND qa.completed_at IS NOT NULL) AS completedAttempts,
+            (SELECT COUNT(*)
+             FROM quiz_attempt_answers qaa
+             JOIN quiz_attempts qa ON qa.attempt_id = qaa.attempt_id
+             WHERE qa.user_id = #{memberId}) AS totalAnswers,
+            (SELECT COUNT(*)
+             FROM quiz_attempt_answers qaa
+             JOIN quiz_attempts qa ON qa.attempt_id = qaa.attempt_id
+             WHERE qa.user_id = #{memberId}
+               AND qaa.is_correct = 1) AS correctAnswers,
+            (SELECT COUNT(*)
+             FROM quiz_attempt_answers qaa
+             JOIN quiz_attempts qa ON qa.attempt_id = qaa.attempt_id
+             WHERE qa.user_id = #{memberId}
+               AND qaa.answered_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)) AS recent7dAnswers
+    </select>
+
+    <select id="findAdminOverview" resultType="com.team.jpquiz.stats.dto.response.StatsResponse$AdminOverview">
+        SELECT
+            (SELECT COUNT(*)
+             FROM quiz_attempts) AS totalAttempts,
+            (SELECT COUNT(*)
+             FROM quiz_attempts
+             WHERE completed_at IS NOT NULL) AS completedAttempts,
+            (SELECT COUNT(*)
+             FROM quiz_attempt_answers) AS totalAnswers,
+            (SELECT COUNT(*)
+             FROM quiz_attempt_answers
+             WHERE is_correct = 1) AS correctAnswers,
+            (SELECT COUNT(DISTINCT user_id)
+             FROM quiz_attempts
+             WHERE started_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)) AS activeUsers7d
+    </select>
 </mapper>
