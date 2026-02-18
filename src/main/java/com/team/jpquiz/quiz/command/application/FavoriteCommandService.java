@@ -2,6 +2,7 @@ package com.team.jpquiz.quiz.command.application;
 
 import com.team.jpquiz.quiz.command.domain.Favorite;
 import com.team.jpquiz.quiz.command.domain.repository.FavoriteRepository;
+import com.team.jpquiz.quiz.dto.response.FavoriteToggleResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,5 +32,29 @@ public class FavoriteCommandService {
   // 즐겨찾기 항목을 삭제합니다.
   public void deleteFavorite(Long memberId, Long questionId) {
     favoriteRepository.deleteByMemberIdAndQuestionId(memberId, questionId);
+  }
+
+  // 현재 상태를 반전해 즐겨찾기 토글을 처리합니다.
+  public FavoriteToggleResponse toggleFavorite(Long memberId, Long questionId) {
+    return favoriteRepository.findByMemberIdAndQuestionId(memberId, questionId)
+        .map(existing -> {
+          favoriteRepository.delete(existing);
+          return FavoriteToggleResponse.builder()
+              .questionId(questionId)
+              .favorited(false)
+              .build();
+        })
+        .orElseGet(() -> {
+          favoriteRepository.save(
+              Favorite.builder()
+                  .memberId(memberId)
+                  .questionId(questionId)
+                  .build()
+          );
+          return FavoriteToggleResponse.builder()
+              .questionId(questionId)
+              .favorited(true)
+              .build();
+        });
   }
 }

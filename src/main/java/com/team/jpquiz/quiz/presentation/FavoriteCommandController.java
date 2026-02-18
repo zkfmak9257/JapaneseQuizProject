@@ -1,7 +1,9 @@
 package com.team.jpquiz.quiz.presentation;
 
+import com.team.jpquiz.common.dto.ApiResponse;
 import com.team.jpquiz.global.security.UserPrincipal;
 import com.team.jpquiz.quiz.command.application.FavoriteCommandService;
+import com.team.jpquiz.quiz.dto.response.FavoriteToggleResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -33,6 +35,16 @@ public class FavoriteCommandController {
   ) {
     favoriteCommandService.deleteFavorite(userPrincipal.getUserId(), questionId);
     return ResponseEntity.noContent().build();
+  }
+
+  // 문제의 즐겨찾기 상태를 토글합니다.
+  @PostMapping("/{questionId}/toggle")
+  public ApiResponse<FavoriteToggleResponse> toggleFavorite(
+      @AuthenticationPrincipal UserPrincipal userPrincipal,
+      @PathVariable Long questionId
+  ) {
+    FavoriteToggleResponse response = favoriteCommandService.toggleFavorite(userPrincipal.getUserId(), questionId);
+    return ApiResponse.ok(response);
   }
 
 }
