@@ -12,9 +12,12 @@ public interface FavoriteMapper {
   List<FavoriteResponse> findFavorites(
       @Param("memberId") Long memberId,
       @Param("offset") int offset,
-      @Param("limit") int limit
-
+      @Param("limit") int limit,
+      @Param("category") String category
   );
 
-long countFavorites(@Param("memberId") Long memberId);
+  long countFavorites(
+      @Param("memberId") Long memberId,
+      @Param("category") String category
+  );
 }
