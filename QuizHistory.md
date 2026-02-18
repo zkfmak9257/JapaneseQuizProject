@@ -289,6 +289,14 @@
   - SQL 구현 포인트:
     - 완료 처리 전 `attempt` 존재/상태 검증에 필요한 최소 컬럼만 조회
     - `completeAttempt`는 `completed_at IS NULL` 조건으로 재완료 요청을 DB 레벨에서 차단 가능하게 설계
+- [DONE] 5-3. MyBatis Mapper/쿼리 구현 (Issue-5, 결과 조회)
+  - Mapper: `QuizCommandMapper`
+    - `findAttemptForResult(attemptId)`: 결과 조회 전 검증/응답 조립용 attempt 정보 조회
+    - `countSolvedQuestions(attemptId)`: 제출 완료 문항 수 집계(기존 재사용)
+    - `countCorrectAnswers(attemptId)`: 정답 문항 수 집계
+  - SQL 구현 포인트:
+    - 결과 조회 시 소유권/완료 상태 검증을 위해 `user_id`, `total_questions`, `completed_at` 조회
+    - 정답 수는 `quiz_attempt_answers.is_correct = 1` 조건으로 집계
 
 ## Service 설계 메모
 - [DONE] 1-3. QuizQueryService 구현 (Attempt 기반 조회 조립)
