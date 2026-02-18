@@ -162,6 +162,35 @@
   - 구현 의도:
     - 요청은 필수값/범위 검증을 DTO에서 1차 차단
     - 응답은 제출 결과 판단에 필요한 최소 필드만 제공
+- [CONFIRMED] 4-1. 퀴즈 완료 처리 API 스펙 (Issue-4)
+  - Endpoint: `POST /api/quiz/attempts/{attemptId}/complete`
+  - 인증: 필요 (`401 UNAUTHORIZED` 대상)
+  - Request:
+    - Path Variable
+      - `attemptId` (Long, 필수): 완료 대상 퀴즈 시도 ID
+    - Body
+      - 없음
+  - 동작 규칙:
+    - 요청한 `attemptId`가 존재해야 함
+    - 요청 사용자가 해당 attempt 소유자여야 함
+    - 완료 시점에는 attempt를 "완료 상태"로 전환하고 완료 시각을 기록함
+    - 완료 조건은 "배정된 전체 문항을 모두 제출한 경우"를 기본으로 함
+  - Success Response (200, `ApiResponse<QuizCompleteResponse>`):
+    - `data.attemptId`: 완료된 시도 ID
+    - `data.totalQuestions`: 전체 문항 수
+    - `data.solvedCount`: 제출 완료 문항 수
+    - `data.completedAt`: 완료 시각
+  - Error Cases:
+    - `400 INVALID_REQUEST`
+      - `attemptId` 형식/범위 오류
+      - 미제출 문항이 남은 상태에서 완료 요청한 경우
+      - 이미 완료된 attempt를 다시 완료 요청한 경우
+    - `401 UNAUTHORIZED`
+      - 인증 정보 없음/유효하지 않음
+    - `403 FORBIDDEN`
+      - 타인 attempt 완료 시도
+    - `404 ATTEMPT_NOT_FOUND`
+      - attempt 없음
 
 ## DB 매핑 메모
 - [CONFIRMED] 1-2. MyBatis Mapper/쿼리 설계 (Attempt 기반 조회)
@@ -299,7 +328,7 @@
 ## 구현 체크리스트
 - [x] 1. 문제/보기 조회 (Read)
 - [x] 2. 퀴즈 시작 (세트 생성)
-- [ ] 3. 답안 제출/채점
+- [x] 3. 답안 제출/채점
 - [ ] 4. 퀴즈 완료 처리
 - [ ] 5. 결과 조회
 
