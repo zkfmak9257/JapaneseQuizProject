@@ -367,6 +367,21 @@
     - `FORBIDDEN`: 타인 attempt 완료 시도
     - `ATTEMPT_NOT_FOUND`: attempt 없음
     - `INTERNAL_ERROR`: 조회값 타입 불일치
+- [DONE] 5-4. QuizCommandService 구현 (Issue-5, 결과 조회)
+  - 대상 메서드: `getQuizResult(Long userId, Long attemptId)`
+  - 처리 순서:
+    1. 입력 검증 (`userId`, `attemptId`)
+    2. 결과 대상 attempt 조회 (`findAttemptForResult`)
+    3. attempt 존재/소유권/완료 상태 검증
+    4. 제출 완료 수 집계 (`countSolvedQuestions`)
+    5. 정답 수 집계 (`countCorrectAnswers`)
+    6. 정답률 계산 후 `QuizResultResponse` 반환
+  - 예외 정책:
+    - `UNAUTHORIZED`: 인증 사용자 식별 불가
+    - `INVALID_REQUEST`: 입력값 오류, 완료 전 attempt 결과 조회
+    - `FORBIDDEN`: 타인 attempt 결과 조회 시도
+    - `ATTEMPT_NOT_FOUND`: attempt 없음
+    - `INTERNAL_ERROR`: 조회값 타입 불일치
 
 ## Controller 구현 메모
 - [DONE] 1-4. QuizController 구현 (Attempt 기반 Read 엔드포인트 연결)
