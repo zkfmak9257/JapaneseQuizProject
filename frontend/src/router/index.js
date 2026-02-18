@@ -30,6 +30,10 @@ router.beforeEach((to) => {
   const authStore = useAuthStore();
   const { isLoggedIn } = storeToRefs(authStore);
 
+  if ((to.path === "/login" || to.path === "/signup") && isLoggedIn.value) {
+    return { path: "/mypage" };
+  }
+
   if (to.meta.requiresAuth && !isLoggedIn.value) {
     return { path: "/login", query: { redirect: to.fullPath } };
   }
