@@ -25,13 +25,13 @@ import java.util.Map;
 @Transactional
 public class QuizCommandService {
 
+    private static final int FIXED_QUIZ_QUESTION_COUNT = 10;
+
     private final QuizCommandMapper quizCommandMapper;
     private final WrongAnswerCommandService wrongAnswerCommandService;
 
     public QuizAttemptResponse startQuiz(Long userId, StartQuizRequest request) {
-        validateInput(request);
-
-        int count = request.getCount();
+        int count = FIXED_QUIZ_QUESTION_COUNT;
         int totalQuestions = quizCommandMapper.countAllQuestions();
         if (totalQuestions < count) {
             throw new CustomException(ErrorCode.INVALID_REQUEST);
@@ -210,12 +210,6 @@ public class QuizCommandService {
                 .accuracy(accuracy)
                 .completedAt(completedAt)
                 .build();
-    }
-
-    private void validateInput(StartQuizRequest request) {
-        if (request == null || request.getCount() == null || request.getCount() < 1 || request.getCount() > 10) {
-            throw new CustomException(ErrorCode.INVALID_REQUEST);
-        }
     }
 
     private void validateSubmitInput(Long userId, Long attemptId, QuizSubmitRequest request) {
