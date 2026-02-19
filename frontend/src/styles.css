@@ -205,3 +205,27 @@ button {
   display: grid;
   gap: 6px;
 }
+
+.list-view {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.list-item {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 12px;
+  background: #f8fafc;
+}
+
+.list-item p {
+  margin: 4px 0;
+}
+
+.pager {
+  align-items: center;
+  margin-top: 12px;
+}
