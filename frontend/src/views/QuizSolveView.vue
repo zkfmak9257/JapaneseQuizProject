@@ -44,7 +44,10 @@
                 @drop.prevent="dropOnPoolIndex(idx)"
                 @click="movePoolTokenToAnswer(idx)"
               >
-                {{ token.tokenText }}
+                <template v-if="hasRuby(token.tokenText)">
+                  <ruby><rb>{{ rubyBase(token.tokenText) }}</rb><rt>{{ rubyReading(token.tokenText) }}</rt></ruby>
+                </template>
+                <template v-else>{{ token.tokenText }}</template>
               </button>
             </div>
           </section>
@@ -64,7 +67,10 @@
                 @drop.prevent="dropOnAnswerIndex(idx)"
                 @click="moveAnswerTokenToPool(idx)"
               >
-                {{ token.tokenText }}
+                <template v-if="hasRuby(token.tokenText)">
+                  <ruby><rb>{{ rubyBase(token.tokenText) }}</rb><rt>{{ rubyReading(token.tokenText) }}</rt></ruby>
+                </template>
+                <template v-else>{{ token.tokenText }}</template>
               </button>
             </div>
           </section>
@@ -88,7 +94,10 @@
             v-model="selectedChoiceId"
             :disabled="submissionDone"
           />
-          {{ choice.choiceText }}
+          <template v-if="hasRuby(choice.choiceText)">
+            <ruby><rb>{{ rubyBase(choice.choiceText) }}</rb><rt>{{ rubyReading(choice.choiceText) }}</rt></ruby>
+          </template>
+          <template v-else>{{ choice.choiceText }}</template>
         </label>
       </li>
     </ul>
@@ -258,6 +267,30 @@ const canSubmit = computed(() => {
 });
 
 const requiredSentenceTokenCount = computed(() => sentenceTokenSource.value.length);
+
+function splitRuby(text) {
+  const value = String(text ?? "");
+  const separatorIndex = value.indexOf("|");
+  if (separatorIndex <= 0 || separatorIndex >= value.length - 1) {
+    return null;
+  }
+  return {
+    base: value.slice(0, separatorIndex),
+    reading: value.slice(separatorIndex + 1)
+  };
+}
+
+function hasRuby(text) {
+  return splitRuby(text) !== null;
+}
+
+function rubyBase(text) {
+  return splitRuby(text)?.base ?? String(text ?? "");
+}
+
+function rubyReading(text) {
+  return splitRuby(text)?.reading ?? "";
+}
 
 function shuffle(tokens) {
   const arr = [...tokens];

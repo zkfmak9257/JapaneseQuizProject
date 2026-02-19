@@ -258,3 +258,8 @@ button {
   padding: 10px;
   background: #f8fafc;
 }
+
+ruby rt {
+  font-size: 11px;
+  color: #475569;
+}
