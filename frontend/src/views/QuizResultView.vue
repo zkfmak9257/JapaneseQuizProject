@@ -8,6 +8,7 @@
     <h2>퀴즈 결과</h2>
     <p class="error">{{ errorMessage }}</p>
     <div class="actions actions-left">
+      <button class="ghost" @click="loadResult">다시 시도</button>
       <RouterLink class="btn-link secondary" to="/">홈으로</RouterLink>
       <RouterLink class="btn-link" to="/quiz/start">다시 풀기</RouterLink>
     </div>
@@ -19,8 +20,8 @@
       <li>총 문제 수: {{ result.totalQuestions }}</li>
       <li>제출 수: {{ result.solvedCount }}</li>
       <li>정답 수: {{ result.correctCount }}</li>
-      <li>정답률: {{ result.accuracy }}%</li>
-      <li>완료 시각: {{ result.completedAt }}</li>
+      <li>정답률: {{ formatAccuracy(result.accuracy) }}</li>
+      <li>완료 시각: {{ formatCompletedAt(result.completedAt) }}</li>
     </ul>
     <div class="actions actions-left">
       <RouterLink class="btn-link" to="/quiz/start">다시 풀기</RouterLink>
@@ -61,13 +62,34 @@ const isGuest = ref(false);
 const loading = ref(false);
 const errorMessage = ref("");
 
-onMounted(async () => {
+function formatAccuracy(value) {
+  if (typeof value !== "number") {
+    return "-";
+  }
+  return `${value}%`;
+}
+
+function formatCompletedAt(value) {
+  if (!value) {
+    return "-";
+  }
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return String(value);
+  }
+  return date.toLocaleString("ko-KR");
+}
+
+async function loadResult() {
   if (!isLoggedIn.value) {
     isGuest.value = true;
+    result.value = null;
+    errorMessage.value = "";
     return;
   }
 
   try {
+    isGuest.value = false;
     loading.value = true;
     errorMessage.value = "";
     result.value = await getResult(Number(route.params.attemptId));
@@ -93,5 +115,7 @@ onMounted(async () => {
   } finally {
     loading.value = false;
   }
-});
+}
+
+onMounted(loadResult);
 </script>
