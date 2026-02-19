@@ -2,6 +2,7 @@ package com.team.jpquiz.quiz.query.infrastructure;
 
 import com.team.jpquiz.quiz.dto.response.QuizAttemptQuestionResponse;
 import com.team.jpquiz.quiz.dto.response.QuizChoiceResponse;
+import com.team.jpquiz.quiz.dto.response.QuizSentenceTokenResponse;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -20,5 +21,9 @@ public interface QuizMapper {
     List<QuizChoiceResponse> findAttemptQuestionChoices(
             @Param("attemptId") Long attemptId,
             @Param("seq") int seq
+    );
+
+    List<QuizSentenceTokenResponse> findSentenceTokens(
+            @Param("questionId") Long questionId
     );
 }

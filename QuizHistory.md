@@ -485,3 +485,36 @@
     - `POST /api/reports` 연동용 `reportApi` 추가
   - 401 처리 보정:
     - 퀴즈 풀이 경로(`/quiz/attempts/*`)는 전역 강제 로그인 리다이렉트 제외
+
+## 최근 프론트 작업 로그 (2026-02-19)
+- [DONE] 퀴즈 결과조회 화면 UX 고도화
+  - 결과 화면 오류 상태에 `다시 시도` 액션 추가
+  - 완료 시각을 `ko-KR` 로컬 포맷으로 변환해 표시
+  - 정답률/완료 시각 표시 함수 분리로 화면 로직 정리
+  - 비회원 분기 시 결과/오류 상태 초기화 보정
+  - 대상 파일: `frontend/src/views/QuizResultView.vue`
+- [DONE] 오답노트/즐겨찾기 목록 UX 안정화
+  - 공통 상태 처리: 로딩/에러/빈 상태 UI 적용
+  - 페이징 UI 추가: 이전/다음, 현재 페이지/전체 페이지 표시
+  - 목록 카드 정보 확장: 문제 ID, 문장, 카테고리, 시각
+  - 대상 파일:
+    - `frontend/src/views/WrongAnswerListView.vue`
+    - `frontend/src/views/FavoriteListView.vue`
+    - `frontend/src/styles.css`
+- [DONE] 즐겨찾기 API 경로 정합성 보정
+  - 프론트 조회 경로를 `GET /api/favorites`로 정렬
+  - 백엔드는 호환을 위해 `/api/favorites`, `/api/quiz/favorites` 동시 매핑 허용
+  - 대상 파일:
+    - `frontend/src/api/favoriteApi.js`
+    - `src/main/java/com/team/jpquiz/quiz/presentation/FavoriteQueryController.java`
+    - `src/main/java/com/team/jpquiz/quiz/presentation/FavoriteCommandController.java`
+- [DONE] 마이페이지 실데이터 연동(학습 접근성)
+  - 프로필 조회/수정 API 연동: `GET/PATCH /api/members/me`
+  - 통계 조회 API 연동: `GET /api/stats/me`
+  - 마이페이지 라우트 추가 및 인증 가드 적용
+  - 대상 파일:
+    - `frontend/src/views/MyPageView.vue`
+    - `frontend/src/api/memberApi.js`
+    - `frontend/src/api/statsApi.js`
+    - `frontend/src/router/index.js`
+    - `frontend/src/App.vue`

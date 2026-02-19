@@ -8,22 +8,54 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
-import { useRouter } from "vue-router";
+import { computed, ref } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import { startQuiz } from "../api/quizApi";
+import { useQuizStore } from "../stores/quizStore";
 
 const router = useRouter();
+const route = useRoute();
+const quizStore = useQuizStore();
 const loading = ref(false);
 const errorMessage = ref("");
+
+const selectedQuestionType = computed(() => {
+  const value = String(route.query.questionType || "").toUpperCase();
+  if (value === "WORD" || value === "SENTENCE") {
+    return value;
+  }
+  return null;
+});
+
+const selectedSceneId = computed(() => {
+  const raw = route.query.sceneId;
+  if (raw == null || raw === "") {
+    return null;
+  }
+  const parsed = Number(raw);
+  if (Number.isNaN(parsed) || parsed <= 0) {
+    return null;
+  }
+  return parsed;
+});
 
 async function start() {
   try {
     loading.value = true;
     errorMessage.value = "";
-    const res = await startQuiz();
+    const res = await startQuiz({
+      questionType: selectedQuestionType.value || undefined,
+      sceneId: selectedSceneId.value || undefined
+    });
+    quizStore.setStartOptions({
+      questionType: selectedQuestionType.value,
+      sceneId: selectedSceneId.value
+    });
+    quizStore.setCurrentAttempt(res.attemptId);
     router.push(`/quiz/attempts/${res.attemptId}/questions/1`);
   } catch (error) {
     const status = error?.response?.status;
+    const code = error?.response?.data?.code;
     if (status === 400) {
       errorMessage.value = "퀴즈를 시작할 수 없습니다. 잠시 후 다시 시도해 주세요.";
       return;
@@ -33,6 +65,10 @@ async function start() {
       return;
     }
     if (status === 403) {
+      if (code === "GUEST_QUIZ_LIMIT_EXCEEDED") {
+        errorMessage.value = "비회원은 1회만 풀 수 있습니다. 로그인 후 계속 이용해 주세요.";
+        return;
+      }
       errorMessage.value = "해당 요청에 대한 권한이 없습니다.";
       return;
     }

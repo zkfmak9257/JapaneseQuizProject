@@ -25,6 +25,8 @@ body {
 .topbar nav {
   display: flex;
   gap: 12px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .topbar a {
@@ -120,6 +122,11 @@ button {
   margin-top: 12px;
 }
 
+.success {
+  color: #166534;
+  margin-top: 12px;
+}
+
 .btn-link {
   display: inline-block;
   padding: 10px 12px;
@@ -204,4 +211,36 @@ button {
   padding-left: 18px;
   display: grid;
   gap: 6px;
+}
+
+.grade-box {
+  margin-top: 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 12px;
+  background: #f8fafc;
+}
+
+.sentence-builder {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.token-pool,
+.answer-token-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.token-btn {
+  padding: 8px 10px;
+}
+
+.token-answer {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 10px;
+  background: #f8fafc;
 }

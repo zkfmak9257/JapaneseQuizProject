@@ -55,6 +55,7 @@ CREATE TABLE IF NOT EXISTS quiz_scenes (
 CREATE TABLE IF NOT EXISTS quiz_questions (
   question_id BIGINT NOT NULL AUTO_INCREMENT,
   scene_id BIGINT NULL,
+  question_type VARCHAR(20) NOT NULL DEFAULT 'WORD',
   question_text TEXT NOT NULL,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -62,6 +63,19 @@ CREATE TABLE IF NOT EXISTS quiz_questions (
   KEY idx_quiz_questions_scene_id (scene_id),
   CONSTRAINT fk_quiz_questions_scene
     FOREIGN KEY (scene_id) REFERENCES quiz_scenes (scene_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 5-1) 문장 조합형 토큰
+CREATE TABLE IF NOT EXISTS quiz_sentence_tokens (
+  token_id BIGINT NOT NULL AUTO_INCREMENT,
+  question_id BIGINT NOT NULL,
+  token_text VARCHAR(255) NOT NULL,
+  correct_order INT NOT NULL,
+  PRIMARY KEY (token_id),
+  KEY idx_sentence_tokens_question_id (question_id),
+  UNIQUE KEY uk_sentence_tokens_question_order (question_id, correct_order),
+  CONSTRAINT fk_sentence_tokens_question
+    FOREIGN KEY (question_id) REFERENCES quiz_questions (question_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 5) 퀴즈 보기
@@ -115,7 +129,8 @@ CREATE TABLE IF NOT EXISTS quiz_attempt_answers (
   attempt_id BIGINT NOT NULL,
   seq INT NOT NULL,
   question_id BIGINT NOT NULL,
-  selected_choice_id BIGINT NOT NULL,
+  selected_choice_id BIGINT NULL,
+  submitted_token_order VARCHAR(500) NULL,
   is_correct TINYINT(1) NOT NULL,
   answered_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,

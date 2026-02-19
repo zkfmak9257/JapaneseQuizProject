@@ -1,7 +1,7 @@
 import { http, unwrap } from "./http";
 
-export async function startQuiz() {
-  const response = await http.post("/api/quiz/attempts/start");
+export async function startQuiz(payload = {}) {
+  const response = await http.post("/api/quiz/attempts/start", payload);
   return unwrap(response);
 }
 
@@ -10,8 +10,8 @@ export async function getAttemptQuestion(attemptId, seq) {
   return unwrap(response);
 }
 
-export async function submitAnswer(attemptId, seq, choiceId) {
-  const response = await http.post(`/api/quiz/attempts/${attemptId}/answers`, { seq, choiceId });
+export async function submitAnswer(attemptId, payload) {
+  const response = await http.post(`/api/quiz/attempts/${attemptId}/answers`, payload);
   return unwrap(response);
 }
 

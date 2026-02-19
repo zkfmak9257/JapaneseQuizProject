@@ -11,10 +11,38 @@
         FROM quiz_questions
     </select>
 
+    <select id="countQuestionsByFilter" resultType="int">
+        SELECT COUNT(*)
+        FROM quiz_questions qq
+        <where>
+            <if test="questionType != null and questionType != ''">
+                qq.question_type = #{questionType}
+            </if>
+            <if test="sceneId != null">
+                AND qq.scene_id = #{sceneId}
+            </if>
+        </where>
+    </select>
+
     <!-- 시작 시점에 랜덤 문제 ID를 count개 추출 -->
     <select id="findRandomQuestionIds" resultType="long">
         SELECT qq.question_id
         FROM quiz_questions qq
+        ORDER BY RAND()
+        LIMIT #{count}
+    </select>
+
+    <select id="findRandomQuestionIdsByFilter" resultType="long">
+        SELECT qq.question_id
+        FROM quiz_questions qq
+        <where>
+            <if test="questionType != null and questionType != ''">
+                qq.question_type = #{questionType}
+            </if>
+            <if test="sceneId != null">
+                AND qq.scene_id = #{sceneId}
+            </if>
+        </where>
         ORDER BY RAND()
         LIMIT #{count}
     </select>
@@ -100,9 +128,11 @@
         SELECT
             qa.user_id AS userId,
             qaq.question_id AS questionId,
+            qq.question_type AS questionType,
             qa.total_questions AS totalQuestions
         FROM quiz_attempts qa
         JOIN quiz_attempt_questions qaq ON qaq.attempt_id = qa.attempt_id
+        JOIN quiz_questions qq ON qq.question_id = qaq.question_id
         WHERE qa.attempt_id = #{attemptId}
           AND qaq.seq = #{seq}
     </select>
@@ -116,6 +146,12 @@
           AND qc.choice_id = #{choiceId}
     </select>
 
+    <select id="findSentenceTokenOrderCsv" resultType="string">
+        SELECT GROUP_CONCAT(CAST(qst.token_id AS CHAR) ORDER BY qst.correct_order ASC SEPARATOR ',')
+        FROM quiz_sentence_tokens qst
+        WHERE qst.question_id = #{questionId}
+    </select>
+
     <!-- 채점 결과 저장 -->
     <insert id="insertQuizAttemptAnswer">
         INSERT INTO quiz_attempt_answers (
@@ -123,6 +159,7 @@
             seq,
             question_id,
             selected_choice_id,
+            submitted_token_order,
             is_correct,
             answered_at,
             created_at,
@@ -132,6 +169,7 @@
             #{seq},
             #{questionId},
             #{selectedChoiceId},
+            #{submittedTokenOrder},
             #{correct},
             NOW(),
             NOW(),

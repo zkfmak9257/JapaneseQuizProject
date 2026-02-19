@@ -19,6 +19,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -32,12 +33,15 @@ public class QuizCommandService {
 
     public QuizAttemptResponse startQuiz(Long userId, StartQuizRequest request) {
         int count = FIXED_QUIZ_QUESTION_COUNT;
-        int totalQuestions = quizCommandMapper.countAllQuestions();
+        String questionType = normalizeQuestionType(request);
+        Long sceneId = normalizeSceneId(request);
+
+        int totalQuestions = quizCommandMapper.countQuestionsByFilter(questionType, sceneId);
         if (totalQuestions < count) {
             throw new CustomException(ErrorCode.INVALID_REQUEST);
         }
 
-        List<Long> questionIds = quizCommandMapper.findRandomQuestionIds(count);
+        List<Long> questionIds = quizCommandMapper.findRandomQuestionIdsByFilter(count, questionType, sceneId);
         if (questionIds.size() != count) {
             throw new CustomException(ErrorCode.INTERNAL_ERROR);
         }
@@ -75,6 +79,27 @@ public class QuizCommandService {
                 .build();
     }
 
+    private String normalizeQuestionType(StartQuizRequest request) {
+        if (request == null || request.getQuestionType() == null || request.getQuestionType().isBlank()) {
+            return null;
+        }
+        String normalized = request.getQuestionType().trim().toUpperCase();
+        if (!"WORD".equals(normalized) && !"SENTENCE".equals(normalized)) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST);
+        }
+        return normalized;
+    }
+
+    private Long normalizeSceneId(StartQuizRequest request) {
+        if (request == null || request.getSceneId() == null) {
+            return null;
+        }
+        if (request.getSceneId() <= 0) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST);
+        }
+        return request.getSceneId();
+    }
+
     public QuizAnswerResultResponse submitAnswer(Long userId, Long attemptId, QuizSubmitRequest request) {
         validateSubmitInput(userId, attemptId, request);
 
@@ -89,6 +114,7 @@ public class QuizCommandService {
 
         Long ownerId = castToLong(attemptQuestion.get("userId"));
         Long questionId = castToLong(attemptQuestion.get("questionId"));
+        String questionType = castToString(attemptQuestion.get("questionType"));
         Integer totalQuestions = castToInteger(attemptQuestion.get("totalQuestions"));
 
         if (questionId == null || totalQuestions == null) {
@@ -98,11 +124,8 @@ public class QuizCommandService {
             throw new CustomException(ErrorCode.FORBIDDEN);
         }
 
-        Integer correctFlag = quizCommandMapper.findChoiceCorrectFlag(questionId, request.getChoiceId());
-        if (correctFlag == null) {
-            throw new CustomException(ErrorCode.INVALID_REQUEST);
-        }
-        boolean correct = correctFlag == 1;
+        EvaluationResult evaluationResult = evaluateAnswer(questionId, questionType, request);
+        boolean correct = evaluationResult.correct();
 
         int submittedCount = quizCommandMapper.countSubmittedAnswer(attemptId, request.getSeq());
         if (submittedCount > 0) {
@@ -114,6 +137,7 @@ public class QuizCommandService {
                 request.getSeq(),
                 questionId,
                 request.getChoiceId(),
+                evaluationResult.submittedTokenOrder(),
                 correct
         );
         if (inserted != 1) {
@@ -219,9 +243,46 @@ public class QuizCommandService {
         if (attemptId == null || attemptId <= 0) {
             throw new CustomException(ErrorCode.INVALID_REQUEST);
         }
-        if (request == null || request.getSeq() == null || request.getSeq() < 1 || request.getChoiceId() == null) {
+        if (request == null || request.getSeq() == null || request.getSeq() < 1) {
             throw new CustomException(ErrorCode.INVALID_REQUEST);
         }
+    }
+
+    private EvaluationResult evaluateAnswer(Long questionId, String questionType, QuizSubmitRequest request) {
+        boolean sentenceMode = "SENTENCE".equalsIgnoreCase(questionType)
+                || (request.getOrderedTokenIds() != null && !request.getOrderedTokenIds().isEmpty());
+
+        if (sentenceMode) {
+            List<Long> tokenIds = request.getOrderedTokenIds();
+            if (tokenIds == null || tokenIds.isEmpty()) {
+                throw new CustomException(ErrorCode.INVALID_REQUEST);
+            }
+            if (tokenIds.stream().anyMatch(id -> id == null || id <= 0)) {
+                throw new CustomException(ErrorCode.INVALID_REQUEST);
+            }
+
+            String submitted = toCsv(tokenIds);
+            String expected = quizCommandMapper.findSentenceTokenOrderCsv(questionId);
+            if (expected == null || expected.isBlank()) {
+                throw new CustomException(ErrorCode.INVALID_REQUEST);
+            }
+            return new EvaluationResult(expected.equals(submitted), submitted);
+        }
+
+        if (request.getChoiceId() == null) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST);
+        }
+        Integer correctFlag = quizCommandMapper.findChoiceCorrectFlag(questionId, request.getChoiceId());
+        if (correctFlag == null) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST);
+        }
+        return new EvaluationResult(correctFlag == 1, null);
+    }
+
+    private String toCsv(List<Long> tokenIds) {
+        return tokenIds.stream()
+                .map(String::valueOf)
+                .collect(Collectors.joining(","));
     }
 
     private void validateCompleteInput(Long userId, Long attemptId) {
@@ -256,6 +317,13 @@ public class QuizCommandService {
         return null;
     }
 
+    private String castToString(Object value) {
+        if (value == null) {
+            return null;
+        }
+        return String.valueOf(value);
+    }
+
     private LocalDateTime castToLocalDateTime(Object value) {
         if (value instanceof LocalDateTime localDateTime) {
             return localDateTime;
@@ -280,5 +348,8 @@ public class QuizCommandService {
             return currentUserId == null;
         }
         return ownerId.equals(currentUserId);
+    }
+
+    private record EvaluationResult(boolean correct, String submittedTokenOrder) {
     }
 }

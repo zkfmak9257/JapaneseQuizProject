@@ -11,7 +11,18 @@ public interface QuizCommandMapper {
 
     int countAllQuestions();
 
+    int countQuestionsByFilter(
+            @Param("questionType") String questionType,
+            @Param("sceneId") Long sceneId
+    );
+
     List<Long> findRandomQuestionIds(@Param("count") int count);
+
+    List<Long> findRandomQuestionIdsByFilter(
+            @Param("count") int count,
+            @Param("questionType") String questionType,
+            @Param("sceneId") Long sceneId
+    );
 
     List<Long> findRecentWrongQuestionIds(
             @Param("memberId") Long memberId,
@@ -46,11 +57,16 @@ public interface QuizCommandMapper {
             @Param("choiceId") Long choiceId
     );
 
+    String findSentenceTokenOrderCsv(
+            @Param("questionId") Long questionId
+    );
+
     int insertQuizAttemptAnswer(
             @Param("attemptId") Long attemptId,
             @Param("seq") int seq,
             @Param("questionId") Long questionId,
             @Param("selectedChoiceId") Long selectedChoiceId,
+            @Param("submittedTokenOrder") String submittedTokenOrder,
             @Param("correct") boolean correct
     );
 
