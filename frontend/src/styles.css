@@ -152,6 +152,11 @@ button {
   gap: 12px;
 }
 
+.quiz-top-actions {
+  display: flex;
+  gap: 8px;
+}
+
 .quiz-progress {
   flex: 1;
 }
@@ -173,6 +178,15 @@ button {
 .report-button {
   background: #dc2626;
   white-space: nowrap;
+}
+
+.favorite-button {
+  background: #334155;
+  white-space: nowrap;
+}
+
+.favorite-button.active {
+  background: #d97706;
 }
 
 .modal-backdrop {
