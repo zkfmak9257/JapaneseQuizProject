@@ -1,12 +1,13 @@
 # 기능 구현 계획 (Feature Implementation Plan)
 
-## 프로젝트 구조 점검 (2026-02-18 기준)
+## 프로젝트 구조 점검 (2026-02-20 기준)
 - `src/main/java/com/team/jpquiz/quiz`는 CQRS(Command Query Responsibility Segregation, 명령-조회 책임 분리) 구조로 운영됩니다.
   - Command(명령): `quiz/command/**` (JPA 기반 저장/수정/삭제)
   - Query(조회): `quiz/query/**` (MyBatis 기반 조회/페이징/필터)
 - 매퍼 XML은 `src/main/resources/mappers/quiz/**`로 분리되어 있으며, Query(조회) 서비스와 1:1로 매핑됩니다.
 - 오답노트/즐겨찾기 컨트롤러는 Command(명령)와 Query(조회)를 분리해 구성되어 있습니다.
-- 통계(`stats`)는 패키지/파일 스텁만 존재하며, 문제 신고(`problem report`) 도메인은 아직 패키지가 없습니다.
+- 문제 신고(`problem report`)는 도메인/서비스/컨트롤러/매퍼까지 백엔드 구현이 반영되어 있습니다.
+- 통계(`stats`)는 기능 코드가 추가되어 있으나, `stats` 관련 5개 파일에 충돌 마커(Merge Conflict Marker, 병합 충돌 표시)가 포함되어 현재 컴파일 불가 상태입니다.
 
 ## 1. 오답노트 (Wrong Answer Note)
 ### 담당/리뷰
@@ -111,10 +112,11 @@
 
 ### 요구사항
 #### 필수
-- [ ] **API 정의**: 신고 제출 API, (관리자용) 신고 목록 조회 및 상태 변경 API
-- [ ] **DTO 설계**: `ReportRequest`, `ReportResponse`
-- [ ] **Mapper/Repository**: `ProblemReportMapper` 구현
-- [ ] **Service 구현**: 신고 저장 로직, 상태 변경 로직
+- [x] **API 정의**: 신고 제출 API, (관리자용) 신고 목록 조회 및 상태 변경 API
+- [x] **DTO 설계**: `ProblemReportCreateRequest/Response`, `ProblemReportStatusUpdateRequest/Response`, `ProblemReportAdminResponse`
+- [x] **Mapper/Repository**: `ProblemReportMapper`, `ProblemReportValidationMapper`, `ProblemReportRepository` 구현
+- [x] **Service 구현**: 신고 저장 로직, 상태 변경 로직 구현
+- [ ] **후속 구현**: 신고 처리 시 문제 자동 비활성화 로직
 
 #### 선택(있으면 좋음)
 - [ ] 신고 처리 시 사용자에게 알림 전송
@@ -134,8 +136,9 @@
 - DB : `problem_reports` 테이블 활용
 
 ### 완료 조건
-- [ ] 신고 데이터가 DB에 정상 저장되는지 확인
-- [ ] 관리자가 상태를 변경할 수 있는지 확인
+- [x] 신고 데이터가 DB에 정상 저장되는지 확인
+- [x] 관리자가 상태를 변경할 수 있는지 확인
+- [ ] 상태 변경 시 문제 자동 비활성화가 동작하는지 확인
 
 ---
 
@@ -157,6 +160,7 @@
 - [ ] **DTO 설계**: `StatsResponse`, `ChartDataDto`
 - [ ] **Mapper/Repository**: `StatsMapper` (복잡한 집계 쿼리 작성)
 - [ ] **Service 구현**: 통계 데이터 가공 및 조회 로직
+  - 현재: 파일 충돌 마커 정리 전까지는 미완료로 관리
 
 #### 선택(있으면 좋음)
 - [ ] 엑셀 다운로드 기능
@@ -182,7 +186,7 @@
 
 ---
 
-## 현재 구현 상태 브리핑 (2026-02-18 기준)
+## 현재 구현 상태 브리핑 (2026-02-20 기준)
 
 ### 오답노트
 - `WrongAnswer` Entity / Repository / Service / Mapper / Controller 구현 완료
@@ -200,10 +204,17 @@
 - `favorites(member_id, question_id)` 유니크 제약으로 중복 등록 방지 적용됨
 
 ### 문제 신고
-- 도메인/DTO/Mapper/Service/Controller 모두 미구현
+- `ProblemReport` 도메인/Enum(`ReportType`, `ReportStatus`) 구현 완료
+- 사용자 신고 API(`POST /api/reports`) 구현 완료
+- 관리자 신고 목록 API(`GET /api/admin/reports`) 구현 완료
+- 관리자 신고 처리 API(`PATCH /api/admin/reports/{reportId}`) 구현 완료
+- 상태 전환 검증(`canTransitionTo`) 및 처리 결과(`action`) 저장 구현 완료
+- 미완료: 신고 처리 시 문제 자동 비활성화 로직, 테스트 코드 보강
 
 ### 통계
-- `StatsController`, `StatsQueryService`, `StatsMapper`, `StatsResponse` 스텁(빈 구현) 상태
+- `StatsController`, `StatsQueryService`, `StatsMapper`, `StatsResponse`, `StatsMapper.xml`에 구현 시도 코드가 존재
+- 다만 현재 충돌 마커가 남아 있어 컴파일 불가
+- 우선순위: 충돌 정리 후 `quizstat-01`~`quizstat-06` 실제 동작 검증
 
 ## 다음 단계 실행 계획 (한 단계씩)
 
@@ -216,17 +227,16 @@
 ### Step 3. 즐겨찾기 CUD + 목록
 - 상태: `완료`
 
-### Step 4. 문제 신고 C + 관리자 처리 (현재 우선순위)
-- 목표: 데이터 품질 피드백 루프 완성
+### Step 4. 문제 신고 후속 (현재 우선순위)
+- 목표: 신고 처리 후속 액션 완성
 - 작업:
-  1. 신고 등록 API(`POST /api/reports`) 구현
-  2. 관리자 신고 목록 API(`GET /api/admin/reports`) 구현
-  3. 관리자 신고 처리 API(`PATCH /api/admin/reports/{reportId}`) 구현
-  4. 상태 변경 이력(`action`) 저장 규칙 정의
+  1. `quizrep-03` 후속: 상태 변경 시 대상 문제 비활성화 연동
+  2. 관리자 처리 이력(`action`) 정책 구체화(필수 문구/길이/포맷)
+  3. 테스트 코드(서비스/컨트롤러) 보강
 
-### Step 5. 통계 API 최소 2종
-- 목표: 개인 통계 1종 + 관리자 통계 1종 우선 제공
+### Step 5. 통계 충돌 정리 + API 복구
+- 목표: 충돌 마커 제거 후 통계 API를 컴파일/실행 가능한 상태로 복구
 - 작업:
-  1. 개인 통계 API 1종(`GET /api/stats/me`) 우선 구현
-  2. 관리자 통계 API 1종(`GET /api/admin/stats/overview`) 구현
-  3. 집계 기준(first/latest) 쿼리 분리 및 검증
+  1. `stats` 5개 파일 충돌 해소 및 단일 기준안 확정
+  2. 개인 통계(`GET /api/stats/me`) 및 관리자 개요(`GET /api/admin/stats/overview`) 정상화
+  3. 카테고리/문항/TOP 오답/학습량 랭킹 API 포함 여부 확정 및 검증
