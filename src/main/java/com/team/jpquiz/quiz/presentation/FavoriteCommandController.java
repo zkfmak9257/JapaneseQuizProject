@@ -10,7 +10,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/favorites")
+@RequestMapping({"/api/favorites", "/api/quiz/favorites"})
 @RequiredArgsConstructor
 // 즐겨찾기 등록/해제를 처리하는 커맨드 API입니다.
 public class FavoriteCommandController {
