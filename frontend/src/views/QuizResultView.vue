@@ -23,17 +23,23 @@
       <li>정답률: {{ formatAccuracy(result.accuracy) }}</li>
       <li>완료 시각: {{ formatCompletedAt(result.completedAt) }}</li>
     </ul>
+
     <div class="actions actions-left">
-      <RouterLink class="btn-link" to="/quiz/start">다시 풀기</RouterLink>
+      <button class="btn-link" @click="startNextQuiz" :disabled="startingNextQuiz">
+        {{ startingNextQuiz ? "시작 중..." : "다음 퀴즈" }}
+      </button>
+      <RouterLink class="btn-link secondary" to="/quiz/start">한번 더 풀기</RouterLink>
       <RouterLink class="btn-link secondary" to="/quiz/wrong-answers">오답노트 보기</RouterLink>
       <RouterLink class="btn-link secondary" to="/">홈으로</RouterLink>
     </div>
+
+    <p v-if="nextQuizErrorMessage" class="error">{{ nextQuizErrorMessage }}</p>
   </section>
 
   <div v-if="isGuest" class="modal-backdrop">
     <section class="modal-card">
       <h3>퀴즈 완료</h3>
-      <p class="muted">비회원은 결과 확인과 오답노트 이용을 위해 로그인이 필요합니다.</p>
+      <p class="muted">기록/오답노트/즐겨찾기는 로그인 후 이용할 수 있습니다.</p>
       <div class="actions actions-left">
         <RouterLink class="btn-link" :to="{ path: '/login', query: { redirect: route.fullPath } }">로그인</RouterLink>
         <RouterLink class="btn-link secondary" to="/signup">회원가입</RouterLink>
@@ -41,6 +47,7 @@
       </div>
     </section>
   </div>
+
   <section class="card" v-else-if="!loading && !result && !errorMessage">
     <h2>퀴즈 결과</h2>
     <p class="muted">표시할 결과가 없습니다.</p>
@@ -49,18 +56,21 @@
 
 <script setup>
 import { onMounted, ref } from "vue";
-import { RouterLink, useRoute } from "vue-router";
+import { RouterLink, useRoute, useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
-import { getResult } from "../api/quizApi";
+import { getResult, startQuiz } from "../api/quizApi";
 import { useAuthStore } from "../stores/authStore";
 
 const route = useRoute();
+const router = useRouter();
 const authStore = useAuthStore();
 const { isLoggedIn } = storeToRefs(authStore);
 const result = ref(null);
 const isGuest = ref(false);
 const loading = ref(false);
 const errorMessage = ref("");
+const startingNextQuiz = ref(false);
+const nextQuizErrorMessage = ref("");
 
 function formatAccuracy(value) {
   if (typeof value !== "number") {
@@ -114,6 +124,34 @@ async function loadResult() {
     errorMessage.value = "결과 조회 중 오류가 발생했습니다.";
   } finally {
     loading.value = false;
+  }
+}
+
+async function startNextQuiz() {
+  if (!isLoggedIn.value) {
+    router.push({ path: "/login", query: { redirect: "/quiz/start" } });
+    return;
+  }
+
+  try {
+    startingNextQuiz.value = true;
+    nextQuizErrorMessage.value = "";
+    const res = await startQuiz();
+    router.push(`/quiz/attempts/${res.attemptId}/questions/1`);
+  } catch (error) {
+    const status = error?.response?.status;
+    const code = error?.response?.data?.code;
+    if (status === 403 && code === "GUEST_QUIZ_LIMIT_EXCEEDED") {
+      nextQuizErrorMessage.value = "비회원은 추가 퀴즈 진행이 제한됩니다. 로그인 후 이용해 주세요.";
+      return;
+    }
+    if (status === 401) {
+      nextQuizErrorMessage.value = "다음 퀴즈를 시작하려면 로그인이 필요합니다.";
+      return;
+    }
+    nextQuizErrorMessage.value = "다음 퀴즈 시작 중 오류가 발생했습니다.";
+  } finally {
+    startingNextQuiz.value = false;
   }
 }
 

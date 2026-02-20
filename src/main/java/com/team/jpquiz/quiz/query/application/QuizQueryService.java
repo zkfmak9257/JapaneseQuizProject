@@ -4,6 +4,7 @@ import com.team.jpquiz.global.error.CustomException;
 import com.team.jpquiz.global.error.ErrorCode;
 import com.team.jpquiz.quiz.dto.response.QuizAttemptQuestionResponse;
 import com.team.jpquiz.quiz.dto.response.QuizChoiceResponse;
+import com.team.jpquiz.quiz.dto.response.QuizSentenceTokenResponse;
 import com.team.jpquiz.quiz.query.infrastructure.QuizMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -27,6 +28,10 @@ public class QuizQueryService {
         }
 
         List<QuizChoiceResponse> choices = quizMapper.findAttemptQuestionChoices(attemptId, seq);
+        List<QuizSentenceTokenResponse> sentenceTokens = List.of();
+        if ("SENTENCE".equalsIgnoreCase(question.getQuestionType())) {
+            sentenceTokens = quizMapper.findSentenceTokens(question.getQuestionId());
+        }
 
         return QuizAttemptQuestionResponse.builder()
                 .attemptId(question.getAttemptId())
@@ -34,8 +39,10 @@ public class QuizQueryService {
                 .totalQuestions(question.getTotalQuestions())
                 .questionId(question.getQuestionId())
                 .questionText(question.getQuestionText())
+                .questionType(question.getQuestionType())
                 .scene(question.getScene())
                 .choices(choices)
+                .sentenceTokens(sentenceTokens)
                 .build();
     }
 

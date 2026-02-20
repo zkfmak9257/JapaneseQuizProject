@@ -15,6 +15,7 @@
         <result property="totalQuestions" column="total_questions"/>
         <result property="questionId" column="question_id"/>
         <result property="questionText" column="question_text"/>
+        <result property="questionType" column="question_type"/>
 
         <association property="scene" javaType="com.team.jpquiz.quiz.dto.response.QuizSceneResponse">
             <result property="sceneId" column="scene_id"/>
@@ -38,6 +39,7 @@
         ) AS total_questions,
         qq.question_id,
         qq.question_text,
+        qq.question_type,
         qs.scene_id,
         qs.name AS scene_name,
         qs.description AS scene_description
@@ -70,6 +72,16 @@
         ELSE FIND_IN_SET(CAST(qc.choice_id AS CHAR), qaq.choice_order)
         END ASC,
         qc.choice_id ASC
+    </select>
+
+    <select id="findSentenceTokens" resultType="com.team.jpquiz.quiz.dto.response.QuizSentenceTokenResponse">
+        SELECT
+            qst.token_id AS tokenId,
+            qst.token_text AS tokenText,
+            qst.correct_order AS `order`
+        FROM quiz_sentence_tokens qst
+        WHERE qst.question_id = #{questionId}
+        ORDER BY qst.correct_order ASC
     </select>
 
 </mapper>
