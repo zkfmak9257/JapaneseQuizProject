@@ -38,4 +38,61 @@ public class StatsResponse {
         private double completionRate;
         private double accuracyRate;
     }
+<<<<<<< Updated upstream
+=======
+
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class CategoryAccuracy {
+        private String category;
+        private int totalAnswers;
+        private int correctAnswers;
+        private double accuracyRate;
+    }
+
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class QuestionStats {
+        private Long questionId;
+        private String questionText;
+        private String category;
+        private int totalAnswers;
+        private int correctAnswers;
+        private int wrongAnswers;
+        private double accuracyRate;
+        private double difficultyScore;
+        private String difficultyLevel;
+    }
+
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class TopWrongQuestion {
+        private Long questionId;
+        private String questionText;
+        private String category;
+        private int totalAnswers;
+        private int wrongAnswers;
+        private double wrongRate;
+    }
+
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class LearningRanking {
+        private int rank;
+        private Long memberId;
+        private String nickname;
+        private int totalAnswers;
+        private int completedAttempts;
+        private int correctAnswers;
+        private double accuracyRate;
+    }
+>>>>>>> Stashed changes
 }

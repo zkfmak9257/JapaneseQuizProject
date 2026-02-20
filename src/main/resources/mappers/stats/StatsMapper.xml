@@ -46,4 +46,196 @@
              FROM quiz_attempts
              WHERE started_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)) AS activeUsers7d
     </select>
+<<<<<<< Updated upstream
+=======
+
+    <select id="findCategoryAccuracyByLatest" resultType="com.team.jpquiz.stats.dto.response.StatsResponse$CategoryAccuracy">
+        WITH ranked_answers AS (
+            SELECT
+                qa.user_id AS userId,
+                qaa.question_id AS questionId,
+                qaa.is_correct AS isCorrect,
+                ROW_NUMBER() OVER (
+                    PARTITION BY qa.user_id, qaa.question_id
+                    ORDER BY qaa.answered_at DESC, qaa.attempt_id DESC, qaa.seq DESC
+                ) AS rn
+            FROM quiz_attempt_answers qaa
+            JOIN quiz_attempts qa ON qa.attempt_id = qaa.attempt_id
+            WHERE qa.user_id IS NOT NULL
+        )
+        SELECT
+            COALESCE(qs.name, 'UNCATEGORIZED') AS category,
+            COUNT(*) AS totalAnswers,
+            SUM(CASE WHEN ra.isCorrect = 1 THEN 1 ELSE 0 END) AS correctAnswers
+        FROM ranked_answers ra
+        JOIN quiz_questions qq ON qq.question_id = ra.questionId
+        LEFT JOIN quiz_scenes qs ON qs.scene_id = qq.scene_id
+        WHERE ra.rn = 1
+        GROUP BY COALESCE(qs.name, 'UNCATEGORIZED')
+        ORDER BY totalAnswers DESC, category ASC
+    </select>
+
+    <select id="findCategoryAccuracyByFirst" resultType="com.team.jpquiz.stats.dto.response.StatsResponse$CategoryAccuracy">
+        WITH ranked_answers AS (
+            SELECT
+                qa.user_id AS userId,
+                qaa.question_id AS questionId,
+                qaa.is_correct AS isCorrect,
+                ROW_NUMBER() OVER (
+                    PARTITION BY qa.user_id, qaa.question_id
+                    ORDER BY qaa.answered_at ASC, qaa.attempt_id ASC, qaa.seq ASC
+                ) AS rn
+            FROM quiz_attempt_answers qaa
+            JOIN quiz_attempts qa ON qa.attempt_id = qaa.attempt_id
+            WHERE qa.user_id IS NOT NULL
+        )
+        SELECT
+            COALESCE(qs.name, 'UNCATEGORIZED') AS category,
+            COUNT(*) AS totalAnswers,
+            SUM(CASE WHEN ra.isCorrect = 1 THEN 1 ELSE 0 END) AS correctAnswers
+        FROM ranked_answers ra
+        JOIN quiz_questions qq ON qq.question_id = ra.questionId
+        LEFT JOIN quiz_scenes qs ON qs.scene_id = qq.scene_id
+        WHERE ra.rn = 1
+        GROUP BY COALESCE(qs.name, 'UNCATEGORIZED')
+        ORDER BY totalAnswers DESC, category ASC
+    </select>
+
+    <select id="findQuestionStatsByLatest" resultType="com.team.jpquiz.stats.dto.response.StatsResponse$QuestionStats">
+        WITH ranked_answers AS (
+            SELECT
+                qa.user_id AS userId,
+                qaa.question_id AS questionId,
+                qaa.is_correct AS isCorrect,
+                ROW_NUMBER() OVER (
+                    PARTITION BY qa.user_id, qaa.question_id
+                    ORDER BY qaa.answered_at DESC, qaa.attempt_id DESC, qaa.seq DESC
+                ) AS rn
+            FROM quiz_attempt_answers qaa
+            JOIN quiz_attempts qa ON qa.attempt_id = qaa.attempt_id
+            WHERE qa.user_id IS NOT NULL
+        )
+        SELECT
+            qq.question_id AS questionId,
+            qq.question_text AS questionText,
+            COALESCE(qs.name, 'UNCATEGORIZED') AS category,
+            COUNT(*) AS totalAnswers,
+            SUM(CASE WHEN ra.isCorrect = 1 THEN 1 ELSE 0 END) AS correctAnswers,
+            SUM(CASE WHEN ra.isCorrect = 0 THEN 1 ELSE 0 END) AS wrongAnswers
+        FROM ranked_answers ra
+        JOIN quiz_questions qq ON qq.question_id = ra.questionId
+        LEFT JOIN quiz_scenes qs ON qs.scene_id = qq.scene_id
+        WHERE ra.rn = 1
+        GROUP BY qq.question_id, qq.question_text, COALESCE(qs.name, 'UNCATEGORIZED')
+        ORDER BY wrongAnswers DESC, totalAnswers DESC, qq.question_id ASC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="countQuestionStatsByLatest" resultType="long">
+        WITH ranked_answers AS (
+            SELECT
+                qa.user_id AS userId,
+                qaa.question_id AS questionId,
+                ROW_NUMBER() OVER (
+                    PARTITION BY qa.user_id, qaa.question_id
+                    ORDER BY qaa.answered_at DESC, qaa.attempt_id DESC, qaa.seq DESC
+                ) AS rn
+            FROM quiz_attempt_answers qaa
+            JOIN quiz_attempts qa ON qa.attempt_id = qaa.attempt_id
+            WHERE qa.user_id IS NOT NULL
+        )
+        SELECT COUNT(*)
+        FROM (
+            SELECT ra.questionId
+            FROM ranked_answers ra
+            WHERE ra.rn = 1
+            GROUP BY ra.questionId
+        ) t
+    </select>
+
+    <select id="findQuestionStatsByFirst" resultType="com.team.jpquiz.stats.dto.response.StatsResponse$QuestionStats">
+        WITH ranked_answers AS (
+            SELECT
+                qa.user_id AS userId,
+                qaa.question_id AS questionId,
+                qaa.is_correct AS isCorrect,
+                ROW_NUMBER() OVER (
+                    PARTITION BY qa.user_id, qaa.question_id
+                    ORDER BY qaa.answered_at ASC, qaa.attempt_id ASC, qaa.seq ASC
+                ) AS rn
+            FROM quiz_attempt_answers qaa
+            JOIN quiz_attempts qa ON qa.attempt_id = qaa.attempt_id
+            WHERE qa.user_id IS NOT NULL
+        )
+        SELECT
+            qq.question_id AS questionId,
+            qq.question_text AS questionText,
+            COALESCE(qs.name, 'UNCATEGORIZED') AS category,
+            COUNT(*) AS totalAnswers,
+            SUM(CASE WHEN ra.isCorrect = 1 THEN 1 ELSE 0 END) AS correctAnswers,
+            SUM(CASE WHEN ra.isCorrect = 0 THEN 1 ELSE 0 END) AS wrongAnswers
+        FROM ranked_answers ra
+        JOIN quiz_questions qq ON qq.question_id = ra.questionId
+        LEFT JOIN quiz_scenes qs ON qs.scene_id = qq.scene_id
+        WHERE ra.rn = 1
+        GROUP BY qq.question_id, qq.question_text, COALESCE(qs.name, 'UNCATEGORIZED')
+        ORDER BY wrongAnswers DESC, totalAnswers DESC, qq.question_id ASC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="countQuestionStatsByFirst" resultType="long">
+        WITH ranked_answers AS (
+            SELECT
+                qa.user_id AS userId,
+                qaa.question_id AS questionId,
+                ROW_NUMBER() OVER (
+                    PARTITION BY qa.user_id, qaa.question_id
+                    ORDER BY qaa.answered_at ASC, qaa.attempt_id ASC, qaa.seq ASC
+                ) AS rn
+            FROM quiz_attempt_answers qaa
+            JOIN quiz_attempts qa ON qa.attempt_id = qaa.attempt_id
+            WHERE qa.user_id IS NOT NULL
+        )
+        SELECT COUNT(*)
+        FROM (
+            SELECT ra.questionId
+            FROM ranked_answers ra
+            WHERE ra.rn = 1
+            GROUP BY ra.questionId
+        ) t
+    </select>
+
+    <select id="findTopWrongQuestions" resultType="com.team.jpquiz.stats.dto.response.StatsResponse$TopWrongQuestion">
+        SELECT
+            qq.question_id AS questionId,
+            qq.question_text AS questionText,
+            COALESCE(qs.name, 'UNCATEGORIZED') AS category,
+            COUNT(*) AS totalAnswers,
+            SUM(CASE WHEN qaa.is_correct = 0 THEN 1 ELSE 0 END) AS wrongAnswers
+        FROM quiz_attempt_answers qaa
+        JOIN quiz_questions qq ON qq.question_id = qaa.question_id
+        LEFT JOIN quiz_scenes qs ON qs.scene_id = qq.scene_id
+        GROUP BY qq.question_id, qq.question_text, COALESCE(qs.name, 'UNCATEGORIZED')
+        HAVING SUM(CASE WHEN qaa.is_correct = 0 THEN 1 ELSE 0 END) > 0
+        ORDER BY wrongAnswers DESC, totalAnswers DESC, qq.question_id ASC
+        LIMIT #{limit}
+    </select>
+
+    <select id="findLearningRanking" resultType="com.team.jpquiz.stats.dto.response.StatsResponse$LearningRanking">
+        SELECT
+            qa.user_id AS memberId,
+            COALESCE(u.nickname, CONCAT('USER-', qa.user_id)) AS nickname,
+            COUNT(qaa.attempt_id) AS totalAnswers,
+            COUNT(DISTINCT CASE WHEN qa.completed_at IS NOT NULL THEN qa.attempt_id END) AS completedAttempts,
+            SUM(CASE WHEN qaa.is_correct = 1 THEN 1 ELSE 0 END) AS correctAnswers
+        FROM quiz_attempts qa
+        LEFT JOIN quiz_attempt_answers qaa ON qaa.attempt_id = qa.attempt_id
+        LEFT JOIN users u ON u.user_id = qa.user_id
+        WHERE qa.user_id IS NOT NULL
+        GROUP BY qa.user_id, COALESCE(u.nickname, CONCAT('USER-', qa.user_id))
+        HAVING COUNT(qaa.attempt_id) > 0
+        ORDER BY totalAnswers DESC, completedAttempts DESC, correctAnswers DESC, qa.user_id ASC
+        LIMIT #{limit}
+    </select>
+>>>>>>> Stashed changes
 </mapper>
