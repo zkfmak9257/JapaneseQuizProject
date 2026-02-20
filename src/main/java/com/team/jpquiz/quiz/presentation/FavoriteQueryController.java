@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/favorites")
+@RequestMapping({"/api/favorites", "/api/quiz/favorites"})
 @RequiredArgsConstructor
 public class FavoriteQueryController {
 
