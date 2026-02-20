@@ -7,7 +7,17 @@
           <div class="progress-fill" :style="{ width: `${progressPercent}%` }"></div>
         </div>
       </div>
-      <button class="report-button" @click="openReportModal">신고하기</button>
+      <div class="quiz-top-actions">
+        <button
+          class="favorite-button"
+          :class="{ active: isFavorited }"
+          @click="toggleFavoriteClick"
+          :disabled="favoriteSubmitting"
+        >
+          {{ isFavorited ? "★ 즐겨찾기" : "☆ 즐겨찾기" }}
+        </button>
+        <button class="report-button" @click="openReportModal">신고하기</button>
+      </div>
     </div>
 
     <p class="muted">유형: {{ isSentenceMode ? "문장 조합" : "단어 선택" }}</p>
@@ -34,7 +44,10 @@
                 @drop.prevent="dropOnPoolIndex(idx)"
                 @click="movePoolTokenToAnswer(idx)"
               >
-                {{ token.tokenText }}
+                <template v-if="hasRuby(token.tokenText)">
+                  <ruby><rb>{{ rubyBase(token.tokenText) }}</rb><rt>{{ rubyReading(token.tokenText) }}</rt></ruby>
+                </template>
+                <template v-else>{{ token.tokenText }}</template>
               </button>
             </div>
           </section>
@@ -54,7 +67,10 @@
                 @drop.prevent="dropOnAnswerIndex(idx)"
                 @click="moveAnswerTokenToPool(idx)"
               >
-                {{ token.tokenText }}
+                <template v-if="hasRuby(token.tokenText)">
+                  <ruby><rb>{{ rubyBase(token.tokenText) }}</rb><rt>{{ rubyReading(token.tokenText) }}</rt></ruby>
+                </template>
+                <template v-else>{{ token.tokenText }}</template>
               </button>
             </div>
           </section>
@@ -78,7 +94,10 @@
             v-model="selectedChoiceId"
             :disabled="submissionDone"
           />
-          {{ choice.choiceText }}
+          <template v-if="hasRuby(choice.choiceText)">
+            <ruby><rb>{{ rubyBase(choice.choiceText) }}</rb><rt>{{ rubyReading(choice.choiceText) }}</rt></ruby>
+          </template>
+          <template v-else>{{ choice.choiceText }}</template>
         </label>
       </li>
     </ul>
@@ -147,6 +166,7 @@ import { computed, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { completeAttempt, getAttemptQuestion, submitAnswer } from "../api/quizApi";
 import { createReport } from "../api/reportApi";
+import { toggleFavorite } from "../api/favoriteApi";
 import { useQuizStore } from "../stores/quizStore";
 
 const route = useRoute();
@@ -173,6 +193,8 @@ const reportContent = ref("");
 const reportSubmitting = ref(false);
 const reportErrorMessage = ref("");
 const reportSuccessMessage = ref("");
+const favoriteSubmitting = ref(false);
+const isFavorited = ref(false);
 
 const progressPercent = computed(() => {
   if (!question.value || !totalQuestions.value) {
@@ -245,6 +267,30 @@ const canSubmit = computed(() => {
 });
 
 const requiredSentenceTokenCount = computed(() => sentenceTokenSource.value.length);
+
+function splitRuby(text) {
+  const value = String(text ?? "");
+  const separatorIndex = value.indexOf("|");
+  if (separatorIndex <= 0 || separatorIndex >= value.length - 1) {
+    return null;
+  }
+  return {
+    base: value.slice(0, separatorIndex),
+    reading: value.slice(separatorIndex + 1)
+  };
+}
+
+function hasRuby(text) {
+  return splitRuby(text) !== null;
+}
+
+function rubyBase(text) {
+  return splitRuby(text)?.base ?? String(text ?? "");
+}
+
+function rubyReading(text) {
+  return splitRuby(text)?.reading ?? "";
+}
 
 function shuffle(tokens) {
   const arr = [...tokens];
@@ -372,6 +418,7 @@ async function loadQuestion() {
     selectedChoiceId.value = null;
     submissionDone.value = false;
     gradeResult.value = null;
+    isFavorited.value = false;
 
     if (isSentenceMode.value) {
       resetSentenceBoard();
@@ -520,6 +567,36 @@ function openReportModal() {
 function closeReportModal() {
   showReportModal.value = false;
   reportErrorMessage.value = "";
+}
+
+async function toggleFavoriteClick() {
+  if (!question.value?.questionId || favoriteSubmitting.value) {
+    return;
+  }
+
+  try {
+    favoriteSubmitting.value = true;
+    errorMessage.value = "";
+    const response = await toggleFavorite(question.value.questionId);
+    isFavorited.value = !!response?.favorited;
+  } catch (error) {
+    const status = error?.response?.status;
+    if (status === 401) {
+      errorMessage.value = "즐겨찾기는 로그인 후 이용할 수 있습니다.";
+      return;
+    }
+    if (status === 403) {
+      errorMessage.value = "즐겨찾기 권한이 없습니다.";
+      return;
+    }
+    if (status === 404) {
+      errorMessage.value = "해당 문제를 찾을 수 없습니다.";
+      return;
+    }
+    errorMessage.value = "즐겨찾기 처리 중 오류가 발생했습니다.";
+  } finally {
+    favoriteSubmitting.value = false;
+  }
 }
 
 async function submitReport() {
