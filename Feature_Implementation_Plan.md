@@ -6,8 +6,7 @@
   - Query(조회): `quiz/query/**` (MyBatis 기반 조회/페이징/필터)
 - 매퍼 XML은 `src/main/resources/mappers/quiz/**`로 분리되어 있으며, Query(조회) 서비스와 1:1로 매핑됩니다.
 - 오답노트/즐겨찾기 컨트롤러는 Command(명령)와 Query(조회)를 분리해 구성되어 있습니다.
-- `report` 도메인은 `command/query` 분리 + 관리자 API 권한 제어(`@PreAuthorize`)를 적용했습니다.
-- `stats` 도메인은 개인 통계/관리자 개요 API를 중심으로 Query(조회) 구조를 구현했습니다.
+- 통계(`stats`)는 패키지/파일 스텁만 존재하며, 문제 신고(`problem report`) 도메인은 아직 패키지가 없습니다.
 
 ## 1. 오답노트 (Wrong Answer Note)
 ### 담당/리뷰
@@ -112,10 +111,10 @@
 
 ### 요구사항
 #### 필수
-- [x] **API 정의**: 신고 제출 API, (관리자용) 신고 목록 조회 및 상태 변경 API 구현
-- [x] **DTO 설계**: `ProblemReportCreateRequest/Response`, `ProblemReportStatusUpdateRequest/Response`, `ProblemReportAdminResponse`
-- [x] **Mapper/Repository**: `ProblemReportMapper` + `ProblemReportRepository` + `ProblemReportValidationMapper` 구현
-- [x] **Service 구현**: 신고 저장 로직, 상태 변경 로직 구현
+- [ ] **API 정의**: 신고 제출 API, (관리자용) 신고 목록 조회 및 상태 변경 API
+- [ ] **DTO 설계**: `ReportRequest`, `ReportResponse`
+- [ ] **Mapper/Repository**: `ProblemReportMapper` 구현
+- [ ] **Service 구현**: 신고 저장 로직, 상태 변경 로직
 
 #### 선택(있으면 좋음)
 - [ ] 신고 처리 시 사용자에게 알림 전송
@@ -135,9 +134,8 @@
 - DB : `problem_reports` 테이블 활용
 
 ### 완료 조건
-- [x] 신고 데이터가 DB에 정상 저장되는 구현 완료
-- [x] 관리자가 상태를 변경할 수 있는 구현 완료
-- [ ] 신고 처리 후 문제 비활성화 연동(정책 확정 후 반영)
+- [ ] 신고 데이터가 DB에 정상 저장되는지 확인
+- [ ] 관리자가 상태를 변경할 수 있는지 확인
 
 ---
 
@@ -155,10 +153,10 @@
 
 ### 요구사항
 #### 필수
-- [x] **API 정의**: `GET /api/stats/me`, `GET /api/admin/stats/overview` 구현
-- [x] **DTO 설계**: `StatsResponse.MyStats`, `StatsResponse.AdminOverview` 구현
-- [x] **Mapper/Repository**: `StatsMapper` + `StatsMapper.xml` 집계 쿼리 구현
-- [x] **Service 구현**: 통계 데이터 가공 및 조회 로직 구현
+- [ ] **API 정의**: 카테고리별/문제별 통계 조회, 유저별 학습량 조회 API
+- [ ] **DTO 설계**: `StatsResponse`, `ChartDataDto`
+- [ ] **Mapper/Repository**: `StatsMapper` (복잡한 집계 쿼리 작성)
+- [ ] **Service 구현**: 통계 데이터 가공 및 조회 로직
 
 #### 선택(있으면 좋음)
 - [ ] 엑셀 다운로드 기능
@@ -179,9 +177,8 @@
 - DB : 기존 테이블 집계 활용
 
 ### 완료 조건
-- [x] 개인/관리자 통계 API 최소 2종 구현
-- [x] 권한에 따른 접근 제어 구현(`ADMIN` 전용 엔드포인트)
-- [ ] 집계 데이터 정합성 검증(수동 계산/테스트 코드) 보강
+- [ ] 집계 데이터가 정확한지 검증 (수동 계산과 비교)
+- [ ] 권한에 따른 접근 제어 확인
 
 ---
 
@@ -203,18 +200,10 @@
 - `favorites(member_id, question_id)` 유니크 제약으로 중복 등록 방지 적용됨
 
 ### 문제 신고
-- `ProblemReport` 도메인/DTO/Mapper/Service/Controller 구현 완료
-- 신고 등록 API(`POST /api/reports`) 구현 완료 (게스트/회원 허용)
-- 관리자 목록 API(`GET /api/admin/reports`) 구현 완료 (상태 필터 + 페이징)
-- 관리자 처리 API(`PATCH /api/admin/reports/{reportId}`) 구현 완료 (상태 변경 + action 기록)
-- 신고 대상 문제 존재 검증(`questionId`) 구현 완료
-- 미완료: 신고 처리 후 문제 비활성화 연동
+- 도메인/DTO/Mapper/Service/Controller 모두 미구현
 
 ### 통계
-- `StatsController`, `StatsQueryService`, `StatsMapper`, `StatsResponse` 구현 완료
-- 개인 통계 API(`GET /api/stats/me`) 구현 완료
-- 관리자 개요 API(`GET /api/admin/stats/overview`) 구현 완료
-- 미완료: 카테고리/문제별 통계, 랭킹, 전환율 지표
+- `StatsController`, `StatsQueryService`, `StatsMapper`, `StatsResponse` 스텁(빈 구현) 상태
 
 ## 다음 단계 실행 계획 (한 단계씩)
 
@@ -227,25 +216,17 @@
 ### Step 3. 즐겨찾기 CUD + 목록
 - 상태: `완료`
 
-### Step 4. 문제 신고 C + 관리자 처리
-- 상태: `진행중`
+### Step 4. 문제 신고 C + 관리자 처리 (현재 우선순위)
 - 목표: 데이터 품질 피드백 루프 완성
 - 작업:
-  1. 신고 처리 후 문제 비활성화 연동 설계/구현
-  2. 상태 전이 정책과 운영 가이드 문서화
-  3. 테스트 시나리오 추가(게스트/관리자/예외)
+  1. 신고 등록 API(`POST /api/reports`) 구현
+  2. 관리자 신고 목록 API(`GET /api/admin/reports`) 구현
+  3. 관리자 신고 처리 API(`PATCH /api/admin/reports/{reportId}`) 구현
+  4. 상태 변경 이력(`action`) 저장 규칙 정의
 
 ### Step 5. 통계 API 최소 2종
-- 상태: `진행중`
 - 목표: 개인 통계 1종 + 관리자 통계 1종 우선 제공
 - 작업:
-  1. 구현된 2종 API 정합성 검증(샘플 데이터 수동 비교)
-  2. 전환율/DAU 기준 확정 및 반영
-  3. 카테고리/문제별 통계 API 확장
-
-### Step 6. 테스트/운영 안정화 (현재 우선순위)
-- 목표: 구현 완료 기능의 운영 품질 확보
-- 작업:
-  1. 신고/통계 API 통합 테스트 추가
-  2. 권한/예외(400/401/403/404) 케이스 자동화
-  3. 집계 쿼리 인덱스 점검 및 성능 확인
+  1. 개인 통계 API 1종(`GET /api/stats/me`) 우선 구현
+  2. 관리자 통계 API 1종(`GET /api/admin/stats/overview`) 구현
+  3. 집계 기준(first/latest) 쿼리 분리 및 검증
