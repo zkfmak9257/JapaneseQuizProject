@@ -1,18 +1,12 @@
 package com.team.jpquiz.stats.query.application;
 
-<<<<<<< Updated upstream
-=======
 import com.team.jpquiz.common.dto.PageResponse;
->>>>>>> Stashed changes
 import com.team.jpquiz.global.error.CustomException;
 import com.team.jpquiz.global.error.ErrorCode;
 import com.team.jpquiz.stats.dto.response.StatsResponse;
 import com.team.jpquiz.stats.query.infrastructure.StatsMapper;
-<<<<<<< Updated upstream
-=======
 import java.util.ArrayList;
 import java.util.List;
->>>>>>> Stashed changes
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,12 +16,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class StatsQueryService {
 
-<<<<<<< Updated upstream
-=======
     private static final int MAX_PAGE_SIZE = 100;
     private static final int MAX_TOP_LIMIT = 100;
 
->>>>>>> Stashed changes
     private final StatsMapper statsMapper;
 
     public StatsResponse.MyStats getMyStats(Long memberId) {
@@ -35,19 +26,11 @@ public class StatsQueryService {
 
         StatsResponse.MyStats raw = statsMapper.findMyStats(memberId);
 
-<<<<<<< Updated upstream
-        int totalAttempts = valueOrZero(raw != null ? raw.getTotalAttempts() : null);
-        int completedAttempts = valueOrZero(raw != null ? raw.getCompletedAttempts() : null);
-        int totalAnswers = valueOrZero(raw != null ? raw.getTotalAnswers() : null);
-        int correctAnswers = valueOrZero(raw != null ? raw.getCorrectAnswers() : null);
-        int recent7dAnswers = valueOrZero(raw != null ? raw.getRecent7dAnswers() : null);
-=======
         int totalAttempts = valueOrZero(raw != null ? raw.getTotalAttempts() : 0);
         int completedAttempts = valueOrZero(raw != null ? raw.getCompletedAttempts() : 0);
         int totalAnswers = valueOrZero(raw != null ? raw.getTotalAnswers() : 0);
         int correctAnswers = valueOrZero(raw != null ? raw.getCorrectAnswers() : 0);
         int recent7dAnswers = valueOrZero(raw != null ? raw.getRecent7dAnswers() : 0);
->>>>>>> Stashed changes
 
         return StatsResponse.MyStats.builder()
                 .memberId(memberId)
@@ -64,19 +47,11 @@ public class StatsQueryService {
     public StatsResponse.AdminOverview getAdminOverview() {
         StatsResponse.AdminOverview raw = statsMapper.findAdminOverview();
 
-<<<<<<< Updated upstream
-        int totalAttempts = valueOrZero(raw != null ? raw.getTotalAttempts() : null);
-        int completedAttempts = valueOrZero(raw != null ? raw.getCompletedAttempts() : null);
-        int totalAnswers = valueOrZero(raw != null ? raw.getTotalAnswers() : null);
-        int correctAnswers = valueOrZero(raw != null ? raw.getCorrectAnswers() : null);
-        int activeUsers7d = valueOrZero(raw != null ? raw.getActiveUsers7d() : null);
-=======
         int totalAttempts = valueOrZero(raw != null ? raw.getTotalAttempts() : 0);
         int completedAttempts = valueOrZero(raw != null ? raw.getCompletedAttempts() : 0);
         int totalAnswers = valueOrZero(raw != null ? raw.getTotalAnswers() : 0);
         int correctAnswers = valueOrZero(raw != null ? raw.getCorrectAnswers() : 0);
         int activeUsers7d = valueOrZero(raw != null ? raw.getActiveUsers7d() : 0);
->>>>>>> Stashed changes
 
         return StatsResponse.AdminOverview.builder()
                 .totalAttempts(totalAttempts)
@@ -89,8 +64,6 @@ public class StatsQueryService {
                 .build();
     }
 
-<<<<<<< Updated upstream
-=======
     public List<StatsResponse.CategoryAccuracy> findCategoryAccuracy(String basis) {
         StatsBasis normalizedBasis = normalizeBasis(basis, StatsBasis.LATEST);
         List<StatsResponse.CategoryAccuracy> raw = normalizedBasis == StatsBasis.FIRST
@@ -199,15 +172,12 @@ public class StatsQueryService {
         return result;
     }
 
->>>>>>> Stashed changes
     private void validateMemberId(Long memberId) {
         if (memberId == null || memberId <= 0) {
             throw new CustomException(ErrorCode.UNAUTHORIZED);
         }
     }
 
-<<<<<<< Updated upstream
-=======
     private void validatePage(int page, int size) {
         if (page < 1 || size < 1 || size > MAX_PAGE_SIZE) {
             throw new CustomException(ErrorCode.INVALID_REQUEST);
@@ -231,7 +201,6 @@ public class StatsQueryService {
         }
     }
 
->>>>>>> Stashed changes
     private int valueOrZero(Integer value) {
         return value == null ? 0 : value;
     }
@@ -240,9 +209,6 @@ public class StatsQueryService {
         if (denominator <= 0) {
             return 0.0;
         }
-<<<<<<< Updated upstream
-        return Math.round((numerator * 10000.0) / denominator) / 100.0;
-=======
         return round2((numerator * 100.0) / denominator);
     }
 
@@ -263,6 +229,5 @@ public class StatsQueryService {
     private enum StatsBasis {
         FIRST,
         LATEST
->>>>>>> Stashed changes
     }
 }
