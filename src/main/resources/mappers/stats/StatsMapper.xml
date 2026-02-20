@@ -46,8 +46,6 @@
              FROM quiz_attempts
              WHERE started_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)) AS activeUsers7d
     </select>
-<<<<<<< Updated upstream
-=======
 
     <select id="findCategoryAccuracyByLatest" resultType="com.team.jpquiz.stats.dto.response.StatsResponse$CategoryAccuracy">
         WITH ranked_answers AS (
@@ -237,5 +235,4 @@
         ORDER BY totalAnswers DESC, completedAttempts DESC, correctAnswers DESC, qa.user_id ASC
         LIMIT #{limit}
     </select>
->>>>>>> Stashed changes
 </mapper>

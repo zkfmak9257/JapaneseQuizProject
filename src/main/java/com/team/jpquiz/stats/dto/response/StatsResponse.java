@@ -38,8 +38,6 @@ public class StatsResponse {
         private double completionRate;
         private double accuracyRate;
     }
-<<<<<<< Updated upstream
-=======
 
     @Getter
     @Builder
@@ -94,5 +92,4 @@ public class StatsResponse {
         private int correctAnswers;
         private double accuracyRate;
     }
->>>>>>> Stashed changes
 }

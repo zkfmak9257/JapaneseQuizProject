@@ -1,10 +1,7 @@
 package com.team.jpquiz.stats.query.infrastructure;
 
 import com.team.jpquiz.stats.dto.response.StatsResponse;
-<<<<<<< Updated upstream
-=======
 import java.util.List;
->>>>>>> Stashed changes
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -14,8 +11,6 @@ public interface StatsMapper {
     StatsResponse.MyStats findMyStats(@Param("memberId") Long memberId);
 
     StatsResponse.AdminOverview findAdminOverview();
-<<<<<<< Updated upstream
-=======
 
     List<StatsResponse.CategoryAccuracy> findCategoryAccuracyByLatest();
 
@@ -38,5 +33,4 @@ public interface StatsMapper {
     List<StatsResponse.TopWrongQuestion> findTopWrongQuestions(@Param("limit") int limit);
 
     List<StatsResponse.LearningRanking> findLearningRanking(@Param("limit") int limit);
->>>>>>> Stashed changes
 }

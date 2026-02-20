@@ -1,25 +1,16 @@
 package com.team.jpquiz.stats.presentation;
 
 import com.team.jpquiz.common.dto.ApiResponse;
-<<<<<<< Updated upstream
-import com.team.jpquiz.common.util.SecurityUtil;
-import com.team.jpquiz.stats.dto.response.StatsResponse;
-import com.team.jpquiz.stats.query.application.StatsQueryService;
-=======
 import com.team.jpquiz.common.dto.PageResponse;
 import com.team.jpquiz.common.util.SecurityUtil;
 import com.team.jpquiz.stats.dto.response.StatsResponse;
 import com.team.jpquiz.stats.query.application.StatsQueryService;
 import java.util.List;
->>>>>>> Stashed changes
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-<<<<<<< Updated upstream
-=======
 import org.springframework.web.bind.annotation.RequestParam;
->>>>>>> Stashed changes
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -42,8 +33,6 @@ public class StatsController {
         StatsResponse.AdminOverview response = statsQueryService.getAdminOverview();
         return ApiResponse.ok(response);
     }
-<<<<<<< Updated upstream
-=======
 
     @GetMapping("/admin/stats/categories")
     @PreAuthorize("hasRole('ADMIN')")
@@ -83,5 +72,4 @@ public class StatsController {
         List<StatsResponse.LearningRanking> response = statsQueryService.findLearningRanking(limit);
         return ApiResponse.ok(response);
     }
->>>>>>> Stashed changes
 }
