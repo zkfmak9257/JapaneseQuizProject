@@ -1,64 +1,172 @@
+/* ============================================================
+   JPQuiz 글로벌 스타일 — 일본 소도시 감성 테마
+   
+   디자인 컨셉:
+   - 바닷가 기차역, 에노덴, 여름 하늘의 청량한 색감
+   - 애니메이션 감성 + 아날로그 느낌
+   - 글라스모피즘(glassmorphism) 기반 UI
+   ============================================================ */
+
+/* ── CSS 커스텀 프로퍼티 (Design Tokens) ──────────────────────
+   왜? 색상을 한 곳에서 관리하면 테마 변경이 용이하고,
+   컴포넌트 전체에 일관된 색상 시스템을 유지할 수 있다. */
+:root {
+  /* 메인 색상 팔레트 — 이미지에서 추출한 색상 */
+  --sky: #7EC8E3;        /* 하늘색: 맑은 여름 하늘 */
+  --ocean: #3A86B8;      /* 바다색: 깊고 시원한 바다 */
+  --ocean-deep: #2B6A94; /* 진한 바다: 호버/강조용 */
+  --train: #5E8B7E;      /* 열차 초록: 에노덴 기차색 */
+  --crossing: #F4D35E;   /* 건널목 노랑: 따뜻한 악센트 */
+  --cloud: #F1FAEE;      /* 구름 흰색: 배경에 사용 */
+  --sand: #FFF8E7;       /* 모래색: 카드 배경 */
+  --dark: #1a2d3d;       /* 어두운 남색: 텍스트/네비게이션 */
+  --text: #2c3e50;       /* 본문 텍스트 색상 */
+  --text-muted: #6b7b8d; /* 보조 텍스트 */
+  --border-light: rgba(126, 200, 227, 0.3); /* 반투명 하늘색 테두리 */
+
+  /* 타이포그래피 */
+  --font-display: "M PLUS Rounded 1c", "Noto Sans JP", sans-serif;
+  --font-body: "Noto Sans JP", "Noto Sans KR", sans-serif;
+
+  /* 그림자 — 부드러운 그림자로 깊이감 표현 */
+  --shadow-sm: 0 2px 8px rgba(58, 134, 184, 0.08);
+  --shadow-md: 0 4px 16px rgba(58, 134, 184, 0.12);
+  --shadow-lg: 0 8px 32px rgba(58, 134, 184, 0.16);
+
+  /* 둥근 모서리 — 부드러운 느낌 */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-pill: 999px; /* 알약형 버튼용 */
+
+  /* 트랜지션 — 부드러운 인터랙션 */
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --duration: 0.3s;
+}
+
+/* ── 리셋 & 기본 스타일 ──────────────────────────────────── */
 * {
   box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 body {
-  margin: 0;
-  font-family: "Noto Sans KR", sans-serif;
-  background: #f5f7fb;
-  color: #1f2937;
+  font-family: var(--font-body);
+  /* 하늘→바다 그라데이션 배경: 전체 페이지에 청량한 분위기 */
+  background: linear-gradient(180deg, var(--cloud) 0%, #e8f4f8 100%);
+  color: var(--text);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased; /* 폰트 렌더링 부드럽게 */
 }
 
+/* ── 레이아웃 ──────────────────────────────────────────── */
 .layout {
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
+/* ── 네비게이션 바 (글라스모피즘) ───────────────────────────
+   왜 글라스모피즘?
+   - 반투명 배경 + blur로 콘텐츠 위에 떠있는 느낌
+   - 모던하고 고급스러운 UI 트렌드 */
 .topbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 20px;
-  background: #0f172a;
+  padding: 14px 24px;
+  /* 글라스모피즘 핵심: 반투명 배경 + backdrop-filter */
+  background: rgba(26, 45, 61, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   color: #fff;
+  position: sticky; /* 스크롤해도 상단 고정 */
+  top: 0;
+  z-index: 100;
+  border-bottom: 1px solid rgba(126, 200, 227, 0.2);
+}
+
+.topbar h1 {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 800;
 }
 
 .topbar nav {
   display: flex;
-  gap: 12px;
+  gap: 6px;
   flex-wrap: wrap;
   justify-content: flex-end;
 }
 
+/* 네비게이션 링크 — 호버 시 하늘색으로 전환 */
 .topbar a {
-  color: #cbd5e1;
+  color: rgba(255, 255, 255, 0.8);
   text-decoration: none;
+  font-size: 14px;
+  padding: 6px 12px;
+  border-radius: var(--radius-pill);
+  transition: all var(--duration) var(--ease);
 }
 
-.brand {
+.topbar a:hover {
   color: #fff;
-  text-decoration: none;
+  background: rgba(126, 200, 227, 0.2);
 }
 
+/* 활성 라우터 링크: 현재 위치한 페이지 표시 */
+.topbar a.router-link-active {
+  color: #fff;
+  background: var(--ocean);
+}
+
+/* 브랜드 로고 */
+.brand {
+  color: #fff !important;
+  text-decoration: none !important;
+  font-family: var(--font-display);
+  letter-spacing: -0.5px;
+}
+
+/* 로그아웃 버튼 */
 .logout {
-  background: #1e293b;
-  border: 1px solid #334155;
-  color: #e2e8f0;
-  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.9);
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all var(--duration) var(--ease);
 }
 
+.logout:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+/* ── 메인 콘텐츠 영역 ─────────────────────────────────── */
 .content {
-  max-width: 760px;
-  margin: 24px auto;
-  padding: 0 16px;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px 16px;
+  flex: 1;
+  width: 100%;
 }
 
+/* ── 카드 컴포넌트 ────────────────────────────────────── */
 .card {
-  background: #fff;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.08);
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(8px);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border-light);
 }
 
+/* ── 폼 관련 ──────────────────────────────────────────── */
 .form,
 .field {
   display: grid;
@@ -70,39 +178,77 @@ select,
 textarea,
 button {
   font: inherit;
-  padding: 10px 12px;
+  padding: 10px 14px;
 }
 
+input,
+select,
+textarea {
+  border: 2px solid #dce6ec;
+  border-radius: var(--radius-sm);
+  background: #fff;
+  transition: border-color var(--duration) var(--ease);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--sky);
+  box-shadow: 0 0 0 3px rgba(126, 200, 227, 0.2);
+}
+
+/* ── 버튼 기본 스타일 ─────────────────────────────────── */
 button {
   border: 0;
-  border-radius: 8px;
-  background: #2563eb;
+  border-radius: var(--radius-sm);
+  background: var(--ocean);
   color: white;
   cursor: pointer;
+  font-weight: 500;
+  transition: all var(--duration) var(--ease);
 }
 
+button:hover {
+  background: var(--ocean-deep);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+/* ── 카테고리 칩 ──────────────────────────────────────── */
+.categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0 16px;
+}
+
+.chip {
+  background: rgba(126, 200, 227, 0.15);
+  color: var(--ocean);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-pill);
+  padding: 6px 14px;
+  font-size: 14px;
+}
+
+.chip.active {
+  background: var(--ocean);
+  color: #fff;
+  border-color: var(--ocean);
+}
+
+/* ── 4지선다 선택지 ───────────────────────────────────── */
 .choices {
   list-style: none;
   padding: 0;
 }
 
-.categories {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin: 12px 0 16px;
-}
-
-.chip {
-  background: #e2e8f0;
-  color: #0f172a;
-}
-
-.chip.active {
-  background: #0ea5e9;
-  color: #fff;
-}
-
+/* ── 액션 버튼 그룹 ───────────────────────────────────── */
 .actions {
   display: flex;
   justify-content: flex-end;
@@ -113,38 +259,55 @@ button {
   justify-content: flex-start;
 }
 
+/* ── 텍스트 유틸리티 ──────────────────────────────────── */
 .muted {
-  color: #475569;
+  color: var(--text-muted);
 }
 
 .error {
-  color: #b91c1c;
+  color: #dc3545;
   margin-top: 12px;
+  font-weight: 500;
 }
 
 .success {
-  color: #166534;
+  color: #198754;
   margin-top: 12px;
+  font-weight: 500;
 }
 
+/* ── 링크형 버튼 ──────────────────────────────────────── */
 .btn-link {
   display: inline-block;
-  padding: 10px 12px;
-  border-radius: 8px;
-  background: #2563eb;
+  padding: 10px 16px;
+  border-radius: var(--radius-sm);
+  background: var(--ocean);
   color: #fff;
   text-decoration: none;
+  font-weight: 500;
+  transition: all var(--duration) var(--ease);
+}
+
+.btn-link:hover {
+  background: var(--ocean-deep);
+  transform: translateY(-1px);
 }
 
 .btn-link.secondary {
-  background: #334155;
+  background: var(--dark);
 }
 
+.btn-link.secondary:hover {
+  background: #243b4d;
+}
+
+/* ── 퀴즈 결과 리스트 ─────────────────────────────────── */
 .result-list {
   padding-left: 18px;
   margin-bottom: 16px;
 }
 
+/* ── 퀴즈 상단 (진행 바 + 액션) ────────────────────────── */
 .quiz-top {
   display: flex;
   justify-content: space-between;
@@ -161,57 +324,74 @@ button {
   flex: 1;
 }
 
+/* 진행 바 — 바다 그라데이션 */
 .progress-track {
   width: 100%;
   height: 10px;
-  background: #e2e8f0;
-  border-radius: 999px;
+  background: rgba(126, 200, 227, 0.2);
+  border-radius: var(--radius-pill);
   overflow: hidden;
   margin-bottom: 12px;
 }
 
 .progress-fill {
   height: 100%;
-  background: #2563eb;
+  background: linear-gradient(90deg, var(--sky), var(--ocean));
+  border-radius: var(--radius-pill);
+  transition: width var(--duration) var(--ease);
 }
 
+/* ── 신고/즐겨찾기 버튼 ───────────────────────────────── */
 .report-button {
-  background: #dc2626;
+  background: #dc3545;
   white-space: nowrap;
 }
 
 .favorite-button {
-  background: #334155;
+  background: var(--dark);
   white-space: nowrap;
 }
 
 .favorite-button.active {
-  background: #d97706;
+  background: var(--crossing);
+  color: var(--dark);
 }
 
+/* ── 모달 ─────────────────────────────────────────────── */
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.5);
+  background: rgba(26, 45, 61, 0.6);
+  backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 16px;
+  z-index: 200;
 }
 
 .modal-card {
   width: min(520px, 100%);
-  background: #fff;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.2);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border-light);
 }
 
+/* ── 고스트 버튼 ──────────────────────────────────────── */
 .ghost {
-  background: #e2e8f0;
-  color: #0f172a;
+  background: rgba(126, 200, 227, 0.1);
+  color: var(--ocean);
+  border: 1px solid var(--border-light);
 }
 
+.ghost:hover {
+  background: rgba(126, 200, 227, 0.2);
+}
+
+/* ── 마이페이지 ───────────────────────────────────────── */
 .mypage-panel + .mypage-panel {
   margin-top: 18px;
 }
@@ -220,6 +400,7 @@ button {
   justify-content: flex-start;
 }
 
+/* ── 통계 ─────────────────────────────────────────────── */
 .stats-list {
   margin: 0;
   padding-left: 18px;
@@ -229,12 +410,13 @@ button {
 
 .grade-box {
   margin-top: 14px;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
   padding: 12px;
-  background: #f8fafc;
+  background: rgba(241, 250, 238, 0.5);
 }
 
+/* ── 문장 조립 ────────────────────────────────────────── */
 .sentence-builder {
   display: grid;
   gap: 12px;
@@ -249,21 +431,34 @@ button {
 }
 
 .token-btn {
-  padding: 8px 10px;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  border: 2px solid var(--border-light);
+  background: #fff;
+  color: var(--text);
+  transition: all var(--duration) var(--ease);
+}
+
+.token-btn:hover {
+  border-color: var(--sky);
+  background: rgba(126, 200, 227, 0.1);
 }
 
 .token-answer {
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  padding: 10px;
-  background: #f8fafc;
+  border: 2px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  background: rgba(241, 250, 238, 0.5);
+  min-height: 48px;
 }
 
+/* ── 루비(발음 표기) ──────────────────────────────────── */
 ruby rt {
   font-size: 11px;
-  color: #475569;
+  color: var(--text-muted);
 }
 
+/* ── 관리자 페이지 ────────────────────────────────────── */
 .admin-section + .admin-section {
   margin-top: 20px;
 }
@@ -285,20 +480,57 @@ ruby rt {
 }
 
 .stat-card {
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  padding: 12px;
-  background: #f8fafc;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(4px);
 }
 
 .stat-label {
   margin: 0;
   font-size: 13px;
-  color: #475569;
+  color: var(--text-muted);
 }
 
 .stat-value {
   margin: 8px 0 0;
   font-size: 22px;
   font-weight: 700;
+  color: var(--ocean);
+}
+
+/* ── 스크롤바 커스터마이징 ────────────────────────────── */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(126, 200, 227, 0.3);
+  border-radius: var(--radius-pill);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(126, 200, 227, 0.5);
+}
+
+/* ── 반응형 (모바일) ──────────────────────────────────── */
+@media (max-width: 640px) {
+  .topbar {
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px 16px;
+  }
+
+  .topbar nav {
+    justify-content: center;
+  }
+
+  .content {
+    padding: 16px 12px;
+  }
 }
