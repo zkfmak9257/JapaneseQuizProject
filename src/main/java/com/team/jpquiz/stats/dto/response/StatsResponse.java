@@ -79,17 +79,4 @@ public class StatsResponse {
         private double wrongRate;
     }
 
-    @Getter
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class LearningRanking {
-        private int rank;
-        private Long memberId;
-        private String nickname;
-        private int totalAnswers;
-        private int completedAttempts;
-        private int correctAnswers;
-        private double accuracyRate;
-    }
 }

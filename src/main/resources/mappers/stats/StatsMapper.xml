@@ -219,20 +219,4 @@
         LIMIT #{limit}
     </select>
 
-    <select id="findLearningRanking" resultType="com.team.jpquiz.stats.dto.response.StatsResponse$LearningRanking">
-        SELECT
-            qa.user_id AS memberId,
-            COALESCE(u.nickname, CONCAT('USER-', qa.user_id)) AS nickname,
-            COUNT(qaa.attempt_id) AS totalAnswers,
-            COUNT(DISTINCT CASE WHEN qa.completed_at IS NOT NULL THEN qa.attempt_id END) AS completedAttempts,
-            SUM(CASE WHEN qaa.is_correct = 1 THEN 1 ELSE 0 END) AS correctAnswers
-        FROM quiz_attempts qa
-        LEFT JOIN quiz_attempt_answers qaa ON qaa.attempt_id = qa.attempt_id
-        LEFT JOIN users u ON u.user_id = qa.user_id
-        WHERE qa.user_id IS NOT NULL
-        GROUP BY qa.user_id, COALESCE(u.nickname, CONCAT('USER-', qa.user_id))
-        HAVING COUNT(qaa.attempt_id) > 0
-        ORDER BY totalAnswers DESC, completedAttempts DESC, correctAnswers DESC, qa.user_id ASC
-        LIMIT #{limit}
-    </select>
 </mapper>
