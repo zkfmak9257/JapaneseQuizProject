@@ -207,8 +207,10 @@ function onStartTravel() {
 
 /* ── 전체 컨테이너 ───────────────────────────────────── */
 .quiz-home {
+  /* 메인 화면은 시각 밀도를 위해 컴팩트 Hero 예외를 사용 */
+  --hero-height: var(--hero-height-main-compact);
   /* content 클래스의 max-width 제한을 벗어나기 위해 음수 마진 사용 */
-  margin: -24px -16px 0;
+  margin: -24px calc(-1 * var(--gutter)) 0;
 }
 
 /* ── Hero Section ────────────────────────────────────── */
@@ -219,7 +221,7 @@ function onStartTravel() {
   background-size: cover;     /* 이미지가 영역을 꽉 채움 */
   background-position: center; /* 중앙 기준으로 크롭 */
   background-repeat: no-repeat;
-  min-height: 420px;
+  min-height: var(--hero-height, var(--hero-height-default));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -306,7 +308,7 @@ function onStartTravel() {
   z-index: 3; /* 오버레이보다 위에 위치 */
   text-align: center;
   color: #fff;
-  padding: 40px 20px;
+  padding: 48px var(--gutter);
 }
 
 .hero-eyebrow {
@@ -320,16 +322,16 @@ function onStartTravel() {
 
 .hero-title {
   font-family: var(--font-display);
-  font-size: 36px;
+  font-size: clamp(32px, 5vw, 64px);
   font-weight: 800;
-  line-height: 1.3;
+  line-height: 1.25;
   margin-bottom: 10px;
   /* 텍스트에 살짝 빛나는 그림자 → 가독성 + 감성 */
   text-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
 }
 
 .hero-subtitle {
-  font-size: 16px;
+  font-size: clamp(16px, 2vw, 20px);
   opacity: 0.9;
   margin-bottom: 28px;
   font-weight: 300;
@@ -346,7 +348,8 @@ function onStartTravel() {
 
 /* 메인 CTA: 눈에 띄는 그라데이션 버튼 */
 .cta-primary {
-  padding: 14px 28px;
+  min-height: 52px;
+  padding: 0 28px;
   border-radius: var(--radius-pill);
   /* 분홍→보라 그라데이션: 🌸 벚꽃 느낌 */
   background: linear-gradient(135deg, #f472b6, #a855f7);
@@ -356,6 +359,9 @@ function onStartTravel() {
   font-family: var(--font-display);
   border: none;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   /* 살짝 떠있는 느낌의 그림자 */
   box-shadow: 0 4px 20px rgba(244, 114, 182, 0.4);
@@ -368,7 +374,8 @@ function onStartTravel() {
 
 /* 서브 CTA: 투명 배경 + 테두리 */
 .cta-secondary {
-  padding: 14px 28px;
+  min-height: 52px;
+  padding: 0 28px;
   border-radius: var(--radius-pill);
   background: rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(8px);
@@ -378,6 +385,9 @@ function onStartTravel() {
   font-family: var(--font-display);
   border: 1px solid rgba(255, 255, 255, 0.3);
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -388,9 +398,9 @@ function onStartTravel() {
 
 /* ── 섹션 블록 (카테고리/씬 선택 공통) ─────────────────── */
 .section-block {
-  max-width: 900px;
+  max-width: var(--container-main);
   margin: 0 auto;
-  padding: 32px 20px 0;
+  padding: 32px var(--gutter) 0;
 }
 
 .section-title {
@@ -565,9 +575,9 @@ function onStartTravel() {
 
 /* ── 시작 섹션 (하단) ────────────────────────────────── */
 .start-section {
-  max-width: 900px;
+  max-width: var(--container-main);
   margin: 0 auto;
-  padding: 28px 20px 40px;
+  padding: 28px var(--gutter) 40px;
   text-align: center;
 }
 
@@ -593,7 +603,8 @@ function onStartTravel() {
 
 /* 시작하기 버튼: 크고 눈에 띄는 그라데이션 */
 .start-button {
-  padding: 16px 48px;
+  min-height: 52px;
+  padding: 0 48px;
   border-radius: var(--radius-pill);
   background: linear-gradient(135deg, var(--ocean), var(--train));
   color: #fff;
@@ -602,6 +613,9 @@ function onStartTravel() {
   font-family: var(--font-display);
   border: none;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 4px 20px rgba(58, 134, 184, 0.3);
 }
@@ -616,19 +630,16 @@ function onStartTravel() {
 }
 
 /* ── 반응형 (모바일) ──────────────────────────────────── */
-@media (max-width: 640px) {
-  .hero {
-    min-height: 340px;
-  }
-
+@media (max-width: 767px) {
   .hero-title {
-    font-size: 26px;
+    font-size: 32px;
   }
 
   .hero-subtitle {
-    font-size: 14px;
+    font-size: 16px;
   }
 
+  /* 모바일: CTA 버튼 세로 배치 */
   .hero-actions {
     flex-direction: column;
     align-items: center;
@@ -640,28 +651,32 @@ function onStartTravel() {
     max-width: 280px;
   }
 
-  /* 모바일에서 카드 2열 또는 1열 */
+  /* 모바일에서 카드 2열 */
   .scene-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 10px;
   }
 
+  /* 모바일: 섹션 상단 여백 줄임 */
   .section-block {
-    padding: 24px 16px 0;
+    padding-top: 24px;
   }
 
   .start-button {
     width: 100%;
     max-width: 320px;
+    min-height: 52px;
     font-size: 16px;
-    padding: 14px 32px;
+    padding: 0 32px;
   }
 }
 
 /* 아주 작은 화면: 카드 1열 */
-@media (max-width: 380px) {
+@media (max-width: 479px) {
   .scene-grid {
     grid-template-columns: 1fr;
   }
 }
+
+
 </style>

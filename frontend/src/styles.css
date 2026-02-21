@@ -27,6 +27,22 @@
   /* 타이포그래피 */
   --font-display: "M PLUS Rounded 1c", "Noto Sans JP", sans-serif;
   --font-body: "Noto Sans JP", "Noto Sans KR", sans-serif;
+  --font-size-body: 16px;
+  --font-size-body-mobile: 15px;
+  --line-height-body: 1.6;
+
+  /* 레이아웃 */
+  --container-main: 1280px;
+  --container-content: 960px;
+  --gutter-mobile: 16px;
+  --gutter-tablet: 24px;
+  --gutter-desktop: 48px;
+  --gutter-wide: 64px;
+  --gutter: var(--gutter-mobile);
+
+  /* Hero 높이: 기본 권장값 + 페이지별 예외값 */
+  --hero-height-default: clamp(620px, 80dvh, 860px);
+  --hero-height-main-compact: clamp(340px, 40vw, 420px);
 
   /* 그림자 — 부드러운 그림자로 깊이감 표현 */
   --shadow-sm: 0 2px 8px rgba(58, 134, 184, 0.08);
@@ -54,16 +70,21 @@
 
 body {
   font-family: var(--font-body);
+  /* 본문은 가독성을 위해 15~16px 범위로 제한 */
+  font-size: clamp(15px, 1.5vw, 16px);
+  line-height: var(--line-height-body);
   /* 하늘→바다 그라데이션 배경: 전체 페이지에 청량한 분위기 */
   background: linear-gradient(180deg, var(--cloud) 0%, #e8f4f8 100%);
   color: var(--text);
   min-height: 100vh;
+  min-height: 100dvh;
   -webkit-font-smoothing: antialiased; /* 폰트 렌더링 부드럽게 */
 }
 
 /* ── 레이아웃 ──────────────────────────────────────────── */
 .layout {
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
 }
@@ -76,7 +97,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 14px 24px;
+  padding: 14px var(--gutter);
   /* 글라스모피즘 핵심: 반투명 배경 + backdrop-filter */
   background: rgba(26, 45, 61, 0.85);
   backdrop-filter: blur(12px);
@@ -149,9 +170,9 @@ body {
 
 /* ── 메인 콘텐츠 영역 ─────────────────────────────────── */
 .content {
-  max-width: 900px;
+  max-width: var(--container-content);
   margin: 0 auto;
-  padding: 24px 16px;
+  padding: 24px var(--gutter);
   flex: 1;
   width: 100%;
 }
@@ -206,6 +227,7 @@ button {
   color: white;
   cursor: pointer;
   font-weight: 500;
+  min-height: 40px;
   transition: all var(--duration) var(--ease);
 }
 
@@ -519,18 +541,41 @@ ruby rt {
 }
 
 /* ── 반응형 (모바일) ──────────────────────────────────── */
-@media (max-width: 640px) {
+@media (max-width: 767px) {
+  :root {
+    --gutter: var(--gutter-mobile);
+  }
+
+  /* 모바일: 네비게이션을 세로 배치 */
   .topbar {
     flex-direction: column;
     gap: 8px;
-    padding: 12px 16px;
   }
 
   .topbar nav {
     justify-content: center;
   }
 
-  .content {
-    padding: 16px 12px;
+  /* 모바일: 버튼 최소 터치 영역 44x44 보장 */
+  button {
+    min-height: 44px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  :root {
+    --gutter: var(--gutter-tablet);
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1439px) {
+  :root {
+    --gutter: var(--gutter-desktop);
+  }
+}
+
+@media (min-width: 1440px) {
+  :root {
+    --gutter: var(--gutter-wide);
   }
 }
