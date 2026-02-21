@@ -54,10 +54,10 @@
 - [ ] **quizstat-01**: 카테고리별 정답률 (latest/first 기준)
 - [ ] **quizstat-02**: 문제별 정답률 및 난이도 지표
 - [ ] **quizstat-03**: 가장 많이 틀린 TOP N 추출
-- [ ] **quizstat-04**: 유저별 학습량 랭킹
 - [ ] **quizstat-05**: 서비스 지표 (DAU, 완료율, 전환율)
 - [ ] **quizstat-06**: [마이페이지] 개인 학습 통계 조회
   - 현재: `stats` 관련 5개 파일에 충돌 마커가 남아 있어 전체 미완료로 분류
+  - 범위 제외: `quizstat-04(학습 랭킹)`은 타 이슈/브랜치 담당으로 본 이슈에서 제외
 
 ## DB 매핑 메모
 - `wrong_answers`: `member_id`, `question_id` (Unique), `wrong_count`, `last_wrong_at`
@@ -118,7 +118,7 @@
 - 작업 범위:
   1. `stats` 5개 파일 충돌 마커 제거 및 기준안(최신 집계안/기본 집계안) 확정
   2. `quizstat-05`(관리자 개요), `quizstat-06`(개인 통계) API 정상 빌드 확인
-  3. `quizstat-01`~`quizstat-04` API 포함 여부 확정 및 누락 시 구현
+  3. `quizstat-01`~`quizstat-03`, `quizstat-05`~`quizstat-06` API 포함 여부 확정 및 누락 시 구현
   4. 테스트 전략 수립: 서비스 단위(Unit Test, 단위 테스트) + 통합(Integration Test, 통합 테스트) 시나리오 정리
 - 완료 기준:
   - `stats` 관련 컴파일 오류(충돌 마커)가 0건이어야 함
