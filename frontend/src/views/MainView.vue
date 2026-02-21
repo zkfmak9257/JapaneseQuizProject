@@ -193,7 +193,7 @@ const sceneGroups = [
   {
     icon: "✈️",
     title: "공항 / 입국·출국",
-    sceneId: 3,               // DB: 여행(scene_id=3)
+    sceneId: 1,               // DB: 공항/입국·출국(scene_id=1)
     image: imgAirport,
     items: [
       { emoji: "📍", name: "위치 · 시설 찾기",
@@ -207,7 +207,7 @@ const sceneGroups = [
   {
     icon: "🚉",
     title: "교통 / 이동",
-    sceneId: 3,
+    sceneId: 2,               // DB: 교통/이동(scene_id=2)
     image: imgTransport,
     items: [
       { emoji: "🚃", name: "기차 · 지하철 이용",
@@ -275,7 +275,7 @@ const sceneGroups = [
   {
     icon: "🌙",
     title: "야간 / 즐길거리",
-    sceneId: 1,               // DB: 일상회화(scene_id=1) — 가장 가까운 매핑
+    sceneId: 6,               // DB: 야간/즐길거리(scene_id=6)
     image: imgNightlife,
     items: [
       { emoji: "🎶", name: "클럽 · 입장 문의",
@@ -293,7 +293,7 @@ const sceneGroups = [
   {
     icon: "🚨",
     title: "긴급 상황",
-    sceneId: 8,               // DB: 긴급상황(scene_id=8)
+    sceneId: 7,               // DB: 긴급상황(scene_id=7)
     image: imgEmergency,
     items: [
       { emoji: "🏥", name: "병원",
@@ -307,8 +307,8 @@ const sceneGroups = [
   {
     icon: "🏛️",
     title: "관광지 / 명소",
-    sceneId: 3,               // DB: 여행(scene_id=3)
-    image: imgAirport,        // 여행 이미지 재활용
+    sceneId: 8,               // DB: 관광지/명소(scene_id=8)
+    image: imgAirport,        // 관광 이미지 재활용
     items: [
       { emoji: "🎫", name: "입장권 · 예약",
         desc: "티켓 구매, 할인, 사전 예약 확인" },
@@ -386,14 +386,14 @@ function onStart() {
   });
 }
 
-// onStartTravel: 여행 모드(sceneId=3) 바로 시작
+// onStartTravel: 여행 모드(sceneId=2: 교통/이동) 바로 시작
 function onStartTravel() {
   categoryType.value = "WORD";
   router.push({
     path: "/quiz/start",
     query: {
       questionType: "WORD",
-      sceneId: "3"
+      sceneId: "2"
     }
   });
 }
