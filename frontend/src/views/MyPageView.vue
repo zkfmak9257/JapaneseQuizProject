@@ -21,6 +21,7 @@
       <div class="actions mypage-actions">
         <RouterLink class="btn-link" to="/quiz/wrong-answers">오답노트</RouterLink>
         <RouterLink class="btn-link secondary" to="/quiz/favorites">즐겨찾기</RouterLink>
+        <RouterLink class="btn-link secondary" to="/me/stats">개인 통계</RouterLink>
       </div>
     </section>
 
