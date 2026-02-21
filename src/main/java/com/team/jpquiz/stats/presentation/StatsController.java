@@ -58,9 +58,10 @@ public class StatsController {
     @GetMapping("/admin/stats/questions/top-wrong")
     @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<List<StatsResponse.TopWrongQuestion>> getTopWrongQuestions(
-            @RequestParam(defaultValue = "10") int limit
+            @RequestParam(defaultValue = "10") int limit,
+            @RequestParam(defaultValue = "latest") String basis
     ) {
-        List<StatsResponse.TopWrongQuestion> response = statsQueryService.findTopWrongQuestions(limit);
+        List<StatsResponse.TopWrongQuestion> response = statsQueryService.findTopWrongQuestions(limit, basis);
         return ApiResponse.ok(response);
     }
 

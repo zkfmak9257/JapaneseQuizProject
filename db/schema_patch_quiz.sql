@@ -12,6 +12,13 @@ ALTER TABLE quiz_choices
 ALTER TABLE quiz_questions
   ADD COLUMN IF NOT EXISTS question_type VARCHAR(20) NOT NULL DEFAULT 'WORD' AFTER scene_id;
 
+-- 1-1-1) quiz_questions: 활성/비활성 상태 컬럼
+ALTER TABLE quiz_questions
+  ADD COLUMN IF NOT EXISTS is_active TINYINT(1) NOT NULL DEFAULT 1 AFTER question_text;
+
+ALTER TABLE quiz_questions
+  ADD COLUMN IF NOT EXISTS deactivated_at DATETIME NULL AFTER is_active;
+
 -- 1-2) SENTENCE 문제용 토큰 테이블
 CREATE TABLE IF NOT EXISTS quiz_sentence_tokens (
   token_id BIGINT NOT NULL AUTO_INCREMENT,

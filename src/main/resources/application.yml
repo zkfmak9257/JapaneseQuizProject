@@ -49,3 +49,9 @@ app:
     secret: ""  # Base64 인코딩된 시크릿 키 (최소 256비트, 환경변수로 주입 권장)
     access-token-expiration: 1800000     # 30분 (밀리초)
     refresh-token-expiration: 604800000  # 7일 (밀리초)
+  report:
+    auto-deactivate:
+      # 동일 문항에 대해 서로 다른 신고자 수가 임계치를 넘으면 자동 비활성화
+      unique-reporter-threshold: 3
+      # 관리자 처리 상태가 RESOLVED일 때 문항 자동 비활성화
+      on-resolved: true

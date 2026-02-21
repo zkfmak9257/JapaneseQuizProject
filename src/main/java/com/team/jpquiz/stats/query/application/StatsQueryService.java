@@ -127,10 +127,13 @@ public class StatsQueryService {
         return PageResponse.of(content, page, size, totalElements);
     }
 
-    public List<StatsResponse.TopWrongQuestion> findTopWrongQuestions(int limit) {
+    public List<StatsResponse.TopWrongQuestion> findTopWrongQuestions(int limit, String basis) {
         validateLimit(limit);
+        StatsBasis normalizedBasis = normalizeBasis(basis, StatsBasis.LATEST);
 
-        List<StatsResponse.TopWrongQuestion> raw = statsMapper.findTopWrongQuestions(limit);
+        List<StatsResponse.TopWrongQuestion> raw = normalizedBasis == StatsBasis.FIRST
+                ? statsMapper.findTopWrongQuestionsByFirst(limit)
+                : statsMapper.findTopWrongQuestionsByLatest(limit);
         List<StatsResponse.TopWrongQuestion> result = new ArrayList<>();
         for (StatsResponse.TopWrongQuestion item : raw) {
             int totalAnswers = valueOrZero(item.getTotalAnswers());

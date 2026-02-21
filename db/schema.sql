@@ -57,10 +57,13 @@ CREATE TABLE IF NOT EXISTS quiz_questions (
   scene_id BIGINT NULL,
   question_type VARCHAR(20) NOT NULL DEFAULT 'WORD',
   question_text TEXT NOT NULL,
+  is_active TINYINT(1) NOT NULL DEFAULT 1,
+  deactivated_at DATETIME NULL,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (question_id),
   KEY idx_quiz_questions_scene_id (scene_id),
+  KEY idx_quiz_questions_active (is_active),
   CONSTRAINT fk_quiz_questions_scene
     FOREIGN KEY (scene_id) REFERENCES quiz_scenes (scene_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
