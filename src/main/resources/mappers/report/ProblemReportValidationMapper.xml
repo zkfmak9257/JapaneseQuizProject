@@ -3,10 +3,28 @@
 
 <mapper namespace="com.team.jpquiz.report.command.infrastructure.ProblemReportValidationMapper">
 
-    <select id="countQuestionById" resultType="int">
+    <select id="countActiveQuestionById" resultType="int">
         SELECT COUNT(*)
         FROM quiz_questions
         WHERE question_id = #{questionId}
+          AND is_active = 1
     </select>
+
+    <select id="countDistinctReporterIdsByQuestionId" resultType="int">
+        SELECT COUNT(DISTINCT reporter_id)
+        FROM problem_reports
+        WHERE question_id = #{questionId}
+          AND reporter_id IS NOT NULL
+          AND status &lt;&gt; 'REJECTED'
+    </select>
+
+    <update id="deactivateQuestionById">
+        UPDATE quiz_questions
+        SET is_active = 0,
+            deactivated_at = NOW(),
+            updated_at = NOW()
+        WHERE question_id = #{questionId}
+          AND is_active = 1
+    </update>
 
 </mapper>
