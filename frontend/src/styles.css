@@ -263,3 +263,42 @@ ruby rt {
   font-size: 11px;
   color: #475569;
 }
+
+.admin-section + .admin-section {
+  margin-top: 20px;
+}
+
+.admin-stats-filters {
+  margin: 12px 0 16px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.field-inline {
+  display: grid;
+  gap: 6px;
+}
+
+.stats-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+}
+
+.stat-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 12px;
+  background: #f8fafc;
+}
+
+.stat-label {
+  margin: 0;
+  font-size: 13px;
+  color: #475569;
+}
+
+.stat-value {
+  margin: 8px 0 0;
+  font-size: 22px;
+  font-weight: 700;
+}
