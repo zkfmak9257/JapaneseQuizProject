@@ -16,8 +16,9 @@
         SELECT COUNT(*)
         FROM quiz_questions qq
         <where>
+            qq.is_active = 1
             <if test="questionType != null and questionType != ''">
-                qq.question_type = #{questionType}
+                AND qq.question_type = #{questionType}
             </if>
             <if test="sceneId != null">
                 AND qq.scene_id = #{sceneId}
@@ -38,8 +39,9 @@
         SELECT qq.question_id
         FROM quiz_questions qq
         <where>
+            qq.is_active = 1
             <if test="questionType != null and questionType != ''">
-                qq.question_type = #{questionType}
+                AND qq.question_type = #{questionType}
             </if>
             <if test="sceneId != null">
                 AND qq.scene_id = #{sceneId}

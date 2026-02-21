@@ -30,6 +30,9 @@ public class ProblemReportCommandService {
     @Value("${app.report.auto-deactivate.unique-reporter-threshold:3}")
     private int autoDeactivateUniqueReporterThreshold;
 
+    @Value("${app.report.auto-deactivate.on-resolved:true}")
+    private boolean autoDeactivateOnResolved;
+
     public ProblemReportCreateResponse createReport(Long reporterId, ProblemReportCreateRequest request) {
         validateReporterId(reporterId);
         validateQuestionId(request.getQuestionId());
@@ -64,6 +67,7 @@ public class ProblemReportCommandService {
         }
 
         problemReport.updateStatus(request.getStatus(), request.getAction());
+        applyResolvedStatusPolicy(problemReport);
         return ProblemReportStatusUpdateResponse.from(problemReport);
     }
 
@@ -103,5 +107,15 @@ public class ProblemReportCommandService {
         }
 
         problemReportValidationMapper.deactivateQuestionById(questionId);
+    }
+
+    private void applyResolvedStatusPolicy(ProblemReport problemReport) {
+        if (!autoDeactivateOnResolved) {
+            return;
+        }
+        if (problemReport.getStatus() != ReportStatus.RESOLVED) {
+            return;
+        }
+        problemReportValidationMapper.deactivateQuestionById(problemReport.getQuestionId());
     }
 }
