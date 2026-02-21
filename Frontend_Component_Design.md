@@ -135,7 +135,41 @@
 ### API
 - `GET /api/members/me`
 - `PATCH /api/members/me`
-- 통계 API (정책 확정 후 연결)
+- `GET /api/stats/me`
+
+---
+
+## 8) 관리자 통계 (`/admin/stats`)
+### 컴포넌트
+- `AdminStatsView`
+- `AdminOverviewCards`
+- `CategoryAccuracyList`
+- `QuestionStatsList`
+- `TopWrongList`
+
+### 상태
+- `basis: 'latest' | 'first'`
+- `page: number`
+- `size: number`
+- `limit: number`
+- `overview`
+- `categories[]`
+- `questionPage`
+- `topWrongItems[]`
+
+### 이벤트
+- `onChangeBasis()`
+- `onChangeQuestionPage()`
+- `onChangeQuestionSize()`
+- `onChangeTopWrongLimit()`
+- `onRetrySection()`
+
+### API
+- `GET /api/admin/stats/overview`
+- `GET /api/admin/stats/categories?basis=latest|first`
+- `GET /api/admin/stats/questions?basis=&page=&size=`
+- `GET /api/admin/stats/questions/top-wrong?limit=`
+- 제외: `GET /api/admin/stats/rankings/learning` (타 이슈 담당)
 
 ---
 
@@ -173,4 +207,3 @@
 3. 완료/결과 조회
 4. 오답노트/즐겨찾기
 5. 마이페이지/통계
-
