@@ -64,12 +64,4 @@ public class StatsController {
         return ApiResponse.ok(response);
     }
 
-    @GetMapping("/admin/stats/rankings/learning")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ApiResponse<List<StatsResponse.LearningRanking>> getLearningRanking(
-            @RequestParam(defaultValue = "20") int limit
-    ) {
-        List<StatsResponse.LearningRanking> response = statsQueryService.findLearningRanking(limit);
-        return ApiResponse.ok(response);
-    }
 }

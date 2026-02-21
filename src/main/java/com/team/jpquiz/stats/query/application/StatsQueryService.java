@@ -148,30 +148,6 @@ public class StatsQueryService {
         return result;
     }
 
-    public List<StatsResponse.LearningRanking> findLearningRanking(int limit) {
-        validateLimit(limit);
-
-        List<StatsResponse.LearningRanking> raw = statsMapper.findLearningRanking(limit);
-        List<StatsResponse.LearningRanking> result = new ArrayList<>();
-        int rank = 1;
-        for (StatsResponse.LearningRanking item : raw) {
-            int totalAnswers = valueOrZero(item.getTotalAnswers());
-            int completedAttempts = valueOrZero(item.getCompletedAttempts());
-            int correctAnswers = valueOrZero(item.getCorrectAnswers());
-
-            result.add(StatsResponse.LearningRanking.builder()
-                    .rank(rank++)
-                    .memberId(item.getMemberId())
-                    .nickname(item.getNickname())
-                    .totalAnswers(totalAnswers)
-                    .completedAttempts(completedAttempts)
-                    .correctAnswers(correctAnswers)
-                    .accuracyRate(calculateRate(correctAnswers, totalAnswers))
-                    .build());
-        }
-        return result;
-    }
-
     private void validateMemberId(Long memberId) {
         if (memberId == null || memberId <= 0) {
             throw new CustomException(ErrorCode.UNAUTHORIZED);

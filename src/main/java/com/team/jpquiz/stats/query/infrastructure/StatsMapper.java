@@ -31,6 +31,4 @@ public interface StatsMapper {
     long countQuestionStatsByFirst();
 
     List<StatsResponse.TopWrongQuestion> findTopWrongQuestions(@Param("limit") int limit);
-
-    List<StatsResponse.LearningRanking> findLearningRanking(@Param("limit") int limit);
 }

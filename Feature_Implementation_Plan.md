@@ -156,7 +156,7 @@
 
 ### 요구사항
 #### 필수
-- [ ] **API 정의**: 카테고리별/문제별 통계 조회, 유저별 학습량 조회 API
+- [ ] **API 정의**: 카테고리별/문제별 통계 조회 API
 - [ ] **DTO 설계**: `StatsResponse`, `ChartDataDto`
 - [ ] **Mapper/Repository**: `StatsMapper` (복잡한 집계 쿼리 작성)
 - [ ] **Service 구현**: 통계 데이터 가공 및 조회 로직
@@ -183,6 +183,7 @@
 ### 완료 조건
 - [ ] 집계 데이터가 정확한지 검증 (수동 계산과 비교)
 - [ ] 권한에 따른 접근 제어 확인
+- 범위 제외: `GET /api/admin/stats/rankings/learning` (학습 랭킹)은 타 이슈/브랜치 담당
 
 ---
 
@@ -239,4 +240,4 @@
 - 작업:
   1. `stats` 5개 파일 충돌 해소 및 단일 기준안 확정
   2. 개인 통계(`GET /api/stats/me`) 및 관리자 개요(`GET /api/admin/stats/overview`) 정상화
-  3. 카테고리/문항/TOP 오답/학습량 랭킹 API 포함 여부 확정 및 검증
+  3. 카테고리/문항/TOP 오답 API 포함 여부 확정 및 검증
