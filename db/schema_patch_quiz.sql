@@ -19,6 +19,23 @@ ALTER TABLE quiz_questions
 ALTER TABLE quiz_questions
   ADD COLUMN IF NOT EXISTS deactivated_at DATETIME NULL AFTER is_active;
 
+-- 1-1-2) quiz_questions: 활성 상태 조회 인덱스
+SET @idx_exists := (
+  SELECT COUNT(1)
+  FROM information_schema.statistics
+  WHERE table_schema = DATABASE()
+    AND table_name = 'quiz_questions'
+    AND index_name = 'idx_quiz_questions_active'
+);
+SET @ddl := IF(
+  @idx_exists = 0,
+  'ALTER TABLE quiz_questions ADD INDEX idx_quiz_questions_active (is_active)',
+  'SELECT 1'
+);
+PREPARE stmt FROM @ddl;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
 -- 1-2) SENTENCE 문제용 토큰 테이블
 CREATE TABLE IF NOT EXISTS quiz_sentence_tokens (
   token_id BIGINT NOT NULL AUTO_INCREMENT,
