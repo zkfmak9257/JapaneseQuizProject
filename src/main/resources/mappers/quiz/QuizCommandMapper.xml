@@ -9,12 +9,14 @@
     <select id="countAllQuestions" resultType="int">
         SELECT COUNT(*)
         FROM quiz_questions
+        WHERE is_active = 1
     </select>
 
     <!-- 시작 시점에 랜덤 문제 ID를 count개 추출 -->
     <select id="findRandomQuestionIds" resultType="long">
         SELECT qq.question_id
         FROM quiz_questions qq
+        WHERE qq.is_active = 1
         ORDER BY RAND()
         LIMIT #{count}
     </select>
@@ -25,6 +27,7 @@
         FROM wrong_answers wa
         JOIN quiz_questions qq ON qq.question_id = wa.question_id
         WHERE wa.member_id = #{memberId}
+          AND qq.is_active = 1
         ORDER BY COALESCE(wa.last_wrong_at, wa.created_at) DESC
         LIMIT #{limit}
     </select>
@@ -34,8 +37,9 @@
         SELECT qq.question_id
         FROM quiz_questions qq
         <where>
+            qq.is_active = 1
             <if test="excludeIds != null and excludeIds.size() > 0">
-                qq.question_id NOT IN
+                AND qq.question_id NOT IN
                 <foreach collection="excludeIds" item="id" open="(" separator="," close=")">
                     #{id}
                 </foreach>

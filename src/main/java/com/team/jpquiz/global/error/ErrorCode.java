@@ -31,7 +31,8 @@ public enum ErrorCode {
     // Problem Report
     REPORT_NOT_FOUND(HttpStatus.NOT_FOUND, "REPORT_NOT_FOUND", "신고 내역을 찾을 수 없습니다."),
     INVALID_REPORT_STATUS_TRANSITION(HttpStatus.BAD_REQUEST, "INVALID_REPORT_STATUS_TRANSITION", "신고 상태 전이가 올바르지 않습니다."),
-    REPORT_TARGET_QUESTION_NOT_FOUND(HttpStatus.NOT_FOUND, "REPORT_TARGET_QUESTION_NOT_FOUND", "신고 대상 문제를 찾을 수 없습니다.");
+    REPORT_TARGET_QUESTION_NOT_FOUND(HttpStatus.NOT_FOUND, "REPORT_TARGET_QUESTION_NOT_FOUND", "신고 대상 문제를 찾을 수 없습니다."),
+    REPORT_CONTENT_REQUIRED_FOR_ETC(HttpStatus.BAD_REQUEST, "REPORT_CONTENT_REQUIRED_FOR_ETC", "기타 신고 유형은 상세 사유를 입력해야 합니다.");
 
 
 
