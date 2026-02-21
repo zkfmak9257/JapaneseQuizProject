@@ -47,3 +47,21 @@
 11) Swagger 기본 설정 확정
 - 왜: 로컬/개발에서는 문서 접근이 필요하고 운영에서는 비활성화가 필요하기 위해
 - 어떻게: `local`, `dev` 프로필에서만 OpenAPI 그룹 활성화
+
+12) Stats 패키지 충돌 복구
+- 왜: `stats` 도메인 파일에 merge conflict marker가 남아 컴파일이 실패했기 때문
+- 어떻게: `StatsController`, `StatsQueryService`, `StatsMapper`, `StatsMapper.xml` 충돌 마커 제거 및 정합성 정리
+- 결과: `./gradlew compileJava` 통과
+
+13) 프론트 Stats API 연동 (학습 랭킹 제외)
+- 왜: 마이페이지/관리자 통계 화면이 더미 상태였고, 실제 운영 가능한 조회 흐름이 필요했기 때문
+- 어떻게:
+  - `GET /api/stats/me`
+  - `GET /api/admin/stats/overview`
+  - `GET /api/admin/stats/categories`
+  - `GET /api/admin/stats/questions`
+  - `GET /api/admin/stats/questions/top-wrong`
+  연동 및 화면 렌더링 반영
+- 어떻게: 공통 상태 컴포넌트(`LoadingState`, `ErrorState`, `EmptyState`) 적용
+- 어떻게: `400/401/403` 메시지 분기 처리
+- 범위 제외: `GET /api/admin/stats/rankings/learning`(학습 랭킹)

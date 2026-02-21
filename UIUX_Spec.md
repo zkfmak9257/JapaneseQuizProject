@@ -33,6 +33,22 @@
 - `409`: 중복/상태 충돌
 - `500`: 서버 오류, 재시도 유도
 
+## 구현 반영 상태 (2026-02-21)
+1. 개인 통계
+- `/me/stats`에서 `GET /api/stats/me` 연동 완료
+- 로딩/에러/빈 상태 UI 반영 완료
+
+2. 관리자 통계
+- `/admin/stats`에서 아래 API 연동 완료
+  - `GET /api/admin/stats/overview`
+  - `GET /api/admin/stats/categories`
+  - `GET /api/admin/stats/questions`
+  - `GET /api/admin/stats/questions/top-wrong`
+- 필터/페이지네이션(basis, page, size, limit) UI 반영 완료
+
+3. 범위 제외
+- `GET /api/admin/stats/rankings/learning`(학습 랭킹)은 타 이슈 담당으로 제외
+
 ## 핵심 사용자 흐름
 1. 메인 페이지 진입
 2. 카테고리 선택
