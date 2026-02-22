@@ -80,18 +80,35 @@
   padding: 0;
 }
 
+/* html → body → #app → .layout 높이 체인 확보
+   왜? 어느 레벨에서든 배경이 끊기면 흰색이 삐져나온다 */
+html,
+body,
+#app {
+  height: 100%;
+}
+
 body {
   font-family: var(--font-body);
-  /* 본문은 가독성을 위해 15~16px 범위로 제한 */
   font-size: clamp(15px, 1.5vw, 16px);
   line-height: var(--line-height-body);
-  /* 하늘→바다 그라데이션 배경: 전체 페이지에 청량한 분위기 */
-  background: linear-gradient(180deg, var(--cloud) 0%, #e8f4f8 100%);
+  /* 전체 앱 통일 배경 — 하늘/구름 그라데이션 */
+  background: linear-gradient(155deg,
+      #e0f2fe 0%,
+      /* sky-100 */
+      #f0f9ff 30%,
+      /* sky-50  */
+      #f8fafc 60%,
+      /* slate-50 */
+      #eff6ff 100%
+      /* blue-50 */
+    );
+  /* 그라데이션이 반복되지 않고 화면 전체를 덮도록 */
+  background-attachment: fixed;
   color: var(--text);
   min-height: 100vh;
   min-height: 100dvh;
   -webkit-font-smoothing: antialiased;
-  /* 폰트 렌더링 부드럽게 */
 }
 
 /* ── 레이아웃 ──────────────────────────────────────────── */
@@ -100,6 +117,13 @@ body {
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
+  /* 부모 배경이 투과되도록 투명 유지 */
+  background: transparent;
+}
+
+/* 메인 콘텐츠가 남은 공간을 차지하여 푸터를 바닥에 고정 */
+.layout .content {
+  flex: 1;
 }
 
 /* ── 헤더 — SaaS 깔끔 스타일 ──────────────────────────── 
@@ -111,14 +135,14 @@ body {
    ============================================================ */
 .topbar {
   position: sticky;
-  /* 스크롤해도 상단 고정 */
   top: 0;
   z-index: 100;
-  background: #fff;
-  /* 깔끔한 흰색 */
-  border-bottom: 1px solid #e8edf2;
-  /* 얇고 부드러운 회색 라인 */
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  /* 반투명 → body 그라데이션이 자연스럽게 비침 (경계감 제거) */
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
   /* 미세한 그림자 */
 }
 

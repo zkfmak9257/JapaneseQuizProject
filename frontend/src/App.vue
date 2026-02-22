@@ -174,12 +174,14 @@ function onLogout() {
 <style scoped>
 /* ── 푸터 스타일 ──────────────────────────────────── */
 .site-footer {
-  background: #1e293b;            /* 슬레이트 다크 */
-  color: rgba(255, 255, 255, 0.5);
+  /* 배경 투명 → body의 그라데이션이 이어짐 */
+  background: transparent;
+  color: #64748b;                 /* 슬레이트 500 */
   text-align: center;
   padding: 24px 20px;
   font-size: 13px;
   font-family: var(--font-body);
+  border-top: 1px solid rgba(79, 70, 229, 0.08);
 }
 
 /* ── 프로필 드롭다운 오버레이 — 외부 클릭 감지 ────── */
