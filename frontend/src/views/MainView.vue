@@ -80,11 +80,6 @@
       </h2>
       <p class="section-desc">카테고리를 선택한 뒤, 세부 상황을 골라주세요. 선택하지 않으면 랜덤으로 출제됩니다.</p>
 
-      <!-- ── 대분류 드롭다운 셀렉트 ─────────────────────────
-           왜 드롭다운?
-           - 카테고리가 많아질수록 가로 공간 절약 가능
-           - 모바일에서도 네이티브 select UX 활용
-           - 한눈에 현재 선택 상태를 파악하기 쉬움 -->
       <div class="category-dropdown-wrapper">
         <select
           class="category-dropdown"
@@ -110,40 +105,21 @@
         </span>
       </div>
 
-      <!-- ── 하위 항목 카드 그리드 ───────────────────────── 
-           대분류가 선택되었을 때만 표시
-           기존 scene-card 스타일을 그대로 재사용 -->
-      <div v-if="activeGroupIndex !== null" class="scene-grid">
-        <button
-          class="scene-card"
-          :class="{ selected: selectedSubItem?.groupIdx === activeGroupIndex && selectedSubItem?.itemIdx === iIdx }"
-          v-for="(item, iIdx) in sceneGroups[activeGroupIndex].items"
-          :key="iIdx"
-          @click="toggleSubItem(activeGroupIndex, iIdx)"
-        >
-          <!-- 카드 이미지: 일본풍 일러스트 + 이모지 오버레이 -->
-          <div class="scene-image">
-            <img :src="sceneGroups[activeGroupIndex].image" :alt="item.name" loading="lazy" />
-            <div class="scene-image-overlay"></div>
-            <span class="scene-image-emoji">{{ item.emoji }}</span>
-            <div
-              v-if="selectedSubItem?.groupIdx === activeGroupIndex && selectedSubItem?.itemIdx === iIdx"
-              class="selected-badge"
-            >✓</div>
-          </div>
-          <!-- 카드 정보: 이름 + 상세 설명 -->
-          <div class="scene-info">
-            <strong class="scene-name">{{ item.name }}</strong>
-            <span class="scene-desc" v-if="item.desc">{{ item.desc }}</span>
-          </div>
+      <!-- ── 하위 항목 스위처 (바텀시트 트리거) ───────────────────────── -->
+      <div class="situation-trigger-wrapper">
+        <button class="situation-trigger-btn" @click="openSituationDrawer">
+          <span class="trigger-label">현재 상황</span>
+          <span class="trigger-value" v-if="selectedSubItem !== null">
+            {{ sceneGroups[selectedSubItem.groupIdx].items[selectedSubItem.itemIdx].emoji }}
+            {{ sceneGroups[selectedSubItem.groupIdx].items[selectedSubItem.itemIdx].name }}
+          </span>
+          <span class="trigger-placeholder" v-else>
+            {{ activeGroupIndex !== null ? '상황을 선택해 주세요 (미선택 시 랜덤)' : '카테고리를 먼저 선택해 주세요' }}
+          </span>
+          <span class="trigger-arrow">›</span>
         </button>
       </div>
 
-      <!-- 대분류 미선택 시 안내 메시지 -->
-      <div v-else class="empty-state">
-        <span class="empty-icon">🗾</span>
-        <p class="empty-text">위에서 상황 카테고리를 선택하면<br/>세부 상황이 표시됩니다</p>
-      </div>
     </section>
 
     <!-- ── 4. 시작하기 버튼 (하단 고정형) ───────────────────
@@ -159,12 +135,60 @@
         🌸 퀴즈 시작하기
       </button>
     </section>
+    <!-- ── 5. 상황 선택 바텀시트 (모달/드로어) ─────────────────── -->
+    <transition name="drawer-slide">
+      <div v-if="isSituationOpen" class="drawer-overlay" @click="closeSituationDrawer">
+        <div class="drawer-content" @click.stop>
+          
+          <div class="drawer-header">
+            <h3 class="drawer-title">
+              <span v-if="activeGroupIndex !== null">{{ sceneGroups[activeGroupIndex].icon }} {{ sceneGroups[activeGroupIndex].title }}</span>
+              <span v-else>상황 선택</span>
+            </h3>
+            <button class="drawer-close" @click="closeSituationDrawer">✕</button>
+          </div>
+
+          <div class="drawer-body">
+            <div v-if="activeGroupIndex === null" class="empty-state">
+              <span class="empty-icon">🗾</span>
+              <p class="empty-text">카테고리를 먼저 선택해 주세요</p>
+            </div>
+            
+            <div v-else class="scene-grid">
+              <button
+                class="scene-card"
+                :class="{ selected: selectedSubItem?.groupIdx === activeGroupIndex && selectedSubItem?.itemIdx === iIdx }"
+                v-for="(item, iIdx) in sceneGroups[activeGroupIndex].items"
+                :key="iIdx"
+                @click="selectSubItemAndClose(activeGroupIndex, iIdx)"
+              >
+                <div class="scene-image">
+                  <img :src="sceneGroups[activeGroupIndex].image" :alt="item.name" loading="lazy" />
+                  <div class="scene-image-overlay"></div>
+                  <span class="scene-image-emoji">{{ item.emoji }}</span>
+                  <div
+                    v-if="selectedSubItem?.groupIdx === activeGroupIndex && selectedSubItem?.itemIdx === iIdx"
+                    class="selected-badge"
+                  >✓</div>
+                </div>
+                <div class="scene-info">
+                  <strong class="scene-name">{{ item.name }}</strong>
+                  <span class="scene-desc" v-if="item.desc">{{ item.desc }}</span>
+                </div>
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </transition>
+
   </section>
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
-import { useRouter } from "vue-router";
+import { ref, computed, onMounted, watch } from "vue";
+import { useRouter, useRoute } from "vue-router";
 
 /* ── 카테고리별 이미지 임포트 ─────────────────────────────
    Vite의 import로 빌드 시 해싱된 URL로 자동 변환
@@ -178,9 +202,11 @@ import imgNightlife from "../assets/scenes/business.png";
 import imgEmergency from "../assets/scenes/emergency.png";
 
 const router = useRouter();
+const route = useRoute();
 
 /* ── 상태(State) 관리 ──────────────────────────────────── */
 const categoryType = ref("WORD");
+const isSituationOpen = ref(false); // 바텀시트 열림 여부
 
 /* ── 대분류 + 하위 항목 데이터 구조 ─────────────────────────
    7개 대분류 × 평균 3~5개 하위 항목 = 총 26개 상황
@@ -327,6 +353,43 @@ const activeGroupIndex = ref(null);
 // null이면 미선택 → 전체(랜덤) 모드
 const selectedSubItem = ref(null);
 
+/* ── 딥링크(URL 동기화) 로직 ────────────────────────────── */
+onMounted(() => {
+  const qType = route.query.questionType;
+  const qCategory = route.query.category;
+  const qSituation = route.query.situation;
+  
+  if (qType === 'WORD' || qType === 'SENTENCE') {
+    categoryType.value = qType;
+  }
+  
+  if (qCategory !== undefined) {
+    const gIdx = Number(qCategory);
+    if (gIdx >= 0 && gIdx < sceneGroups.length) {
+      activeGroupIndex.value = gIdx;
+      
+      if (qSituation !== undefined) {
+        const iIdx = Number(qSituation);
+        if (iIdx >= 0 && iIdx < sceneGroups[gIdx].items.length) {
+          selectedSubItem.value = { groupIdx: gIdx, itemIdx: iIdx };
+        }
+      }
+    }
+  }
+});
+
+// 상태 변경 시마다 URL 동기화
+watch([categoryType, activeGroupIndex, selectedSubItem], () => {
+  router.replace({
+    query: {
+      ...route.query,
+      questionType: categoryType.value,
+      category: activeGroupIndex.value ?? undefined,
+      situation: selectedSubItem.value?.itemIdx ?? undefined
+    }
+  }).catch(() => {});
+});
+
 /* ── Computed 속성 ─────────────────────────────────────── */
 
 // selectedSceneId: 선택된 하위 항목의 대분류에 매핑된 DB sceneId
@@ -337,7 +400,12 @@ const selectedSceneId = computed(() => {
 
 // selectedSceneSummary: 하단 요약 영역에 표시할 텍스트
 const selectedSceneSummary = computed(() => {
-  if (selectedSubItem.value === null) return "🗺️ 전체(랜덤)";
+  if (selectedSubItem.value === null) {
+    if (activeGroupIndex.value !== null) {
+      return `${sceneGroups[activeGroupIndex.value].icon} 랜덤 상황`;
+    }
+    return "🗺️ 랜덤 (전체)";
+  }
   const group = sceneGroups[selectedSubItem.value.groupIdx];
   const item = group.items[selectedSubItem.value.itemIdx];
   return `${group.icon} ${item.name}`;
@@ -346,33 +414,45 @@ const selectedSceneSummary = computed(() => {
 /* ── 이벤트 핸들러 ─────────────────────────────────────── */
 
 // onGroupChange: 드롭다운에서 대분류 선택 시 호출
-// event.target.value가 문자열이므로 Number()로 변환
 function onGroupChange(event) {
   const val = event.target.value;
   if (val === "") {
-    // 빈 값 선택 → 전체 모드
     activeGroupIndex.value = null;
     selectedSubItem.value = null;
   } else {
     activeGroupIndex.value = Number(val);
-    // 대분류 변경 시 이전 하위 선택 해제
     selectedSubItem.value = null;
+    // 대분류를 선택하면 자동으로 드로어를 열어서 하위상황을 고를 수 있게 유도
+    isSituationOpen.value = true;
   }
 }
 
-// toggleSubItem: 하위 항목 카드 클릭 시 선택/해제 토글
-function toggleSubItem(gIdx, iIdx) {
+// 바텀시트 제어
+function openSituationDrawer() {
+  if (activeGroupIndex.value === null) {
+    alert("카테고리를 먼저 선택해 주세요.");
+    return;
+  }
+  isSituationOpen.value = true;
+}
+
+function closeSituationDrawer() {
+  isSituationOpen.value = false;
+}
+
+// 하위 항목 카드 클릭 시 선택하고 모달 닫기
+function selectSubItemAndClose(gIdx, iIdx) {
   if (
     selectedSubItem.value &&
     selectedSubItem.value.groupIdx === gIdx &&
     selectedSubItem.value.itemIdx === iIdx
   ) {
-    // 같은 카드 재클릭 → 선택 해제
+    // 같은 카드 재클릭 시 선택 해제
     selectedSubItem.value = null;
   } else {
-    // 새로운 카드 선택
     selectedSubItem.value = { groupIdx: gIdx, itemIdx: iIdx };
   }
+  closeSituationDrawer();
 }
 
 // onStart: 현재 설정으로 퀴즈 시작
@@ -979,10 +1059,131 @@ function onStartTravel() {
   }
 }
 
-/* 아주 작은 화면: 카드 1열 */
-@media (max-width: 479px) {
-  .scene-grid {
-    grid-template-columns: 1fr;
-  }
+/* ── 하위 항목 스위처 (트리거 버튼) ───────────────────── */
+.situation-trigger-wrapper {
+  margin-top: 12px;
 }
+.situation-trigger-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #ffffff;
+  border: 2px solid rgba(126, 200, 227, 0.25);
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+}
+.situation-trigger-btn:hover {
+  border-color: var(--sky);
+  box-shadow: 0 10px 15px -3px rgba(58, 134, 184, 0.1);
+  transform: translateY(-2px);
+}
+.trigger-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-right: auto;
+}
+.trigger-value {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--dark);
+  margin-right: 12px;
+}
+.trigger-placeholder {
+  font-size: 15px;
+  font-weight: 500;
+  color: #94a3b8;
+  margin-right: 12px;
+}
+.trigger-arrow {
+  font-size: 20px;
+  color: var(--text-muted);
+}
+
+
+/* ── 바텀시트 (모달/드로어) ──────────────────────────── */
+.drawer-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 9999;
+  display: flex;
+  align-items: flex-end; /* 아래쪽에 붙앰 */
+}
+
+.drawer-content {
+  background: #f8fafc;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  border-radius: 24px 24px 0 0;
+  padding: 24px 20px 48px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 -10px 40px rgba(0,0,0,0.2);
+}
+
+.drawer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+.drawer-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--dark);
+  margin: 0;
+}
+.drawer-close {
+  background: transparent;
+  border: none;
+  font-size: 24px;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+}
+.drawer-close:hover {
+  color: var(--dark);
+}
+
+.drawer-body {
+  overflow-y: auto;
+  /* 스크롤바 커스텀 */
+  padding-right: 4px;
+}
+.drawer-body::-webkit-scrollbar {
+  width: 6px;
+}
+.drawer-body::-webkit-scrollbar-track {
+  background: transparent; 
+}
+.drawer-body::-webkit-scrollbar-thumb {
+  background: rgba(126, 200, 227, 0.5); 
+  border-radius: 4px;
+}
+
+/* 드로어 트랜지션 효과 */
+.drawer-slide-enter-active,
+.drawer-slide-leave-active {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.drawer-slide-enter-from,
+.drawer-slide-leave-to {
+  opacity: 0;
+}
+.drawer-slide-enter-from .drawer-content,
+.drawer-slide-leave-to .drawer-content {
+  transform: translateY(100%);
+}
+
 </style>
