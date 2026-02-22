@@ -12,17 +12,28 @@
    컴포넌트 전체에 일관된 색상 시스템을 유지할 수 있다. */
 :root {
   /* 메인 색상 팔레트 — 이미지에서 추출한 색상 */
-  --sky: #7EC8E3;        /* 하늘색: 맑은 여름 하늘 */
-  --ocean: #3A86B8;      /* 바다색: 깊고 시원한 바다 */
-  --ocean-deep: #2B6A94; /* 진한 바다: 호버/강조용 */
-  --train: #5E8B7E;      /* 열차 초록: 에노덴 기차색 */
-  --crossing: #F4D35E;   /* 건널목 노랑: 따뜻한 악센트 */
-  --cloud: #F1FAEE;      /* 구름 흰색: 배경에 사용 */
-  --sand: #FFF8E7;       /* 모래색: 카드 배경 */
-  --dark: #1a2d3d;       /* 어두운 남색: 텍스트/네비게이션 */
-  --text: #2c3e50;       /* 본문 텍스트 색상 */
-  --text-muted: #6b7b8d; /* 보조 텍스트 */
-  --border-light: rgba(126, 200, 227, 0.3); /* 반투명 하늘색 테두리 */
+  --sky: #7EC8E3;
+  /* 하늘색: 맑은 여름 하늘 */
+  --ocean: #3A86B8;
+  /* 바다색: 깊고 시원한 바다 */
+  --ocean-deep: #2B6A94;
+  /* 진한 바다: 호버/강조용 */
+  --train: #5E8B7E;
+  /* 열차 초록: 에노덴 기차색 */
+  --crossing: #F4D35E;
+  /* 건널목 노랑: 따뜻한 악센트 */
+  --cloud: #F1FAEE;
+  /* 구름 흰색: 배경에 사용 */
+  --sand: #FFF8E7;
+  /* 모래색: 카드 배경 */
+  --dark: #1a2d3d;
+  /* 어두운 남색: 텍스트/네비게이션 */
+  --text: #2c3e50;
+  /* 본문 텍스트 색상 */
+  --text-muted: #6b7b8d;
+  /* 보조 텍스트 */
+  --border-light: rgba(126, 200, 227, 0.3);
+  /* 반투명 하늘색 테두리 */
 
   /* 타이포그래피 */
   --font-display: "M PLUS Rounded 1c", "Noto Sans JP", sans-serif;
@@ -54,7 +65,8 @@
   --radius-md: 12px;
   --radius-lg: 16px;
   --radius-xl: 20px;
-  --radius-pill: 999px; /* 알약형 버튼용 */
+  --radius-pill: 999px;
+  /* 알약형 버튼용 */
 
   /* 트랜지션 — 부드러운 인터랙션 */
   --ease: cubic-bezier(0.4, 0, 0.2, 1);
@@ -78,7 +90,8 @@ body {
   color: var(--text);
   min-height: 100vh;
   min-height: 100dvh;
-  -webkit-font-smoothing: antialiased; /* 폰트 렌더링 부드럽게 */
+  -webkit-font-smoothing: antialiased;
+  /* 폰트 렌더링 부드럽게 */
 }
 
 /* ── 레이아웃 ──────────────────────────────────────────── */
@@ -103,7 +116,8 @@ body {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   color: #fff;
-  position: sticky; /* 스크롤해도 상단 고정 */
+  position: sticky;
+  /* 스크롤해도 상단 고정 */
   top: 0;
   z-index: 100;
   border-bottom: 1px solid rgba(126, 200, 227, 0.2);
@@ -270,6 +284,460 @@ button:active {
   padding: 0;
 }
 
+/* ── 장면(Scene) 배지 ────────────────────────────────── 
+   왜? 현재 어떤 장면(시나리오)에서 퀴즈를 풀고 있는지
+   시각적으로 알려주어 몰입감을 높인다. */
+.scene-badge {
+  display: inline-flex;
+  /* 아이콘 + 텍스트 가로 정렬 */
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  /* 알약형 배지 */
+  background: rgba(126, 200, 227, 0.15);
+  /* 하늘색 반투명 */
+  color: var(--ocean);
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.scene-badge-icon {
+  font-size: 16px;
+  /* 이모지 크기 살짝 강조 */
+}
+
+/* ── 문제 텍스트 강조 ────────────────────────────────────
+   왜? 문제 텍스트를 시각적으로 돋보이게 하여
+   사용자의 시선을 바로 잡는다. */
+.quiz-question-text {
+  font-size: clamp(22px, 4vw, 32px);
+  /* 반응형 크기 */
+  font-weight: 700;
+  color: var(--dark);
+  text-align: center;
+  margin: 16px 0 24px;
+  letter-spacing: 2px;
+  /* 일본어 가독성을 위한 자간 */
+  line-height: 1.5;
+}
+
+/* ── 유형 레이블 ─────────────────────────────────────── */
+.quiz-type-label {
+  display: inline-block;
+  font-size: 12px;
+  color: var(--text-muted);
+  background: rgba(126, 200, 227, 0.1);
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  margin-bottom: 4px;
+}
+
+/* ── 티켓 카드형 선택지 그리드 ────────────────────────────
+   왜? 선택지를 카드 형태로 배치하면
+   터치/클릭 영역이 넓어지고 시각적 임팩트가 강해진다.
+   2열 구조(태블릿↑), 모바일은 1열. */
+.choices-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  /* 모바일: 1열 */
+  gap: 12px;
+  margin: 8px 0 20px;
+}
+
+@media (min-width: 520px) {
+  .choices-grid {
+    grid-template-columns: 1fr 1fr;
+    /* 넓은 화면: 2열 */
+    gap: 14px;
+  }
+}
+
+/* ── 개별 선택지 카드 (여행 티켓 스타일) ────────────────── 
+   디자인 포인트:
+   - 둥근 모서리(16px) + 2px 테두리 → 티켓 느낌
+   - 부드러운 그림자 + hover 시 떠오름 → 클릭 유도
+   - transition-all로 모든 상태 변화를 자연스럽게 */
+.choice-card {
+  position: relative;
+  /* 체크 아이콘 절대 배치용 */
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  border: 2px solid var(--border-light);
+  /* 기본: 연한 테두리 */
+  border-radius: var(--radius-lg);
+  /* 16px 둥근 모서리 */
+  background: rgba(255, 255, 255, 0.95);
+  /* 거의 흰색 배경 */
+  cursor: pointer;
+  user-select: none;
+  /* 텍스트 드래그 방지 */
+  transition: all 0.25s var(--ease);
+  /* 부드러운 전환 */
+  box-shadow: var(--shadow-sm);
+  /* 기본 그림자 */
+  min-height: 60px;
+}
+
+/* hover: 살짝 떠오름 + 그림자 강화 → 클릭 가능함을 암시 */
+.choice-card:hover:not(.disabled) {
+  transform: translateY(-3px);
+  /* 3px 떠오름 */
+  box-shadow: var(--shadow-lg);
+  /* 큰 그림자 */
+  border-color: var(--sky);
+  /* 테두리 하늘색 */
+}
+
+/* active(클릭 순간): 살짝 눌리는 느낌 → 물리적 피드백 */
+.choice-card:active:not(.disabled) {
+  transform: scale(0.97);
+  /* 0.97배로 축소 */
+  transition-duration: 0.1s;
+  /* 빠른 반응 */
+}
+
+/* ── 선택(selected) 상태 ────────────────────────────────
+   왜? 사용자가 클릭한 카드를 명확하게 구분해야
+   "내가 뭘 골랐지?" 혼란을 방지한다. */
+.choice-card.selected {
+  border-color: var(--ocean);
+  /* 파란 테두리 */
+  background: rgba(126, 200, 227, 0.1);
+  /* 연한 파랑 배경 */
+  transform: scale(1.02);
+  /* 1.02배 살짝 확대 */
+  box-shadow: 0 4px 20px rgba(58, 134, 184, 0.2);
+  /* 파란 그림자 */
+}
+
+/* ── 정답(correct) 상태 ─────────────────────────────────
+   제출 후 정답 카드에 적용 — 초록색 glow + 펄스
+   왜? "맞았다!"는 강한 긍정 피드백이 필요하다. */
+.choice-card.correct {
+  border-color: #198754;
+  background: rgba(25, 135, 84, 0.1);
+  box-shadow: 0 0 20px rgba(25, 135, 84, 0.25),
+    /* 초록 glow */
+    0 4px 12px rgba(25, 135, 84, 0.15);
+  /* 깊이감 */
+  transform: scale(1.03);
+  /* 살짝 확대로 강조 */
+  pointer-events: none;
+  animation: correctPulse 0.6s var(--ease);
+  /* 펄스 효과 */
+}
+
+/* 정답 카드 텍스트도 초록으로 변경 */
+.choice-card.correct .choice-text {
+  color: #198754;
+}
+
+/* ── 오답(wrong) 상태 ──────────────────────────────────
+   사용자가 고른 오답 카드 — 빨간색 glow + shake */
+.choice-card.wrong {
+  border-color: #dc3545;
+  background: rgba(220, 53, 69, 0.08);
+  box-shadow: 0 0 16px rgba(220, 53, 69, 0.2),
+    /* 빨간 glow */
+    0 4px 12px rgba(220, 53, 69, 0.12);
+  animation: shake 0.5s ease-in-out;
+  pointer-events: none;
+}
+
+/* 오답 카드 텍스트도 빨간으로 변경 */
+.choice-card.wrong .choice-text {
+  color: #dc3545;
+}
+
+/* ── 정답 공개(correct-reveal) ──────────────────────────
+   왜? 틀렸을 때 "정답은 이거였어!" 를 보여줘야
+   학습 효과가 극대화된다.
+   오답 시 실제 정답 카드에 초록 테두리로 힌트 제공 */
+.choice-card.correct-reveal {
+  border-color: #198754;
+  background: rgba(25, 135, 84, 0.06);
+  box-shadow: 0 0 12px rgba(25, 135, 84, 0.15);
+  pointer-events: none;
+  animation: correctPulse 0.8s var(--ease) 0.5s both;
+  /* 0.5초 딜레이 */
+}
+
+.choice-card.correct-reveal .choice-text {
+  color: #198754;
+}
+
+/* 제출 후 비활성 상태 — 선택 불가 표시 */
+.choice-card.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ── 체크 아이콘 (선택/정답 시 표시) ─────────────────────
+   왜? 시각적 확인 표시가 있어야
+   "선택됨"을 텍스트 없이도 인지할 수 있다. */
+.choice-check {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  /* 원형 배지 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  opacity: 0;
+  /* 기본: 숨김 */
+  transform: scale(0.5);
+  transition: all 0.3s var(--ease);
+  color: #fff;
+}
+
+/* 선택됨 → 체크 아이콘 표시 (파란 원) */
+.choice-card.selected .choice-check {
+  opacity: 1;
+  transform: scale(1);
+  background: var(--ocean);
+  animation: fadeCheckIn 0.3s var(--ease);
+}
+
+/* 정답 → 체크 아이콘 (초록 원) */
+.choice-card.correct .choice-check {
+  opacity: 1;
+  transform: scale(1);
+  background: #198754;
+}
+
+/* 오답 → X 아이콘 (빨간 원) */
+.choice-card.wrong .choice-check {
+  opacity: 1;
+  transform: scale(1);
+  background: #dc3545;
+}
+
+/* ── 선택지 텍스트 영역 ─────────────────────────────────
+   이모지 + 한자/히라가나를 자연스럽게 배치 */
+.choice-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+  /* 텍스트 오버플로 방지 */
+}
+
+/* 선택지 이모지 아이콘 */
+.choice-emoji {
+  font-size: 22px;
+  flex-shrink: 0;
+  /* 이모지 축소 방지 */
+}
+
+/* 선택지 텍스트 (한자 + 후리가나) */
+.choice-text {
+  font-size: clamp(16px, 2.5vw, 20px);
+  font-weight: 600;
+  color: var(--dark);
+  line-height: 1.4;
+}
+
+/* ── 후리가나(읽기) hover 표시 ───────────────────────────
+   왜? 일본어 학습에서 한자 읽기를 모를 때
+   hover하면 후리가나가 나오는 UX가 핵심이다.
+   항상 보이면 학습 효과가 떨어지고,
+   숨겨두면 필요할 때 확인할 수 있다. */
+.furigana-hover ruby rt {
+  opacity: 0;
+  /* 기본: 후리가나 숨김 */
+  transition: opacity 0.2s var(--ease);
+}
+
+.furigana-hover:hover ruby rt {
+  opacity: 1;
+  /* hover 시: 후리가나 표시 */
+}
+
+/* 선택지 카드 안에서 후리가나 hover */
+.choice-card .furigana-hover ruby rt {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.choice-card:hover .furigana-hover ruby rt,
+.choice-card.selected .furigana-hover ruby rt {
+  opacity: 1;
+  /* 카드 hover/선택 시 후리가나 표시 */
+}
+
+/* ── 제출/다음 버튼 업그레이드 ───────────────────────────
+   왜? 제출 버튼은 비활성 → 활성 전환이 명확해야
+   "아직 선택 안 했구나"를 인지할 수 있다. */
+.quiz-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.btn-submit {
+  flex: 1;
+  padding: 14px 24px;
+  border-radius: var(--radius-md);
+  font-size: 16px;
+  font-weight: 600;
+  min-height: 50px;
+  border: none;
+  background: var(--ocean);
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.25s var(--ease);
+}
+
+.btn-submit:hover:not(:disabled) {
+  background: var(--ocean-deep);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-submit:disabled {
+  background: #c5d5e0;
+  /* 비활성: 회색 */
+  color: rgba(255, 255, 255, 0.7);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-next {
+  flex: 1;
+  padding: 14px 24px;
+  border-radius: var(--radius-md);
+  font-size: 16px;
+  font-weight: 600;
+  min-height: 50px;
+  border: 2px solid var(--ocean);
+  background: transparent;
+  color: var(--ocean);
+  cursor: pointer;
+  transition: all 0.25s var(--ease);
+}
+
+.btn-next:hover:not(:disabled) {
+  background: var(--ocean);
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-next:disabled {
+  border-color: #c5d5e0;
+  color: #c5d5e0;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ── 결과 피드백 박스 업그레이드 ──────────────────────────
+   정답/오답 결과를 카드 하단에 눈에 띄게 표시 */
+.grade-feedback {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+  padding: 16px 20px;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: 15px;
+  animation: fadeCheckIn 0.4s var(--ease);
+}
+
+.grade-feedback.is-correct {
+  background: rgba(25, 135, 84, 0.08);
+  border: 1px solid rgba(25, 135, 84, 0.3);
+  color: #198754;
+}
+
+.grade-feedback.is-wrong {
+  background: rgba(220, 53, 69, 0.06);
+  border: 1px solid rgba(220, 53, 69, 0.3);
+  color: #dc3545;
+}
+
+.grade-feedback-icon {
+  font-size: 28px;
+  /* 큰 이모지 */
+  flex-shrink: 0;
+}
+
+.grade-feedback-text {
+  line-height: 1.4;
+}
+
+/* ── 키프레임 애니메이션 ──────────────────────────────── */
+
+/* shake: 오답 시 좌우 흔들림 — 
+   왜? 시각적 피드백으로 "틀렸다"를 직관적으로 전달 */
+@keyframes shake {
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: translateX(-4px);
+  }
+
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: translateX(4px);
+  }
+}
+
+/* fadeCheckIn: 체크 아이콘이 부드럽게 등장 */
+@keyframes fadeCheckIn {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* correctPulse: 정답 카드의 초록 펄스 —
+   왜? "맞았다!" 포지티브 피드백을 시각적으로 강화.
+   한 번 커졌다 원래대로 돌아오는 느낌. */
+@keyframes correctPulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 rgba(25, 135, 84, 0);
+  }
+
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 24px rgba(25, 135, 84, 0.35);
+  }
+
+  100% {
+    transform: scale(1.03);
+    box-shadow: 0 0 20px rgba(25, 135, 84, 0.25);
+  }
+}
+
 /* ── 액션 버튼 그룹 ───────────────────────────────────── */
 .actions {
   display: flex;
@@ -414,7 +882,7 @@ button:active {
 }
 
 /* ── 마이페이지 ───────────────────────────────────────── */
-.mypage-panel + .mypage-panel {
+.mypage-panel+.mypage-panel {
   margin-top: 18px;
 }
 
@@ -438,40 +906,406 @@ button:active {
   background: rgba(241, 250, 238, 0.5);
 }
 
-/* ── 문장 조립 ────────────────────────────────────────── */
+/* ── 문장 조합 — 여행 경로 완성 스타일 ─────────────────── 
+   디자인 컨셉:
+   - 위: 슬롯형 조합 영역 (내가 만드는 문장)
+   - 아래: 토큰 보관함 (클릭하면 위로 이동)
+   - 드래그 대신 클릭 기반 → 모바일 친화적
+   ============================================================ */
+
+/* ── 문장 빌더 컨테이너 ─────────────────────────────────
+   위→아래 흐름으로 배치.
+   gap으로 각 섹션 간 여백 확보 */
 .sentence-builder {
-  display: grid;
-  gap: 12px;
-  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  /* 세로 배치 */
+  gap: 20px;
+  margin-bottom: 16px;
 }
 
-.token-pool,
-.answer-token-list {
+/* ── 한국어 문장 안내 영역 ───────────────────────────────
+   "이 한국어를 일본어로 조합하세요" 느낌 */
+.sentence-kr-guide {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 18px;
+  background: rgba(126, 200, 227, 0.08);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  font-size: 15px;
+  color: var(--text);
+}
+
+.sentence-kr-guide-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.sentence-kr-guide-text {
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+/* ── 선택 개수 프로그레스 ────────────────────────────────
+   왜? 숫자만으로는 진행감이 약하다.
+   바(bar)로 시각화하면 "얼마나 남았지?" 직관적으로 인지 */
+.sentence-progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sentence-progress-bar {
+  flex: 1;
+  height: 8px;
+  background: rgba(126, 200, 227, 0.15);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+
+.sentence-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--sky), var(--ocean));
+  border-radius: var(--radius-pill);
+  transition: width 0.3s var(--ease);
+}
+
+.sentence-progress-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ocean);
+  white-space: nowrap;
+  min-width: 45px;
+  text-align: right;
+}
+
+/* 개별 동그라미 인디케이터 (선택 개수 시각화) */
+.sentence-dots {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.sentence-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(126, 200, 227, 0.2);
+  transition: all 0.25s var(--ease);
+}
+
+.sentence-dot.filled {
+  background: var(--ocean);
+  transform: scale(1.15);
+  box-shadow: 0 0 6px rgba(58, 134, 184, 0.4);
+}
+
+/* ── 조합 영역 (내가 만드는 문장) ────────────────────────
+   슬롯 형태: 빈 칸들이 채워지는 느낌
+   왜? "퍼즐 완성" 느낌 → 학습 몰입감 상승 */
+.sentence-answer-zone {
+  padding: 20px;
+  border: 2px dashed var(--border-light);
+  border-radius: var(--radius-lg);
+  background: rgba(126, 200, 227, 0.04);
+  min-height: 80px;
+  transition: all 0.3s var(--ease);
+}
+
+/* 토큰이 채워지면 실선 테두리로 전환 */
+.sentence-answer-zone.has-tokens {
+  border-style: solid;
+  border-color: var(--sky);
+  background: rgba(126, 200, 227, 0.06);
+}
+
+/* 정답 시 초록 glow + pulse — "맞았다!" 강한 긍정 피드백 */
+.sentence-answer-zone.is-correct {
+  border-color: #198754;
+  background: rgba(25, 135, 84, 0.08);
+  box-shadow: 0 0 24px rgba(25, 135, 84, 0.25),
+    0 4px 16px rgba(25, 135, 84, 0.15);
+  animation: correctPulse 0.6s var(--ease);
+}
+
+/* 오답 시 빨간 glow + shake — "틀렸다" 명확한 피드백 */
+.sentence-answer-zone.is-wrong {
+  border-color: #dc3545;
+  background: rgba(220, 53, 69, 0.06);
+  box-shadow: 0 0 16px rgba(220, 53, 69, 0.2),
+    0 4px 12px rgba(220, 53, 69, 0.12);
+  animation: shake 0.5s ease-in-out;
+}
+
+.sentence-answer-zone-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.sentence-answer-zone-icon {
+  font-size: 16px;
+}
+
+/* 조합된 토큰들이 나열되는 영역 */
+.sentence-answer-tokens {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  min-height: 44px;
+  align-items: center;
 }
 
-.token-btn {
-  padding: 8px 12px;
+/* 빈 슬롯 (아직 채워지지 않은 자리) */
+.sentence-slot-empty {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 60px;
+  height: 42px;
+  border: 2px dashed rgba(126, 200, 227, 0.3);
   border-radius: var(--radius-sm);
-  border: 2px solid var(--border-light);
-  background: #fff;
-  color: var(--text);
-  transition: all var(--duration) var(--ease);
+  color: var(--text-muted);
+  font-size: 14px;
+  opacity: 0.5;
 }
 
-.token-btn:hover {
-  border-color: var(--sky);
-  background: rgba(126, 200, 227, 0.1);
+/* 조합 영역 빈 상태 안내 */
+.sentence-answer-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px;
+  color: var(--text-muted);
+  font-size: 14px;
+  opacity: 0.6;
 }
 
-.token-answer {
+/* ── 토큰 보관함 ────────────────────────────────────────
+   아래쪽에 배치. 클릭하면 위로 이동하는 구조 */
+.sentence-token-pool {
+  padding: 16px;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(4px);
+}
+
+.sentence-pool-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.sentence-pool-icon {
+  font-size: 16px;
+}
+
+.sentence-pool-tokens {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* ── 개별 토큰 카드 (보관함 + 조합 영역 공통) ──────────── 
+   왜 카드형? 
+   - 터치 영역이 넓어 모바일에서 편하다
+   - 시각적 상태(hover/active/used) 피드백이 명확하다 */
+.stk {
+  display: inline-flex;
+  flex-direction: column;
+  /* 한자 + 후리가나 세로 배치 */
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px;
   border: 2px solid var(--border-light);
   border-radius: var(--radius-md);
-  padding: 12px;
-  background: rgba(241, 250, 238, 0.5);
-  min-height: 48px;
+  background: #fff;
+  color: var(--dark);
+  font-size: 16px;
+  font-weight: 600;
+  min-height: 46px;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s var(--ease);
+  box-shadow: var(--shadow-sm);
+  position: relative;
+}
+
+/* 후리가나(읽기) — 기본은 작게 표시 */
+.stk-reading {
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--text-muted);
+  line-height: 1;
+  margin-top: 2px;
+  opacity: 0.6;
+  transition: opacity 0.2s var(--ease);
+}
+
+/* hover 시 후리가나 완전 표시 */
+.stk:hover .stk-reading {
+  opacity: 1;
+}
+
+/* 토큰 hover: 살짝 떠오름 */
+.stk:hover:not(.stk-used):not(.stk-disabled) {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--sky);
+}
+
+/* 토큰 클릭(active): 눌림 */
+.stk:active:not(.stk-used):not(.stk-disabled) {
+  transform: scale(0.95);
+  transition-duration: 0.1s;
+}
+
+/* ── 사용된 토큰 (보관함에서 흐리게) ─────────────────────
+   왜? 사용된 토큰이 사라지면 "어디 갔지?" 혼란
+   흐리게 남겨두면 "이미 사용함"을 인지하면서 안정감 */
+.stk-used {
+  opacity: 0.3;
+  transform: scale(0.95);
+  cursor: not-allowed;
+  pointer-events: none;
+  border-style: dashed;
+}
+
+/* ── 조합 영역 안의 토큰 (제거 가능) ─────────────────── */
+.stk-answer {
+  background: rgba(126, 200, 227, 0.08);
+  border-color: var(--sky);
+  cursor: pointer;
+  animation: tokenDropIn 0.25s var(--ease);
+}
+
+.stk-answer:hover {
+  background: rgba(220, 53, 69, 0.06);
+  border-color: #dc3545;
+  /* 제거 힌트: 빨간 테두리 */
+}
+
+/* 제거 힌트 아이콘 — hover 시 표시 */
+.stk-answer::after {
+  content: "✕";
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #dc3545;
+  color: #fff;
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: scale(0.5);
+  transition: all 0.2s var(--ease);
+}
+
+.stk-answer:hover::after {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* 제출 후 비활성 토큰 */
+.stk-disabled {
+  cursor: not-allowed;
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+/* 정답 토큰 — 초록 glow + 색상 강조 */
+.stk-correct {
+  border-color: #198754;
+  background: rgba(25, 135, 84, 0.1);
+  color: #198754;
+  box-shadow: 0 0 12px rgba(25, 135, 84, 0.2);
+  font-weight: 700;
+}
+
+/* 오답 토큰 — 빨간 glow + 색상 강조 */
+.stk-wrong {
+  border-color: #dc3545;
+  background: rgba(220, 53, 69, 0.08);
+  color: #dc3545;
+  box-shadow: 0 0 12px rgba(220, 53, 69, 0.2);
+  font-weight: 700;
+}
+
+/* ── 초기화 버튼 ────────────────────────────────────── */
+.btn-reset {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-pill);
+  background: rgba(126, 200, 227, 0.08);
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s var(--ease);
+}
+
+.btn-reset:hover:not(:disabled) {
+  background: rgba(220, 53, 69, 0.06);
+  border-color: #dc3545;
+  color: #dc3545;
+}
+
+.btn-reset:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ── 토큰 등장 애니메이션 ────────────────────────────── */
+@keyframes tokenDropIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.9);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ── 모바일 최적화 ────────────────────────────────────── 
+   조합 영역은 상단 유지, 토큰은 스크롤 가능 */
+@media (max-width: 520px) {
+  .sentence-answer-zone {
+    padding: 14px;
+  }
+
+  .sentence-token-pool {
+    padding: 12px;
+  }
+
+  .stk {
+    padding: 8px 12px;
+    font-size: 15px;
+    min-height: 42px;
+  }
+
+  .sentence-pool-tokens {
+    gap: 8px;
+  }
 }
 
 /* ── 루비(발음 표기) ──────────────────────────────────── */
@@ -481,7 +1315,7 @@ ruby rt {
 }
 
 /* ── 관리자 페이지 ────────────────────────────────────── */
-.admin-section + .admin-section {
+.admin-section+.admin-section {
   margin-top: 20px;
 }
 
