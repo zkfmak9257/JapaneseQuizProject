@@ -141,7 +141,7 @@ async function onSubmit() {
     loading.value = true;
     errorMessage.value = "";
     await authStore.login(email.value, password.value);
-    const redirect = route.query.redirect || "/quiz/start";
+    const redirect = route.query.redirect || "/";
     router.push(String(redirect));
   } catch (error) {
     errorMessage.value = error?.response?.data?.message || "로그인에 실패했습니다.";
