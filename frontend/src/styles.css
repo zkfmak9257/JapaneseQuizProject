@@ -12,17 +12,28 @@
    컴포넌트 전체에 일관된 색상 시스템을 유지할 수 있다. */
 :root {
   /* 메인 색상 팔레트 — 이미지에서 추출한 색상 */
-  --sky: #7EC8E3;        /* 하늘색: 맑은 여름 하늘 */
-  --ocean: #3A86B8;      /* 바다색: 깊고 시원한 바다 */
-  --ocean-deep: #2B6A94; /* 진한 바다: 호버/강조용 */
-  --train: #5E8B7E;      /* 열차 초록: 에노덴 기차색 */
-  --crossing: #F4D35E;   /* 건널목 노랑: 따뜻한 악센트 */
-  --cloud: #F1FAEE;      /* 구름 흰색: 배경에 사용 */
-  --sand: #FFF8E7;       /* 모래색: 카드 배경 */
-  --dark: #1a2d3d;       /* 어두운 남색: 텍스트/네비게이션 */
-  --text: #2c3e50;       /* 본문 텍스트 색상 */
-  --text-muted: #6b7b8d; /* 보조 텍스트 */
-  --border-light: rgba(126, 200, 227, 0.3); /* 반투명 하늘색 테두리 */
+  --sky: #7EC8E3;
+  /* 하늘색: 맑은 여름 하늘 */
+  --ocean: #3A86B8;
+  /* 바다색: 깊고 시원한 바다 */
+  --ocean-deep: #2B6A94;
+  /* 진한 바다: 호버/강조용 */
+  --train: #5E8B7E;
+  /* 열차 초록: 에노덴 기차색 */
+  --crossing: #F4D35E;
+  /* 건널목 노랑: 따뜻한 악센트 */
+  --cloud: #F1FAEE;
+  /* 구름 흰색: 배경에 사용 */
+  --sand: #FFF8E7;
+  /* 모래색: 카드 배경 */
+  --dark: #1a2d3d;
+  /* 어두운 남색: 텍스트/네비게이션 */
+  --text: #2c3e50;
+  /* 본문 텍스트 색상 */
+  --text-muted: #6b7b8d;
+  /* 보조 텍스트 */
+  --border-light: rgba(126, 200, 227, 0.3);
+  /* 반투명 하늘색 테두리 */
 
   /* 타이포그래피 */
   --font-display: "M PLUS Rounded 1c", "Noto Sans JP", sans-serif;
@@ -54,7 +65,8 @@
   --radius-md: 12px;
   --radius-lg: 16px;
   --radius-xl: 20px;
-  --radius-pill: 999px; /* 알약형 버튼용 */
+  --radius-pill: 999px;
+  /* 알약형 버튼용 */
 
   /* 트랜지션 — 부드러운 인터랙션 */
   --ease: cubic-bezier(0.4, 0, 0.2, 1);
@@ -78,7 +90,8 @@ body {
   color: var(--text);
   min-height: 100vh;
   min-height: 100dvh;
-  -webkit-font-smoothing: antialiased; /* 폰트 렌더링 부드럽게 */
+  -webkit-font-smoothing: antialiased;
+  /* 폰트 렌더링 부드럽게 */
 }
 
 /* ── 레이아웃 ──────────────────────────────────────────── */
@@ -89,83 +102,425 @@ body {
   flex-direction: column;
 }
 
-/* ── 네비게이션 바 (글라스모피즘) ───────────────────────────
-   왜 글라스모피즘?
-   - 반투명 배경 + blur로 콘텐츠 위에 떠있는 느낌
-   - 모던하고 고급스러운 UI 트렌드 */
+/* ── 헤더 — SaaS 깔끔 스타일 ──────────────────────────── 
+   디자인 컨셉:
+   - 깔끔한 흰색 배경 + 얇은 border-bottom
+   - 여백으로 고급감 표현
+   - 로고: 旅(인디고) + Quiz(슬레이트)
+   - 메뉴: hover underline 애니메이션
+   ============================================================ */
 .topbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 14px var(--gutter);
-  /* 글라스모피즘 핵심: 반투명 배경 + backdrop-filter */
-  background: rgba(26, 45, 61, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  color: #fff;
-  position: sticky; /* 스크롤해도 상단 고정 */
+  position: sticky;
+  /* 스크롤해도 상단 고정 */
   top: 0;
   z-index: 100;
-  border-bottom: 1px solid rgba(126, 200, 227, 0.2);
+  background: #fff;
+  /* 깔끔한 흰색 */
+  border-bottom: 1px solid #e8edf2;
+  /* 얇고 부드러운 회색 라인 */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  /* 미세한 그림자 */
 }
 
-.topbar h1 {
-  font-family: var(--font-display);
-  font-size: 20px;
-  font-weight: 800;
-}
-
-.topbar nav {
+/* 헤더 내부 컨테이너 — max-width + 중앙 정렬 */
+.topbar-inner {
+  max-width: var(--container-main);
+  margin: 0 auto;
   display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px var(--gutter);
+  gap: 24px;
 }
 
-/* 네비게이션 링크 — 호버 시 하늘색으로 전환 */
-.topbar a {
-  color: rgba(255, 255, 255, 0.8);
-  text-decoration: none;
-  font-size: 14px;
-  padding: 6px 12px;
-  border-radius: var(--radius-pill);
-  transition: all var(--duration) var(--ease);
-}
-
-.topbar a:hover {
-  color: #fff;
-  background: rgba(126, 200, 227, 0.2);
-}
-
-/* 활성 라우터 링크: 현재 위치한 페이지 표시 */
-.topbar a.router-link-active {
-  color: #fff;
-  background: var(--ocean);
-}
-
-/* 브랜드 로고 */
+/* ── 로고 ─────────────────────────────────────────────
+   旅(인디고) + Quiz(슬레이트)로 브랜드 개성 표현.
+   hover 시 旅 살짝 scale */
 .brand {
-  color: #fff !important;
   text-decoration: none !important;
+  display: flex;
+  flex-direction: column;
+  /* 제목 + 부제 세로 배치 */
+  line-height: 1.2;
+  transition: all 0.2s var(--ease);
+  flex-shrink: 0;
+}
+
+.brand:hover .brand-tabi {
+  transform: scale(1.08);
+  /* hover 시 旅 살짝 확대 */
+}
+
+.brand-title {
   font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 800;
   letter-spacing: -0.5px;
 }
 
-/* 로그아웃 버튼 */
-.logout {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: rgba(255, 255, 255, 0.9);
-  padding: 6px 14px;
-  border-radius: var(--radius-pill);
-  font-size: 14px;
-  cursor: pointer;
-  transition: all var(--duration) var(--ease);
+/* 旅 — 인디고 컬러로 강조 */
+.brand-tabi {
+  color: #4f46e5;
+  /* 인디고 600 */
+  display: inline-block;
+  /* transform 적용을 위해 */
+  transition: transform 0.2s var(--ease);
 }
 
-.logout:hover {
-  background: rgba(255, 255, 255, 0.2);
-  color: #fff;
+/* Quiz — 슬레이트 컬러 */
+.brand-quiz {
+  color: #1e293b;
+  /* 슬레이트 800 */
+}
+
+/* 부제: '일본어를 여행처럼' */
+.brand-subtitle {
+  font-size: 11px;
+  color: #94a3b8;
+  /* 슬레이트 400 */
+  font-weight: 400;
+  letter-spacing: 0.5px;
+}
+
+/* ── 데스크탑 네비게이션 ──────────────────────────────── */
+.topbar-nav {
+  display: none;
+  /* 모바일에서 숨김 */
+  gap: 32px;
+  /* 넓은 여백 — SaaS 느낌 */
+  align-items: center;
+}
+
+/* 개별 네비게이션 링크 */
+.nav-link {
+  position: relative;
+  color: #64748b;
+  /* 슬레이트 500 */
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 6px 0;
+  transition: color 0.2s var(--ease);
+}
+
+/* hover 시 인디고 색상 전환 */
+.nav-link:hover {
+  color: #4f46e5;
+}
+
+/* hover underline 애니메이션 —
+   왜? 바닥에서 중앙으로 퍼지는 라인이 고급스럽다 */
+.nav-link::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: #4f46e5;
+  border-radius: 1px;
+  transition: all 0.25s var(--ease);
+  transform: translateX(-50%);
+}
+
+.nav-link:hover::after {
+  width: 100%;
+  /* hover 시 라인 펼쳐짐 */
+}
+
+/* 활성 라우터 링크: 현재 페이지 강조 */
+.nav-link.router-link-active {
+  color: #4f46e5;
+  /* 인디고 */
+  font-weight: 600;
+}
+
+.nav-link.router-link-active::after {
+  width: 100%;
+  /* 활성 페이지는 항상 라인 표시 */
+}
+
+/* ── 오른쪽 액션 영역 ─────────────────────────────────── */
+.topbar-actions {
+  display: none;
+  /* 모바일에서 숨김 */
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+/* 인증 버튼 (로그인/회원가입) */
+.btn-auth {
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  color: #64748b;
+  transition: all 0.2s var(--ease);
+}
+
+.btn-auth:hover {
+  color: #4f46e5;
+  background: rgba(79, 70, 229, 0.06);
+}
+
+/* 회원가입 — 인디고 강조 버튼 */
+.btn-auth-primary {
+  background: #4f46e5;
+  color: #fff !important;
+  border-radius: var(--radius-md);
+}
+
+.btn-auth-primary:hover {
+  background: #4338ca;
+  /* 인디고 700 */
+}
+
+/* ── 프로필 드롭다운 ──────────────────────────────────── */
+.profile-dropdown {
+  position: relative;
+}
+
+.profile-trigger {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid #e2e8f0;
+  /* 슬레이트 200 */
+  border-radius: var(--radius-md);
+  background: #fff;
+  color: #334155;
+  /* 슬레이트 700 */
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s var(--ease);
+  min-height: 36px;
+}
+
+.profile-trigger:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  transform: none;
+  box-shadow: none;
+}
+
+.profile-avatar {
+  font-size: 16px;
+}
+
+.profile-name {
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile-arrow {
+  font-size: 10px;
+  transition: transform 0.2s var(--ease);
+  color: #94a3b8;
+}
+
+.profile-arrow.open {
+  transform: rotate(180deg);
+}
+
+/* 드롭다운 메뉴 */
+.profile-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  width: 160px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--radius-md);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  z-index: 110;
+  animation: fadeCheckIn 0.15s var(--ease);
+}
+
+.profile-menu-item {
+  display: block;
+  width: 100%;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 400;
+  color: #334155;
+  text-decoration: none;
+  text-align: left;
+  border: none;
+  background: none;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.profile-menu-item:hover {
+  background: #f1f5f9;
+  /* 슬레이트 100 */
+  transform: none;
+  box-shadow: none;
+}
+
+.profile-menu-logout {
+  color: #dc3545;
+  border-top: 1px solid #f1f5f9;
+}
+
+.profile-menu-logout:hover {
+  background: rgba(220, 53, 69, 0.06);
+}
+
+/* ── 모바일 햄버거 버튼 ───────────────────────────────── */
+.mobile-menu-btn {
+  display: flex;
+  /* 모바일에서만 보임 */
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  min-height: auto;
+}
+
+.mobile-menu-btn:hover {
+  background: #f1f5f9;
+  border-radius: var(--radius-sm);
+  transform: none;
+  box-shadow: none;
+}
+
+/* 햄버거 라인 (CSS로 만든 3줄 아이콘) */
+.hamburger-line {
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: #334155;
+  border-radius: 1px;
+  position: relative;
+  transition: all 0.3s var(--ease);
+}
+
+.hamburger-line::before,
+.hamburger-line::after {
+  content: "";
+  position: absolute;
+  width: 20px;
+  height: 2px;
+  background: #334155;
+  border-radius: 1px;
+  left: 0;
+  transition: all 0.3s var(--ease);
+}
+
+.hamburger-line::before {
+  top: -6px;
+}
+
+.hamburger-line::after {
+  top: 6px;
+}
+
+/* 열린 상태: X 모양으로 전환 */
+.hamburger-line.open {
+  background: transparent;
+}
+
+.hamburger-line.open::before {
+  top: 0;
+  transform: rotate(45deg);
+}
+
+.hamburger-line.open::after {
+  top: 0;
+  transform: rotate(-45deg);
+}
+
+/* ── 모바일 메뉴 패널 ─────────────────────────────────── */
+.mobile-menu {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 16px 16px;
+  border-top: 1px solid #f1f5f9;
+  background: #fff;
+  animation: slideDown 0.2s var(--ease);
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mobile-menu-link {
+  display: block;
+  padding: 12px 8px;
+  font-size: 15px;
+  font-weight: 500;
+  color: #334155;
+  text-decoration: none;
+  border-bottom: 1px solid #f8fafc;
+  transition: color 0.15s;
+  background: none;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+  text-align: left;
+  cursor: pointer;
+  width: 100%;
+}
+
+.mobile-menu-link:hover {
+  color: #4f46e5;
+  transform: none;
+  box-shadow: none;
+}
+
+.mobile-menu-link.router-link-active {
+  color: #4f46e5;
+  font-weight: 600;
+}
+
+.mobile-menu-logout {
+  color: #dc3545;
+  margin-top: 4px;
+  border-top: 1px solid #f1f5f9;
+  border-bottom: none;
+}
+
+/* ── 반응형: 태블릿 이상에서 데스크탑 UI 표시 ──────────── */
+@media (min-width: 768px) {
+  .topbar-nav {
+    display: flex;
+    /* 데스크탑 네비 표시 */
+  }
+
+  .topbar-actions {
+    display: flex;
+    /* 오른쪽 액션 표시 */
+  }
+
+  .mobile-menu-btn {
+    display: none;
+    /* 햄버거 숨김 */
+  }
+
+  .mobile-menu {
+    display: none;
+    /* 모바일 메뉴 숨김 */
+  }
 }
 
 /* ── 메인 콘텐츠 영역 ─────────────────────────────────── */
@@ -414,7 +769,7 @@ button:active {
 }
 
 /* ── 마이페이지 ───────────────────────────────────────── */
-.mypage-panel + .mypage-panel {
+.mypage-panel+.mypage-panel {
   margin-top: 18px;
 }
 
@@ -481,7 +836,7 @@ ruby rt {
 }
 
 /* ── 관리자 페이지 ────────────────────────────────────── */
-.admin-section + .admin-section {
+.admin-section+.admin-section {
   margin-top: 20px;
 }
 
@@ -544,16 +899,6 @@ ruby rt {
 @media (max-width: 767px) {
   :root {
     --gutter: var(--gutter-mobile);
-  }
-
-  /* 모바일: 네비게이션을 세로 배치 */
-  .topbar {
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .topbar nav {
-    justify-content: center;
   }
 
   /* 모바일: 버튼 최소 터치 영역 44x44 보장 */
