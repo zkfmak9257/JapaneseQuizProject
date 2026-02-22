@@ -8,7 +8,7 @@
          - 로고: 旅(인디고) + Quiz(슬레이트) + 부제
          - 메뉴: hover 시 인디고 underline 애니메이션
          - 프로필: 드롭다운 (마이페이지/로그아웃) -->
-    <header class="topbar">
+    <header class="topbar" v-if="!isAuthPage">
       <div class="topbar-inner">
 
         <!-- ── 로고 영역 ──────────────────────────────── 
@@ -107,13 +107,19 @@ import { computed, onMounted, ref } from "vue";
 // Pinia의 storeToRefs: store state를 반응형으로 구독
 import { storeToRefs } from "pinia";
 // Vue Router 컴포넌트
-import { RouterLink, RouterView } from "vue-router";
+import { RouterLink, RouterView, useRoute } from "vue-router";
 // 인증 상태 관리 스토어
 import { useAuthStore } from "./stores/authStore";
 
 const authStore = useAuthStore();
+const route = useRoute();
 // storeToRefs: 반응형(ref)으로 변환하여 template에서 사용
 const { isLoggedIn, isAdmin } = storeToRefs(authStore);
+
+// 로그인/회원가입 페이지인지 확인하여 헤더 숨김 처리
+const isAuthPage = computed(() => {
+  return ["/login", "/signup"].includes(route.path);
+});
 
 // 프로필 드롭다운 열림/닫힘 상태
 const showProfileMenu = ref(false);
@@ -137,6 +143,7 @@ const displayName = computed(() => {
   }
   return "사용자";
 });
+
 
 // 마운트 시: 로그인 상태지만 프로필이 없으면 서버에서 가져오기
 onMounted(async () => {
