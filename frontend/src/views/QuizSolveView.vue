@@ -261,7 +261,7 @@ const canSubmit = computed(() => {
     return false;
   }
   if (isSentenceMode.value) {
-    return requiredSentenceTokenCount.value > 0 && answerTokens.value.length === requiredSentenceTokenCount.value;
+    return answerTokens.value.length > 0;
   }
   return !!selectedChoiceId.value;
 });
