@@ -10,178 +10,224 @@
        ============================================================ -->
   <section class="quiz-home">
 
-    <!-- ── 1. Hero Section ─────────────────────────────────
-         fullwidth 배경 이미지 + 어두운 오버레이
-         중앙에 타이틀과 CTA 버튼 배치 -->
-    <div class="hero">
-      <!-- 구름 애니메이션: CSS @keyframes로 천천히 움직이는 구름들 -->
-      <div class="clouds">
-        <div class="cloud cloud-1">☁</div>
-        <div class="cloud cloud-2">☁</div>
-        <div class="cloud cloud-3">☁</div>
-      </div>
+    <!-- ── 1. Hero Section (보딩패스 / 여권 테마 + Slow Zoom Anim) ── -->
+    <div class="hero ticket-hero">
+      <!-- 🎬 영상 배경 1: 빈 공간을 채우는 꽉 찬 블러 배경 -->
+      <video 
+        ref="heroVideoBlurRef"
+        class="hero-video-bg-blur" 
+        :src="currentSeason.src" 
+        autoplay 
+        loop 
+        muted 
+        playsinline
+      ></video>
 
-      <!-- 오버레이: 배경 이미지 위에 어두운 레이어 → 텍스트 가독성 확보 -->
+      <!-- 🎬 영상 배경 2: 잘림 없이 원본 비율을 유지하는 메인 비디오 -->
+      <video 
+        ref="heroVideoRef"
+        class="hero-video-bg" 
+        :src="currentSeason.src" 
+        autoplay 
+        loop 
+        muted 
+        playsinline
+      ></video>
+      <div class="stamp-pattern"></div>
       <div class="hero-overlay"></div>
 
-      <!-- Hero 콘텐츠: 중앙 정렬 -->
-      <div class="hero-content">
-        <p class="hero-eyebrow">JAPANESE QUIZ</p>
-        <h1 class="hero-title">일본어, 여행처럼 배우다.</h1>
-        <p class="hero-subtitle">일상 · 여행 · 비즈니스 상황별 일본어 퀴즈</p>
-
-        <!-- CTA 버튼 그룹 -->
-        <div class="hero-actions">
-          <!-- 메인 CTA: 퀴즈 시작 (현재 선택된 옵션으로 시작) -->
-          <button class="cta-primary" @click="onStart">
-            🌸 퀴즈 시작하기
-          </button>
-          <!-- 서브 CTA: 여행 모드 바로 시작 (sceneId=3 고정) -->
-          <button class="cta-secondary" @click="onStartTravel">
-            🚃 여행 모드 바로 시작
-          </button>
-        </div>
+      <!-- 🌸 계절 테마 선택기 (우측 하단) -->
+      <div class="season-selector">
+        <button 
+          v-for="season in seasons" 
+          :key="season.id"
+          class="season-btn"
+          :class="{ active: currentSeason.id === season.id }"
+          @click="selectSeason(season)"
+        >
+          {{ season.icon }} {{ season.name }}
+        </button>
+      </div>
+      
+      <!-- 텍스트 콘텐츠 (Fade-in 효과 적용) -->
+      <div class="hero-content hero-content-anim">
       </div>
     </div>
 
-    <!-- ── 2. 카테고리 선택 (Pill Toggle) ───────────────────
-         단어/문장 모드를 알약형 토글로 선택
-         선택된 건 하늘색, 미선택은 투명 -->
-    <section class="section-block">
-      <h2 class="section-title">
-        <span class="section-icon">📚</span>
-        카테고리 선택
-      </h2>
-
-      <div class="pill-toggle">
-        <!-- :class 바인딩: categoryType 값에 따라 active 클래스 토글 -->
-        <button
-          :class="['pill', { active: categoryType === 'WORD' }]"
-          @click="categoryType = 'WORD'"
-        >
-          📝 단어 모드
-        </button>
-        <button
-          :class="['pill', { active: categoryType === 'SENTENCE' }]"
-          @click="categoryType = 'SENTENCE'"
-        >
-          💬 문장 모드
-        </button>
-      </div>
-    </section>
-
-    <!-- ── 3. 상황 선택 (대분류 탭 + 하위 카드 그리드) ─────────
-         상단: 대분류를 가로 스크롤 칩으로 배치
-         하단: 선택된 대분류의 하위 항목을 이미지 카드 그리드로 표시 -->
-    <section class="section-block">
-      <h2 class="section-title">
-        <span class="section-icon">🗺️</span>
-        상황 선택
-      </h2>
-      <p class="section-desc">카테고리를 선택한 뒤, 세부 상황을 골라주세요. 선택하지 않으면 랜덤으로 출제됩니다.</p>
-
-      <div class="category-dropdown-wrapper">
-        <select
-          class="category-dropdown"
-          :value="activeGroupIndex ?? ''"
-          @change="onGroupChange($event)"
-        >
-          <!-- 기본 옵션: 미선택 상태 → 전체 랜덤 -->
-          <option value="" disabled>카테고리를 선택하세요</option>
-          <!-- 대분류 목록을 option으로 렌더링 -->
-          <option
-            v-for="(group, gIdx) in sceneGroups"
-            :key="gIdx"
-            :value="gIdx"
-          >
-            {{ group.icon }} {{ group.title }}
-          </option>
-        </select>
-        <!-- 커스텀 화살표 아이콘: 기본 select 화살표를 숨기고 직접 그림 -->
-        <span class="dropdown-arrow">
-          <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
-            <path d="M6 8L10 12L14 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </span>
+    <!-- ── 2. 여정 선택 (모드 & 상황) ───────── -->
+    <section class="section-block situation-selection">
+      
+      <div class="selection-header-layout">
+        <div>
+          <h2 class="section-title">
+            <span class="section-icon">🗺️</span>
+            여정 선택
+          </h2>
+          <p class="section-desc">모드를 선택하고, 즉시 떠나고 싶은 상황 카드를 클릭하세요!</p>
+        </div>
+        
+        <!-- 모드 선택 (여기로 이동 = 흐름 통일) -->
+        <div class="mode-toggle-wrapper">
+          <div class="pill-toggle">
+            <button :class="['pill', { active: categoryType === 'WORD' }]" @click="categoryType = 'WORD'">
+              📝 단어
+            </button>
+            <button :class="['pill', { active: categoryType === 'SENTENCE' }]" @click="categoryType = 'SENTENCE'">
+              💬 문장
+            </button>
+          </div>
+        </div>
       </div>
 
-      <!-- ── 하위 항목 스위처 (바텀시트 트리거) ───────────────────────── -->
-      <div class="situation-trigger-wrapper">
-        <button class="situation-trigger-btn" @click="openSituationDrawer">
-          <span class="trigger-label">현재 상황</span>
-          <span class="trigger-value" v-if="selectedSubItem !== null">
-            {{ sceneGroups[selectedSubItem.groupIdx].items[selectedSubItem.itemIdx].emoji }}
-            {{ sceneGroups[selectedSubItem.groupIdx].items[selectedSubItem.itemIdx].name }}
-          </span>
-          <span class="trigger-placeholder" v-else>
-            {{ activeGroupIndex !== null ? '상황을 선택해 주세요 (미선택 시 랜덤)' : '카테고리를 먼저 선택해 주세요' }}
-          </span>
-          <span class="trigger-arrow">›</span>
-        </button>
+      <!-- 검색창 -->
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input 
+          type="text" 
+          v-model="searchQuery" 
+          placeholder="어떤 상황을 연습할까요? (예: 게이트, 체크인, 경찰)"
+        />
+        <button v-if="searchQuery" class="clear-btn" @click="searchQuery = ''">✕</button>
       </div>
 
-    </section>
-
-    <!-- ── 4. 시작하기 버튼 (하단 고정형) ───────────────────
-         현재 선택 상태를 요약하여 표시 -->
-    <section class="start-section">
-      <div class="start-summary">
-        <!-- 현재 선택된 옵션 표시 -->
-        <span class="summary-chip">{{ categoryType === 'WORD' ? '📝 단어' : '💬 문장' }}</span>
-        <span class="summary-chip">{{ selectedSceneSummary }}</span>
-        <span class="summary-chip">10문제</span>
-      </div>
-      <button class="start-button" @click="onStart">
-        🌸 퀴즈 시작하기
-      </button>
-    </section>
-    <!-- ── 5. 상황 선택 바텀시트 (모달/드로어) ─────────────────── -->
-    <transition name="drawer-slide">
-      <div v-if="isSituationOpen" class="drawer-overlay" @click="closeSituationDrawer">
-        <div class="drawer-content" @click.stop>
+      <div class="selection-container">
+        <!-- 대분류 탭 (스크롤) -->
+        <div class="category-tabs-wrapper" v-show="!searchQuery">
+          <!-- 스크롤 컨테이너 밖의 고정 네비게이션 버튼 -->
+          <button class="tab-nav-btn left" @click="scrollTabs(-250)" aria-label="이전 탭">◀︎</button>
           
-          <div class="drawer-header">
-            <h3 class="drawer-title">
-              <span v-if="activeGroupIndex !== null">{{ sceneGroups[activeGroupIndex].icon }} {{ sceneGroups[activeGroupIndex].title }}</span>
-              <span v-else>상황 선택</span>
-            </h3>
-            <button class="drawer-close" @click="closeSituationDrawer">✕</button>
+          <div class="category-tabs" @wheel="onTabWheel" ref="tabsContainerRef">
+            <!-- ✨ 전체 보기 (선택/비선택 시 다른 버튼들과 위계 분리) -->
+            <button 
+              class="tab-item tab-all" 
+              :class="{ active: activeGroupIndex === null }" 
+              @click="onCategoryTabClick(null, $event)"
+            >
+              🗺️ 전체 보기
+            </button>
+            <button 
+              v-for="(group, gIdx) in sceneGroups" 
+              :key="gIdx"
+              class="tab-item"
+              :class="{ active: activeGroupIndex === gIdx }"
+              :style="activeGroupIndex === gIdx ? { backgroundColor: group.theme, borderColor: group.theme, color: 'white', boxShadow: '0 4px 12px ' + group.theme + '66, 0 0 0 1px ' + group.theme } : {}"
+              @click="onCategoryTabClick(gIdx, $event)"
+            >
+              {{ group.icon }} {{ group.title }}
+            </button>
+            <div class="tab-spacer"></div>
           </div>
 
-          <div class="drawer-body">
-            <div v-if="activeGroupIndex === null" class="empty-state">
-              <span class="empty-icon">🗾</span>
-              <p class="empty-text">카테고리를 먼저 선택해 주세요</p>
-            </div>
+          <button class="tab-nav-btn right" @click="scrollTabs(250)" aria-label="다음 탭">▶︎</button>
+        </div>
+
+        <!-- 하위 항목 패널 -->
+        <div class="subcategory-panel">
+          
+          <!-- 검색 시 피드백 -->
+          <div class="search-feedback" v-if="searchQuery">
+            <p>검색 결과: <strong>{{ displayItems.length }}</strong>건</p>
+          </div>
+
+          <div v-if="searchQuery && displayItems.length === 0" class="empty-state">
+            <span class="empty-icon">😥</span>
+            <p class="empty-text">검색 결과가 없습니다.</p>
+          </div>
+          <div v-else class="scene-grid-container">
             
-            <div v-else class="scene-grid">
+            <!-- ── 4. Passport Status Card (Inline Sticky: Boarding Pass Theme) ─────────────────── -->
+            <transition name="slide-down">
+              <div class="passport-status-wrapper" v-if="selectedSubItem !== null">
+                <div class="boarding-pass-card">
+                  <!-- 좌측: 티켓 정보 -->
+                  <div class="bpc-left">
+                    <div class="bpc-header">
+                      <span class="bpc-title">🛂 BOARDING PASS</span>
+                      <button class="bpc-close-btn" @click="selectedSubItem = null" aria-label="선택 취소">✕</button>
+                    </div>
+                    <div class="bpc-body">
+                      <div class="bpc-row">
+                        <div class="bpc-field">
+                          <span class="bpc-label">MODE</span>
+                          <span class="bpc-value">{{ categoryType === 'WORD' ? '📝 단어' : '💬 문장' }}</span>
+                        </div>
+                        <div class="bpc-field">
+                          <span class="bpc-label">DESTINATION</span>
+                          <span class="bpc-value">{{ selectedGroupTitle }}</span>
+                        </div>
+                      </div>
+                      <div class="bpc-field">
+                        <span class="bpc-label">MISSION</span>
+                        <!-- 강화된 선택 상태 시각화 -->
+                        <div class="bpc-mission-highlight">
+                          <span class="bpc-value">{{ selectedItemName }}</span>
+                          <span class="bpc-badge-ready">READY</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <!-- 절취선 분리선 -->
+                  <div class="bpc-divider"></div>
+                  
+                  <!-- 우측: 액션 및 바코드 -->
+                  <div class="bpc-right">
+                    <div class="bpc-barcode"></div>
+                    <button class="bpc-cta-start" @click="onStartSubItem">
+                      <span class="cta-icon">✈️</span>
+                      <span class="cta-text">여정 시작하기</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </transition>
+
+            <div class="scene-grid">
+              
+              <!-- 상황 카드 렌더링 (클릭 시 선택 상태 토글) -->
               <button
                 class="scene-card"
-                :class="{ selected: selectedSubItem?.groupIdx === activeGroupIndex && selectedSubItem?.itemIdx === iIdx }"
-                v-for="(item, iIdx) in sceneGroups[activeGroupIndex].items"
-                :key="iIdx"
-                @click="selectSubItemAndClose(activeGroupIndex, iIdx)"
+                :class="{ selected: selectedSubItem?.groupIdx === item.gIdx && selectedSubItem?.itemIdx === item.iIdx }"
+                v-for="item in displayItems"
+                :key="`${item.gIdx}-${item.iIdx}`"
+                @click="selectDisplayItem(item)"
               >
                 <div class="scene-image">
-                  <img :src="sceneGroups[activeGroupIndex].image" :alt="item.name" loading="lazy" />
+                  <img :src="item.image" :alt="item.name" loading="lazy" />
                   <div class="scene-image-overlay"></div>
-                  <span class="scene-image-emoji">{{ item.emoji }}</span>
-                  <div
-                    v-if="selectedSubItem?.groupIdx === activeGroupIndex && selectedSubItem?.itemIdx === iIdx"
-                    class="selected-badge"
-                  >✓</div>
+                  <!-- 선택 배지 -->
+                  <div v-if="selectedSubItem?.groupIdx === item.gIdx && selectedSubItem?.itemIdx === item.iIdx" class="selected-badge">✓</div>
                 </div>
                 <div class="scene-info">
+                  <div class="scene-badge" v-if="searchQuery || activeGroupIndex === null" :style="{ color: item.theme || 'var(--ocean)', backgroundColor: (item.theme || 'var(--ocean)') + '26' }">
+                    {{ item.groupIcon }} {{ item.groupTitle }}
+                  </div>
                   <strong class="scene-name">{{ item.name }}</strong>
                   <span class="scene-desc" v-if="item.desc">{{ item.desc }}</span>
                 </div>
               </button>
-            </div>
-          </div>
+              
+              <!-- '전체' 탭일 때만 보이는 무작위 챌린지 특별 카드 (맨 하단 배치) -->
+              <button 
+                v-if="activeGroupIndex === null && !searchQuery" 
+                class="scene-card random-card" 
+                @click="onStart"
+              >
+                <div class="random-content">
+                  <span class="random-emoji">🎲</span>
+                  <div class="random-text">
+                    <h3>🎲 무작위 챌린지 (전체 랜덤)</h3>
+                    <p>어떤 상황이 나올지 모르는 서바이벌 모드!</p>
+                  </div>
+                  <span class="random-arrow">→</span>
+                </div>
+              </button>
 
-        </div>
-      </div>
-    </transition>
+            </div> <!-- closes .scene-grid -->
+          </div> <!-- closes .scene-grid-container -->
+        </div> <!-- closes .subcategory-panel -->
+      </div> <!-- closes .selection-container -->
+    </section>
 
   </section>
 </template>
@@ -204,9 +250,47 @@ import imgEmergency from "../assets/scenes/emergency.png";
 const router = useRouter();
 const route = useRoute();
 
+const tabsContainerRef = ref(null);
+
+function scrollTabs(amount) {
+  if (tabsContainerRef.value) {
+    tabsContainerRef.value.scrollBy({ left: amount, behavior: 'smooth' });
+  }
+}
+
+/* ── 히어로 영상 테마 (계절) 관리 ──────────────────── */
+const heroVideoRef = ref(null);
+const heroVideoBlurRef = ref(null);
+
+const seasons = [
+  { id: 'main', icon: '🏠', name: '기본', src: '/bg/main.mp4' },
+  { id: 'spring', icon: '🌸', name: '봄', src: '/bg/spring.mp4' },
+  { id: 'summer', icon: '🌻', name: '여름', src: '/bg/summer.mp4' },
+  { id: 'autumn', icon: '🍁', name: '가을', src: '/bg/autumn.mov' },
+  { id: 'winter', icon: '❄️', name: '겨울', src: '/bg/winter.mp4' }
+];
+
+const currentSeason = ref(seasons[0]);
+
+function selectSeason(season) {
+  currentSeason.value = season;
+}
+
+// 테마 변경 시 비디오 소스를 다시 로드하고 재생 시작 보장
+watch(currentSeason, () => {
+  if (heroVideoRef.value) {
+    heroVideoRef.value.load();
+    heroVideoRef.value.play().catch(err => console.log('Video autoplay prevented:', err));
+  }
+  if (heroVideoBlurRef.value) {
+    heroVideoBlurRef.value.load();
+    heroVideoBlurRef.value.play().catch(err => console.log('Blur video autoplay prevented:', err));
+  }
+});
+
 /* ── 상태(State) 관리 ──────────────────────────────────── */
 const categoryType = ref("WORD");
-const isSituationOpen = ref(false); // 바텀시트 열림 여부
+const searchQuery = ref("");
 
 /* ── 대분류 + 하위 항목 데이터 구조 ─────────────────────────
    7개 대분류 × 평균 3~5개 하위 항목 = 총 26개 상황
@@ -220,6 +304,7 @@ const sceneGroups = [
     icon: "✈️",
     title: "공항 / 입국·출국",
     sceneId: 1,               // DB: 공항/입국·출국(scene_id=1)
+    theme: "#38bdf8", /* sky-400 */
     image: imgAirport,
     items: [
       { emoji: "📍", name: "위치 · 시설 찾기",
@@ -234,6 +319,7 @@ const sceneGroups = [
     icon: "🚉",
     title: "교통 / 이동",
     sceneId: 2,               // DB: 교통/이동(scene_id=2)
+    theme: "#14b8a6", /* teal-500 */
     image: imgTransport,
     items: [
       { emoji: "🚃", name: "기차 · 지하철 이용",
@@ -252,6 +338,7 @@ const sceneGroups = [
     icon: "🏨",
     title: "숙박",
     sceneId: 3,
+    theme: "#6366f1", /* indigo-500 */
     image: imgHotel,
     items: [
       { emoji: "🛎️", name: "예약 확인 · 체크인",
@@ -268,6 +355,7 @@ const sceneGroups = [
     icon: "🍣",
     title: "음식 / 술",
     sceneId: 4,               // DB: 식당(scene_id=4)
+    theme: "#f97316", /* orange-500 */
     image: imgFood,
     items: [
       { emoji: "🪑", name: "입장 · 자리 · 대기",
@@ -284,6 +372,7 @@ const sceneGroups = [
     icon: "🏪",
     title: "쇼핑 / 상점",
     sceneId: 5,               // DB: 쇼핑(scene_id=5)
+    theme: "#ec4899", /* pink-500 */
     image: imgShopping,
     items: [
       { emoji: "🏪", name: "편의점 · 계산",
@@ -302,6 +391,7 @@ const sceneGroups = [
     icon: "🌙",
     title: "야간 / 즐길거리",
     sceneId: 6,               // DB: 야간/즐길거리(scene_id=6)
+    theme: "#8b5cf6", /* violet-500 */
     image: imgNightlife,
     items: [
       { emoji: "🎶", name: "클럽 · 입장 문의",
@@ -320,6 +410,7 @@ const sceneGroups = [
     icon: "🚨",
     title: "긴급 상황",
     sceneId: 7,               // DB: 긴급상황(scene_id=7)
+    theme: "#ef4444", /* red-500 */
     image: imgEmergency,
     items: [
       { emoji: "🏥", name: "병원",
@@ -334,6 +425,7 @@ const sceneGroups = [
     icon: "🏛️",
     title: "관광지 / 명소",
     sceneId: 8,               // DB: 관광지/명소(scene_id=8)
+    theme: "#06b6d4", /* cyan-500 */
     image: imgAirport,        // 관광 이미지 재활용
     items: [
       { emoji: "🎫", name: "입장권 · 예약",
@@ -352,6 +444,42 @@ const activeGroupIndex = ref(null);
 // selectedSubItem: 현재 선택된 하위 항목 { groupIdx, itemIdx }
 // null이면 미선택 → 전체(랜덤) 모드
 const selectedSubItem = ref(null);
+
+/* ── Computed (검색 및 표시용 데이터) ────────────────────── */
+const allSubItems = computed(() => {
+  return sceneGroups.flatMap((group, gIdx) => 
+    group.items.map((item, iIdx) => ({
+      ...item, 
+      gIdx, 
+      iIdx, 
+      groupTitle: group.title,
+      groupIcon: group.icon,
+      image: group.image,
+      theme: group.theme
+    }))
+  );
+});
+
+const displayItems = computed(() => {
+  if (searchQuery.value.trim()) {
+    const q = searchQuery.value.trim().toLowerCase();
+    return allSubItems.value.filter(item => 
+      item.name.toLowerCase().includes(q) || 
+      item.desc.toLowerCase().includes(q) ||
+      item.groupTitle.toLowerCase().includes(q)
+    );
+  } else {
+    // 탭 선택: null이면 모든 아이템 표시, 아니면 해당 탭의 아이템만 표시
+    if (activeGroupIndex.value === null) {
+      return allSubItems.value;
+    }
+    const group = sceneGroups[activeGroupIndex.value];
+    return group.items.map((item, iIdx) => ({
+      ...item, gIdx: activeGroupIndex.value, iIdx, 
+      groupTitle: group.title, groupIcon: group.icon, image: group.image, theme: group.theme
+    }));
+  }
+});
 
 /* ── 딥링크(URL 동기화) 로직 ────────────────────────────── */
 onMounted(() => {
@@ -378,7 +506,6 @@ onMounted(() => {
   }
 });
 
-// 상태 변경 시마다 URL 동기화
 watch([categoryType, activeGroupIndex, selectedSubItem], () => {
   router.replace({
     query: {
@@ -392,76 +519,77 @@ watch([categoryType, activeGroupIndex, selectedSubItem], () => {
 
 /* ── Computed 속성 ─────────────────────────────────────── */
 
-// selectedSceneId: 선택된 하위 항목의 대분류에 매핑된 DB sceneId
 const selectedSceneId = computed(() => {
   if (selectedSubItem.value === null) return null;
   return sceneGroups[selectedSubItem.value.groupIdx].sceneId;
 });
 
-// selectedSceneSummary: 하단 요약 영역에 표시할 텍스트
-const selectedSceneSummary = computed(() => {
-  if (selectedSubItem.value === null) {
-    if (activeGroupIndex.value !== null) {
-      return `${sceneGroups[activeGroupIndex.value].icon} 랜덤 상황`;
-    }
-    return "🗺️ 랜덤 (전체)";
-  }
+const activeGroupTitle = computed(() => {
+  if (activeGroupIndex.value === null) return null;
+  const group = sceneGroups[activeGroupIndex.value];
+  return `${group.icon} ${group.title}`;
+});
+
+const selectedGroupTitle = computed(() => {
+  if (!selectedSubItem.value) return "";
   const group = sceneGroups[selectedSubItem.value.groupIdx];
-  const item = group.items[selectedSubItem.value.itemIdx];
-  return `${group.icon} ${item.name}`;
+  return `${group.icon} ${group.title}`;
+});
+
+const selectedItemName = computed(() => {
+  if (!selectedSubItem.value) return "";
+  const group = sceneGroups[selectedSubItem.value.groupIdx];
+  return group.items[selectedSubItem.value.itemIdx].name;
 });
 
 /* ── 이벤트 핸들러 ─────────────────────────────────────── */
 
-// onGroupChange: 드롭다운에서 대분류 선택 시 호출
-function onGroupChange(event) {
-  const val = event.target.value;
-  if (val === "") {
-    activeGroupIndex.value = null;
-    selectedSubItem.value = null;
+function onCategoryTabClick(idx, event) {
+  activeGroupIndex.value = idx;
+  
+  // 선택된 탭을 자연스럽게 화면 중앙으로 스크롤 이동
+  if (event && event.currentTarget) {
+    event.currentTarget.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+  }
+}
+
+// PC 환경에서 마우스 휠로 가로 스크롤을 지원
+function onTabWheel(event) {
+  // 세로(Y) 휠 움직임이 가로(X)보다 클 때만 가로 스크롤로 변환
+  if (Math.abs(event.deltaY) > Math.abs(event.deltaX)) {
+    event.preventDefault(); // 페이지 세로 스크롤 방지
+    event.currentTarget.scrollLeft += event.deltaY;
+  }
+}
+
+// 카드를 누르면 즉시 시작이 아닌, 여행 정보 세팅(선택)
+function selectDisplayItem(item) {
+  if (selectedSubItem.value && selectedSubItem.value.groupIdx === item.gIdx && selectedSubItem.value.itemIdx === item.iIdx) {
+    selectedSubItem.value = null; // 이미 선택된 항목 누르면 해제
   } else {
-    activeGroupIndex.value = Number(val);
-    selectedSubItem.value = null;
-    // 대분류를 선택하면 자동으로 드로어를 열어서 하위상황을 고를 수 있게 유도
-    isSituationOpen.value = true;
+    selectedSubItem.value = { groupIdx: item.gIdx, itemIdx: item.iIdx };
   }
 }
 
-// 바텀시트 제어
-function openSituationDrawer() {
-  if (activeGroupIndex.value === null) {
-    alert("카테고리를 먼저 선택해 주세요.");
-    return;
-  }
-  isSituationOpen.value = true;
+// 실제 '여정 시작하기' 버튼 (패스포트 카드 내부)
+function onStartSubItem() {
+  if (!selectedSubItem.value) return;
+  router.push({
+    path: "/quiz/start",
+    query: {
+      questionType: categoryType.value,
+      sceneId: String(sceneGroups[selectedSubItem.value.groupIdx].sceneId)
+    }
+  });
 }
 
-function closeSituationDrawer() {
-  isSituationOpen.value = false;
-}
-
-// 하위 항목 카드 클릭 시 선택하고 모달 닫기
-function selectSubItemAndClose(gIdx, iIdx) {
-  if (
-    selectedSubItem.value &&
-    selectedSubItem.value.groupIdx === gIdx &&
-    selectedSubItem.value.itemIdx === iIdx
-  ) {
-    // 같은 카드 재클릭 시 선택 해제
-    selectedSubItem.value = null;
-  } else {
-    selectedSubItem.value = { groupIdx: gIdx, itemIdx: iIdx };
-  }
-  closeSituationDrawer();
-}
-
-// onStart: 현재 설정으로 퀴즈 시작
+// onStart: '전체' 탭 무작위 챌린지 전용 버튼
 function onStart() {
   router.push({
     path: "/quiz/start",
     query: {
       questionType: categoryType.value,
-      sceneId: selectedSceneId.value == null ? undefined : String(selectedSceneId.value)
+      // sceneId 전달안함 -> 서버에서 전체 랜덤 출제
     }
   });
 }
@@ -493,15 +621,104 @@ function onStartTravel() {
 /* ── Hero Section ────────────────────────────────────── */
 .hero {
   position: relative;
-  background-image: url("../assets/hero-bg.png");
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
   min-height: var(--hero-height, var(--hero-height-default));
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
+}
+
+/* ── Hero Section 영상 배경 ────────────────────────────────────── */
+
+/* 1. 뒷단 몽환적 블러 배경 (빈 틈을 채움) */
+.hero-video-bg-blur {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: blur(24px) saturate(1.2) brightness(0.7);
+  transform: scale(1.1); /* 블러 테두리가 하얗게 뜨는 현상 방지 */
+  z-index: 0;
+}
+
+/* 2. 앞단 원본 비율 유지 영상 (너무 크게 크롭되지 않게) */
+.hero-video-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain; /* cover 대신 contain 적용으로 100% 원본 노출 */
+  filter: saturate(1.1) brightness(0.9);
+  z-index: 1; /* 블러 배경보다 위 */
+}
+
+/* 히어로 오버레이 밑으로 깔림 보장 */
+.stamp-pattern, .hero-overlay {
+  z-index: 2; /* 비디오 2개보다 위에 오도록 승격 */
+}
+
+/* ── 계절 테마 선택기 (Hero 우측 하단 둥둥) ── */
+.season-selector {
+  position: absolute;
+  right: 24px;
+  bottom: 24px;
+  z-index: 10;
+  display: flex;
+  gap: 8px;
+  background: rgba(26, 45, 61, 0.4);
+  backdrop-filter: blur(8px);
+  padding: 6px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.season-btn {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.season-btn:hover {
+  color: white;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.season-btn.active {
+  background: white;
+  color: var(--dark);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transform: scale(1.05);
+  font-weight: 800;
+}
+
+/* 히어로 텍스트 컨텐츠 등장 애니메이션 */
+.hero-content-anim {
+  position: relative;
+  z-index: 2;
+  animation: fadeUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes fadeUp {
+  0% { opacity: 0; transform: translateY(15px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* 탑승 준비 완료 깜빡임 효과 */
+.animate-pulse-subtle {
+  animation: pulseSubtle 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+@keyframes pulseSubtle {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
 }
 
 /* ── 구름 애니메이션 ─────────────────────────────────── */
@@ -552,102 +769,124 @@ function onStartTravel() {
   100% { transform: translateX(calc(100vw + 120px)); }
 }
 
-/* ── Hero 오버레이 ───────────────────────────────────── */
+/* ── Hero 오버레이 (다층 그라데이션 + 브랜드 틴트 + 인터랙션 방지) ── */
 .hero-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    180deg,
-    rgba(26, 45, 61, 0.2) 0%,
-    rgba(26, 45, 61, 0.5) 50%,
-    rgba(26, 45, 61, 0.75) 100%
-  );
+  /* 
+    1) 상단 강(타이틀 가독성), 중앙 약(영상 본연의 색 유지), 하단 무(답답함 해소)
+    2) 양 가장자리 미세 비네팅(Vignette)으로 시선을 중앙 집중
+    3) 브랜드 틴트: 딥 인디고(26, 45, 61) 적용으로 통일감 부여
+  */
+  background: 
+    linear-gradient(
+      180deg,
+      rgba(26, 45, 61, 0.45) 0%,      /* 상단 가장 어둡게 */
+      rgba(26, 45, 61, 0.15) 35%,     /* 상단~중앙 자연스럽게 풀림 */
+      rgba(26, 45, 61, 0.05) 70%,     /* 중앙 메인 디테일 보존 */
+      rgba(26, 45, 61, 0.0) 100%      /* 하단은 투명하게 (답답함 해소) */
+    ),
+    radial-gradient(
+      circle at center,
+      transparent 40%,
+      rgba(26, 45, 61, 0.2) 150%      /* 외곽 약한 비네팅 터치 */
+    );
+  
+  /* 마우스/터치 인터랙션을 하위 계절 버튼, 스크롤 등에 온전히 통과시킴 */
+  pointer-events: none;
+  
+  /* 부모 컨테이너(hero)와 경계가 일치하도록 곡률 상속 */
+  border-radius: inherit;
   z-index: 2;
+}
+
+/* ── 스탬프 패턴 (여권 감성) ──────────────────────────── */
+.stamp-pattern {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.1) 2px, transparent 2px);
+  background-size: 30px 30px;
+  opacity: 0.15;
+  z-index: 1;
 }
 
 /* ── Hero 콘텐츠 ─────────────────────────────────────── */
 .hero-content {
   position: relative;
   z-index: 3;
-  text-align: center;
-  color: #fff;
-  padding: 48px var(--gutter);
-}
-
-.hero-eyebrow {
-  font-family: var(--font-display);
-  font-size: 13px;
-  letter-spacing: 4px;
-  opacity: 0.85;
-  margin-bottom: 12px;
-  font-weight: 500;
-}
-
-.hero-title {
-  font-family: var(--font-display);
-  font-size: clamp(32px, 5vw, 64px);
-  font-weight: 800;
-  line-height: 1.25;
-  margin-bottom: 10px;
-  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
-}
-
-.hero-subtitle {
-  font-size: clamp(16px, 2vw, 20px);
-  opacity: 0.9;
-  margin-bottom: 28px;
-  font-weight: 300;
-  letter-spacing: 1px;
-}
-
-/* ── CTA 버튼 그룹 ───────────────────────────────────── */
-.hero-actions {
   display: flex;
-  gap: 12px;
   justify-content: center;
-  flex-wrap: wrap;
+  align-items: center;
+  padding: 60px var(--gutter);
+  width: 100%;
 }
 
-.cta-primary {
-  min-height: 52px;
-  padding: 0 28px;
-  border-radius: var(--radius-pill);
-  background: linear-gradient(135deg, #f472b6, #a855f7);
-  color: #fff;
-  font-size: 16px;
+/* ── 보딩 패스 카드 ───────────────────────────────────── */
+.boarding-pass {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 500px;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  animation: slideDownTicket 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  color: var(--dark);
+}
+
+@keyframes slideDownTicket {
+  from { opacity: 0; transform: translateY(-40px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.bp-header {
+  background: var(--ocean-deep);
+  color: white;
+  padding: 12px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 2px;
+}
+.bp-class { color: var(--crossing); }
+
+.bp-body {
+  padding: 32px 24px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.bp-label {
+  font-size: 13px;
+  color: var(--text-muted);
   font-weight: 700;
+  letter-spacing: 2px;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+}
+.bp-dest {
   font-family: var(--font-display);
-  border: none;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 20px rgba(244, 114, 182, 0.4);
+  font-size: clamp(24px, 5vw, 36px);
+  font-weight: 900;
+  color: var(--dark);
+  margin-bottom: 20px;
+  letter-spacing: -0.5px;
 }
-
-.cta-primary:hover {
-  transform: translateY(-2px) scale(1.03);
-  box-shadow: 0 8px 30px rgba(244, 114, 182, 0.5);
-}
-
-.cta-secondary {
-  min-height: 52px;
-  padding: 0 28px;
+.bp-mission {
+  font-size: 15px;
+  color: var(--ocean);
+  font-weight: 600;
+  background: rgba(126, 200, 227, 0.15);
+  padding: 8px 16px;
   border-radius: var(--radius-pill);
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(8px);
-  color: #fff;
-  font-size: 16px;
-  font-weight: 500;
-  font-family: var(--font-display);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+.bp-footer { display: flex; justify-content: flex-end; align-items: center; background: rgba(0,0,0,0.02); padding: 12px 24px; border-top: 1px dashed rgba(0,0,0,0.1); }
+.boarding-time { font-family: var(--font-display); font-weight: 800; font-size: 14px; color: var(--ocean); letter-spacing: 1px; }
 
 .cta-secondary:hover {
   background: rgba(255, 255, 255, 0.25);
@@ -661,26 +900,26 @@ function onStartTravel() {
   padding: 32px var(--gutter) 0;
 }
 
+.selection-header-layout {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
 .section-title {
   font-family: var(--font-display);
-  font-size: 20px;
-  font-weight: 700;
+  font-size: 24px;
+  font-weight: 800;
   color: var(--dark);
   margin-bottom: 6px;
   display: flex;
   align-items: center;
   gap: 8px;
 }
-
-.section-icon {
-  font-size: 24px;
-}
-
-.section-desc {
-  color: var(--text-muted);
-  font-size: 14px;
-  margin-bottom: 16px;
-}
+.section-icon { font-size: 28px; }
+.section-desc { color: var(--text-muted); font-size: 15px; margin-bottom: 0; }
 
 /* ── Pill Toggle (단어/문장) ─────────────────────────── */
 .pill-toggle {
@@ -717,473 +956,527 @@ function onStartTravel() {
 }
 
 /* ============================================================
-   대분류 탭 + 하위 카드 그리드
-   
-   왜 탭 방식?
-   - 대분류를 먼저 선택 → 하위 항목 카드가 나타남
-   - 기존의 이미지 카드 UI 형식을 유지하면서
-     많은 하위 항목을 논리적으로 분류할 수 있음
+   상황 선택 UI (검색 + 카테고리 탭 형태)
    ============================================================ */
+.situation-selection {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
 
-/* ── 대분류 드롭다운 셀렉트 ────────────────────────────── 
-   왜 커스텀 드롭다운?
-   - 기본 select 스타일은 브라우저마다 다름
-   - 디자인 시스템에 맞는 일관된 스타일 보장
-   - appearance: none으로 기본 화살표를 숨기고 커스텀 화살표 사용 */
-.category-dropdown-wrapper {
+.search-box {
   position: relative;
   width: 100%;
-  max-width: 400px;
-  margin-bottom: 20px;
 }
-
-.category-dropdown {
-  /* 기본 select 스타일 초기화 */
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  /* 커스텀 스타일 적용 */
+.search-box input {
   width: 100%;
-  padding: 14px 48px 14px 20px;  /* 오른쪽: 화살표 공간 확보 */
-  border: 2px solid rgba(126, 200, 227, 0.25);
+  padding: 16px 48px 16px 44px;
   border-radius: var(--radius-md);
+  border: 2px solid rgba(126, 200, 227, 0.25);
   background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(8px);
-  color: var(--dark);
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
-  font-family: var(--font-display);
-  cursor: pointer;
+  color: var(--dark);
   outline: none;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
-
-/* 포커스/호버 시 하늘색 테두리 + 그림자 */
-.category-dropdown:hover {
-  border-color: var(--sky);
-}
-
-.category-dropdown:focus {
+.search-box input:focus {
   border-color: var(--ocean);
   box-shadow: 0 0 0 3px rgba(58, 134, 184, 0.15);
 }
-
-/* 커스텀 화살표 아이콘 위치 */
-.dropdown-arrow {
+.search-icon {
   position: absolute;
-  right: 16px;
+  left: 14px;
   top: 50%;
   transform: translateY(-50%);
-  color: var(--text-muted);
-  pointer-events: none;  /* 클릭 이벤트를 select로 전달 */
+  font-size: 20px;
+  color: #94a3b8;
+}
+.clear-btn {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #e2e8f0;
+  color: #64748b;
+  border: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
   display: flex;
   align-items: center;
-  transition: color 0.2s ease;
+  justify-content: center;
+}
+.clear-btn:hover { background: #cbd5e1; color: var(--dark); }
+
+.category-tabs-wrapper {
+  margin-bottom: 20px;
+  position: relative;
+  /* 버튼이 살짝 밖으로 나가도록 여백 허용 */
+  margin-left: -8px; 
+  margin-right: -8px;
+  padding-left: 8px;
+  padding-right: 8px;
 }
 
-/* select 포커스 시 화살표 색 변경 */
-.category-dropdown:focus + .dropdown-arrow {
+.category-tabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  /* 부모 box-shadow나 border가 잘리지 않게 위아래 패딩 확보 및 
+     좌/우 화살표 버튼과 버튼이 겹치지 않게 충분한 좌우 여백(안전 영역) 더 넓게 확보 */
+  padding: 4px 48px 12px 48px;
+  -ms-overflow-style: none; /* IE, Edge 스크롤바 완전 숨김 */
+  scrollbar-width: none; /* Firefox 스크롤바 완전 숨김 */
+  scroll-behavior: smooth;
+  /* 오른쪽 끝으로 갈수록 페이드스루(스며들듯 사라짐) 마스크 효과 */
+  -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
+  mask-image: linear-gradient(to right, black 85%, transparent 100%);
+}
+.category-tabs::-webkit-scrollbar { display: none; /* Chrome, Safari 스크롤바 완전 숨김 */ }
+
+/* 여유 공간 스페이서 */
+.tab-spacer {
+  min-width: 40px;
+  visibility: hidden;
+}
+
+/* 좌우 스크롤 내비게이션 화살표 */
+.tab-nav-btn {
+  position: absolute;
+  top: calc(50% - 4px); /* 하단 스크롤 여백(12px)과 상단(4px) 비대칭 보정하여 시각적 완벽한 중앙 정렬 */
+  transform: translateY(-50%);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.7); /* bg-white/70 */
+  backdrop-filter: blur(4px);
+  border: 1px solid #e2e8f0; /* border-slate-200 */
+  color: #64748b; /* slate-500 */
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  opacity: 0.7;
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); /* shadow-sm */
+}
+.tab-nav-btn:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.95);
+  color: var(--dark);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* shadow */
+  transform: translateY(-50%) scale(1.05);
+}
+.tab-nav-btn:active {
+  transform: translateY(-50%) scale(0.95);
+}
+.tab-nav-btn.left { left: 4px; }
+.tab-nav-btn.right { right: 4px; }
+
+.tab-item {
+  white-space: nowrap;
+  padding: 10px 18px;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(126, 200, 227, 0.3);
+  border-radius: var(--radius-pill);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-muted);
+  font-family: var(--font-display);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.tab-item:hover { background: rgba(126, 200, 227, 0.1); color: var(--ocean); border-color: rgba(126, 200, 227, 0.6); transform: translateY(-1px); }
+.tab-item.active { 
+  background: var(--ocean); 
+  color: white; 
+  border-color: var(--ocean); 
+  box-shadow: 0 4px 12px rgba(58, 134, 184, 0.4), 0 0 0 2px var(--ocean); /* 테두리를 진하게 보이도록 2px 링 추가 */
+  transform: scale(1.05); 
+  font-weight: 900; 
+  letter-spacing: 0.2px;
+}
+
+/* ✨ "전체 보기" 탭 전용 위계 변경 (Outline Style 분리) */
+.tab-item.tab-all {
+  background: transparent;
+  border: 1.5px dashed rgba(126, 200, 227, 0.6);
+  color: var(--ocean);
+}
+.tab-item.tab-all:hover {
+  background: rgba(126, 200, 227, 0.05);
+}
+.tab-item.tab-all.active {
+  background: rgba(126, 200, 227, 0.15);
+  border: 1.5px solid var(--ocean);
+  color: var(--ocean);
+  box-shadow: none;
+}
+
+.search-feedback {
+  margin-bottom: 16px;
+  font-size: 14px;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+.search-feedback strong {
   color: var(--ocean);
 }
 
-/* ── Scene 카드 그리드 (기존 레이아웃 유지) ────────────── */
-.scene-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-  gap: 16px;
-  margin-top: 4px;
-  /* 카드 등장 시 부드러운 페이드인 애니메이션 */
-  animation: cards-fade-in 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+.scene-grid-container {
+  position: relative;
 }
 
-@keyframes cards-fade-in {
-  0% { opacity: 0; transform: translateY(12px); }
+.scene-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+  animation: fade-in 0.3s ease;
+}
+
+@keyframes fade-in {
+  0% { opacity: 0; transform: translateY(8px); }
   100% { opacity: 1; transform: translateY(0); }
 }
 
-/* ── Scene 카드 (기존 디자인 유지) ────────────────────── */
+/* ── 무작위 챌린지 특별 카드 ── */
+.random-card {
+  grid-column: 1 / -1; /* 가로 전체 너비 확보 */
+  background: linear-gradient(135deg, var(--ocean), var(--train));
+  border: none;
+  padding: 0;
+}
+.random-card:hover {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: 0 12px 30px rgba(58, 134, 184, 0.3);
+}
+.random-content {
+  display: flex;
+  align-items: center;
+  padding: 24px;
+  gap: 16px;
+  color: white;
+  width: 100%;
+}
+.random-emoji { font-size: 40px; animation: bounce-subtle 2s infinite; }
+.random-text { display: flex; flex-direction: column; flex: 1; text-align: left; }
+.random-text h3 { margin: 0; font-size: 20px; font-weight: 900; font-family: var(--font-display); letter-spacing: -0.5px; }
+.random-text p { margin: 4px 0 0; font-size: 13px; opacity: 0.9; }
+.random-arrow { font-size: 24px; font-weight: bold; background: rgba(255,255,255,0.2); width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
+
 .scene-card {
   background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(8px);
   border: 2px solid rgba(126, 200, 227, 0.2);
   border-radius: var(--radius-lg);
   overflow: hidden;
   cursor: pointer;
-  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-  padding: 0;
   text-align: left;
   display: flex;
   flex-direction: column;
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+}
+.scene-card:hover { transform: translateY(-4px); box-shadow: 0 10px 30px rgba(58, 134, 184, 0.15); border-color: var(--sky); }
+
+/* 선택 시 피드백 강조 (링 추가) */
+.scene-card.selected { 
+  border-width: 3px;
+  border-color: var(--ocean); 
+  background: rgba(126, 200, 227, 0.08); 
+  box-shadow: 0 8px 24px rgba(58, 134, 184, 0.25); 
+  transform: translateY(-4px) scale(1.02); 
 }
 
-.scene-card:hover {
-  transform: translateY(-6px) scale(1.02);
-  box-shadow: 0 12px 40px rgba(58, 134, 184, 0.2);
-  border-color: var(--sky);
+.scene-image { position: relative; width: 100%; aspect-ratio: 16 / 9; overflow: hidden; }
+.scene-image img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s; }
+.scene-card:hover .scene-image img { transform: scale(1.08); }
+.scene-card.selected .scene-image img { transform: scale(1.1); filter: brightness(0.8); }
+.scene-image-overlay { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.3) 100%); pointer-events: none; }
+.scene-card.selected .scene-image-overlay { background: rgba(58, 134, 184, 0.4); } /* 선택 시 파란색 틴트 추가 */
+
+.selected-badge { 
+  position: absolute; 
+  top: 12px; 
+  right: 12px; 
+  width: 32px; 
+  height: 32px; 
+  background: var(--ocean); 
+  border: 2px solid white;
+  border-radius: 50%; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  color: white; 
+  font-weight: 900; 
+  font-size: 18px; 
+  box-shadow: 0 4px 12px rgba(58, 134, 184, 0.5); 
+  animation: scale-in 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
 }
 
-.scene-card.selected {
-  border-color: var(--ocean);
-  background: rgba(126, 200, 227, 0.08);
-  box-shadow: 0 4px 20px rgba(58, 134, 184, 0.2);
-}
-
-/* ── Scene 카드 이미지 영역 (일본풍 이미지 + 오버레이) ────── */
-.scene-image {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  overflow: hidden;
-}
-
-/* 이미지: object-fit으로 비율 유지하며 영역 채움 */
-.scene-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* 호버 시 이미지 살짝 확대 → 생동감 있는 인터랙션 */
-.scene-card:hover .scene-image img {
-  transform: scale(1.08);
-}
-
-/* 이미지 위 어두운 그라데이션: 이모지 가독성 보장 */
-.scene-image-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg,
-    rgba(0,0,0,0.05) 0%,
-    rgba(0,0,0,0.25) 100%
-  );
-  pointer-events: none;
-}
-
-/* 이모지 오버레이: 이미지 좌하단에 배치 */
-.scene-image-emoji {
-  position: absolute;
-  bottom: 10px;
-  left: 12px;
-  font-size: 28px;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
-}
-
-/* 선택 배지: 체크마크 원형 배지 */
-.selected-badge {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 28px;
-  height: 28px;
-  background: var(--ocean);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  font-size: 14px;
-  font-weight: 700;
-  animation: badge-pop 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2px 8px rgba(58, 134, 184, 0.4);
-}
-
-@keyframes badge-pop {
+@keyframes scale-in {
   0% { transform: scale(0); }
-  50% { transform: scale(1.2); }
   100% { transform: scale(1); }
 }
 
-/* ── Scene 카드 정보 ─────────────────────────────────── */
-.scene-info {
-  padding: 12px 14px;
+.scene-info { padding: 12px; display: flex; flex-direction: column; gap: 4px; }
+.scene-badge { font-size: 11px; font-weight: 800; padding: 2px 6px; border-radius: 4px; width: fit-content; margin-bottom: 2px; }
+.scene-name { font-size: 14px; font-weight: 800; color: var(--dark); line-height: 1.3; }
+
+/* 설명을 1줄로 줄이고 Hover 시 풀 텍스트 보이도록 밀도 개선 */
+.scene-desc { 
+  font-size: 12px; 
+  color: var(--text-muted); 
+  line-height: 1.4; 
+  white-space: nowrap; 
+  overflow: hidden; 
+  text-overflow: ellipsis; 
+  transition: all 0.3s;
+}
+.scene-card:hover .scene-desc {
+  white-space: normal;
+}
+
+.empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; background: rgba(126, 200, 227, 0.04); border: 2px dashed rgba(126, 200, 227, 0.2); border-radius: var(--radius-lg); text-align: center; }
+.empty-icon { font-size: 36px; margin-bottom: 12px; }
+.empty-text { font-size: 15px; font-weight: 600; color: var(--text-muted); line-height: 1.5; }
+
+/* ── 4. Passport Status Card (Boarding Pass Theme) ─────────────────── */
+.passport-status-wrapper {
+  position: sticky;
+  top: 16px;
+  z-index: 50;
+  margin-bottom: 24px;
+}
+
+.boarding-pass-card {
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(20px);
+  border-radius: 16px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(255, 255, 255, 0.5) inset;
+  border: 1px solid rgba(126, 200, 227, 0.4);
+  overflow: hidden;
+}
+
+/* 수직 절취선 구조 (Tablet+) */
+@media (min-width: 768px) {
+  .boarding-pass-card {
+    flex-direction: row;
+  }
+}
+
+.bpc-left {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 24px;
+}
+
+.bpc-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--dark);
+}
+
+.bpc-title {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  color: var(--dark);
+}
+
+.bpc-close-btn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+}
+.bpc-close-btn:hover { color: var(--dark); }
+
+.bpc-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.bpc-row {
+  display: flex;
+  gap: 32px;
+}
+
+.bpc-field {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-.scene-name {
-  font-family: var(--font-display);
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--dark);
-  line-height: 1.3;
+.bpc-label {
+  font-family: monospace;
+  font-size: 11px;
+  color: #64748b;
+  letter-spacing: 1px;
 }
 
-/* desc: 카드 하단에 세부 상황 설명을 회색 소텍스트로 표시
-   인지과학 — 정보 청킹: 이름(핵심) + 설명(보조)으로 2단계 제공 */
-.scene-desc {
-  font-size: 12px;
-  color: var(--text-muted);
-  line-height: 1.4;
-  /* 2줄까지만 표시, 넘으면 ... 처리 */
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-/* ── 빈 상태 (대분류 미선택 시) ──────────────────────── */
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 48px 20px;
-  background: rgba(126, 200, 227, 0.04);
-  border: 2px dashed rgba(126, 200, 227, 0.2);
-  border-radius: var(--radius-lg);
-  margin-top: 4px;
-}
-
-.empty-icon {
-  font-size: 36px;
-  margin-bottom: 12px;
-  /* 살짝 위아래로 바운스하는 애니메이션 */
-  animation: bounce-hint 1.5s ease-in-out infinite;
-}
-
-@keyframes bounce-hint {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
-}
-
-.empty-text {
-  color: var(--text-muted);
-  font-size: 15px;
-  font-family: var(--font-display);
-  font-weight: 500;
-}
-
-/* ── 시작 섹션 (하단) ────────────────────────────────── */
-.start-section {
-  max-width: var(--container-main);
-  margin: 0 auto;
-  padding: 28px var(--gutter) 40px;
-  text-align: center;
-}
-
-.start-summary {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  margin-bottom: 16px;
-  flex-wrap: wrap;
-}
-
-.summary-chip {
-  display: inline-block;
-  padding: 6px 14px;
-  background: rgba(126, 200, 227, 0.12);
-  color: var(--ocean);
-  border-radius: var(--radius-pill);
-  font-size: 13px;
-  font-weight: 500;
-  font-family: var(--font-display);
-}
-
-.start-button {
-  min-height: 52px;
-  padding: 0 48px;
-  border-radius: var(--radius-pill);
-  background: linear-gradient(135deg, var(--ocean), var(--train));
-  color: #fff;
-  font-size: 18px;
-  font-weight: 700;
-  font-family: var(--font-display);
-  border: none;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 20px rgba(58, 134, 184, 0.3);
-}
-
-.start-button:hover {
-  transform: translateY(-3px) scale(1.03);
-  box-shadow: 0 8px 30px rgba(58, 134, 184, 0.4);
-}
-
-.start-button:active {
-  transform: translateY(-1px);
-}
-
-/* ── 반응형 (모바일) ──────────────────────────────────── */
-@media (max-width: 767px) {
-  .hero-title {
-    font-size: 32px;
-  }
-
-  .hero-subtitle {
-    font-size: 16px;
-  }
-
-  .hero-actions {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .cta-primary,
-  .cta-secondary {
-    width: 100%;
-    max-width: 280px;
-  }
-
-  /* 모바일: 드롭다운 풀 너비 */
-  .category-dropdown-wrapper {
-    max-width: 100%;
-  }
-
-  .category-dropdown {
-    font-size: 15px;
-    padding: 12px 44px 12px 16px;
-  }
-
-  /* 모바일에서 카드 2열 */
-  .scene-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-  }
-
-  .section-block {
-    padding-top: 24px;
-  }
-
-  .start-button {
-    width: 100%;
-    max-width: 320px;
-    min-height: 52px;
-    font-size: 16px;
-    padding: 0 32px;
-  }
-}
-
-/* ── 하위 항목 스위처 (트리거 버튼) ───────────────────── */
-.situation-trigger-wrapper {
-  margin-top: 12px;
-}
-.situation-trigger-btn {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: #ffffff;
-  border: 2px solid rgba(126, 200, 227, 0.25);
-  border-radius: var(--radius-md);
-  padding: 16px 20px;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-}
-.situation-trigger-btn:hover {
-  border-color: var(--sky);
-  box-shadow: 0 10px 15px -3px rgba(58, 134, 184, 0.1);
-  transform: translateY(-2px);
-}
-.trigger-label {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--text-muted);
-  margin-right: auto;
-}
-.trigger-value {
+.bpc-value {
   font-size: 16px;
   font-weight: 800;
   color: var(--dark);
-  margin-right: 12px;
-}
-.trigger-placeholder {
-  font-size: 15px;
-  font-weight: 500;
-  color: #94a3b8;
-  margin-right: 12px;
-}
-.trigger-arrow {
-  font-size: 20px;
-  color: var(--text-muted);
 }
 
-
-/* ── 바텀시트 (모달/드로어) ──────────────────────────── */
-.drawer-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(15, 23, 42, 0.6);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  z-index: 9999;
-  display: flex;
-  align-items: flex-end; /* 아래쪽에 붙앰 */
-}
-
-.drawer-content {
-  background: #f8fafc;
-  width: 100%;
-  max-width: 600px;
-  margin: 0 auto;
-  border-radius: 24px 24px 0 0;
-  padding: 24px 20px 48px;
-  max-height: 85vh;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 -10px 40px rgba(0,0,0,0.2);
-}
-
-.drawer-header {
-  display: flex;
-  justify-content: space-between;
+/* MISSION 라인 강조 */
+.bpc-mission-highlight {
+  display: inline-flex;
   align-items: center;
-  margin-bottom: 20px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid rgba(0,0,0,0.05);
+  gap: 8px;
+  background: rgba(126, 200, 227, 0.15); /* bg-primary/10 느낌의 연한 톤 */
+  padding: 4px 12px;
+  border-radius: 8px;
+  width: fit-content;
+  margin-left: -4px; /* 라벨과 정렬 맞추기 위한 미세 조정 */
 }
-.drawer-title {
-  font-size: 20px;
+.bpc-mission-highlight .bpc-value {
+  font-size: 16px;
   font-weight: 800;
   color: var(--dark);
+}
+
+.bpc-badge-ready {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--ocean-deep);
+  background: rgba(58, 134, 184, 0.15);
+  padding: 2px 8px;
+  border-radius: 9999px; /* rounded-full */
+  letter-spacing: 0.5px;
+}
+.bpc-badge-ready::before {
+  content: '●';
+  font-size: 8px;
+}
+
+.bpc-divider {
+  width: 100%;
+  height: 2px;
+  background: transparent;
+  border-top: 2px dashed rgba(126, 200, 227, 0.4);
+  position: relative;
   margin: 0;
 }
-.drawer-close {
-  background: transparent;
+@media (min-width: 768px) {
+  .bpc-divider {
+    width: 2px;
+    height: auto;
+    border-top: none;
+    border-left: 2px dashed rgba(126, 200, 227, 0.4);
+  }
+}
+/* 절취선 양 끝 반원 구멍 */
+.bpc-divider::before, .bpc-divider::after {
+  content: '';
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  background: #f8fafc; /* 상위 배경색 매칭 */
+  border-radius: 50%;
+  border: 1px solid rgba(126, 200, 227, 0.4);
+  z-index: 1;
+}
+@media (max-width: 767px) {
+  .bpc-divider::before { left: -14px; top: -12px; border-right-color: transparent; border-bottom-color: transparent; transform: rotate(45deg); }
+  .bpc-divider::after { right: -14px; top: -12px; border-left-color: transparent; border-bottom-color: transparent; transform: rotate(-45deg); }
+}
+@media (min-width: 768px) {
+  .bpc-divider::before { top: -14px; left: -12px; border-bottom-color: transparent; border-right-color: transparent; transform: rotate(45deg); }
+  .bpc-divider::after { bottom: -14px; left: -12px; border-top-color: transparent; border-right-color: transparent; transform: rotate(-135deg); }
+}
+
+.bpc-right {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: stretch;
+  padding: 20px 24px;
+  background: rgba(126, 200, 227, 0.05);
+}
+@media (min-width: 768px) {
+  .bpc-right {
+    min-width: 260px;
+    background: transparent;
+  }
+}
+
+.bpc-barcode {
+  height: 48px;
+  margin-bottom: 20px;
+  background-image: repeating-linear-gradient(
+    90deg,
+    var(--dark),
+    var(--dark) 2px,
+    transparent 2px,
+    transparent 4px,
+    var(--dark) 4px,
+    var(--dark) 7px,
+    transparent 7px,
+    transparent 11px
+  );
+  opacity: 0.2;
+}
+
+.bpc-cta-start {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, var(--ocean), var(--ocean-deep));
+  color: white;
   border: none;
-  font-size: 24px;
-  color: var(--text-muted);
+  border-radius: 12px;
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: 1px;
   cursor: pointer;
-  padding: 4px;
-}
-.drawer-close:hover {
-  color: var(--dark);
+  box-shadow: 0 8px 24px rgba(58, 134, 184, 0.4);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-.drawer-body {
-  overflow-y: auto;
-  /* 스크롤바 커스텀 */
-  padding-right: 4px;
+.bpc-cta-start:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 12px 32px rgba(58, 134, 184, 0.6);
 }
-.drawer-body::-webkit-scrollbar {
-  width: 6px;
+.bpc-cta-start:active {
+  transform: translateY(0) scale(0.98);
 }
-.drawer-body::-webkit-scrollbar-track {
-  background: transparent; 
-}
-.drawer-body::-webkit-scrollbar-thumb {
-  background: rgba(126, 200, 227, 0.5); 
-  border-radius: 4px;
-}
+.cta-icon { font-size: 20px; }
 
-/* 드로어 트랜지션 효과 */
-.drawer-slide-enter-active,
-.drawer-slide-leave-active {
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.drawer-slide-enter-from,
-.drawer-slide-leave-to {
-  opacity: 0;
-}
-.drawer-slide-enter-from .drawer-content,
-.drawer-slide-leave-to .drawer-content {
-  transform: translateY(100%);
+/* 반응형 모바일 (기존 CSS와 호환) */
+@media (max-width: 767px) {
+  .hero-title { font-size: 42px; }
+  .hero-subtitle { font-size: 18px; }
+  .scene-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .selection-header-layout { flex-direction: column; align-items: stretch; gap: 12px; }
+  .pill-toggle { width: 100%; display: flex; }
+  .pill-toggle .pill { flex: 1; text-align: center; }
 }
 
 </style>
