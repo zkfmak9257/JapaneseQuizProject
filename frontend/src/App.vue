@@ -22,13 +22,20 @@
         </RouterLink>
 
         <!-- ── 데스크탑 네비게이션 ─────────────────────── 
-             깔끔한 텍스트 링크 + hover underline 애니메이션 -->
-        <nav class="topbar-nav">
-          <RouterLink to="/quiz/start" class="nav-link">퀴즈 시작</RouterLink>
-          <RouterLink v-if="isLoggedIn" to="/me/history" class="nav-link">학습기록</RouterLink>
-          <RouterLink v-if="isLoggedIn" to="/quiz/wrong-answers" class="nav-link">오답노트</RouterLink>
-          <RouterLink v-if="isLoggedIn" to="/quiz/favorites" class="nav-link">즐겨찾기</RouterLink>
-          <RouterLink v-if="isAdmin" to="/admin" class="nav-link">관리자</RouterLink>
+             아이콘 + 텍스트 중심의 명확한 네비게이션 -->
+        <nav class="topbar-nav" v-if="isLoggedIn">
+          <RouterLink to="/me/history" class="nav-text-link">
+            <span class="nav-icon">✈️</span> 여행 기록
+          </RouterLink>
+          <RouterLink to="/quiz/wrong-answers" class="nav-text-link">
+            <span class="nav-icon">🔥</span> 미션 훈련소
+          </RouterLink>
+          <RouterLink to="/quiz/favorites" class="nav-text-link">
+            <span class="nav-icon">🛂</span> 나의 여행 도장
+          </RouterLink>
+          <RouterLink v-if="isAdmin" to="/admin" class="nav-text-link">
+            <span class="nav-icon">⚙️</span> 관리자
+          </RouterLink>
         </nav>
 
         <!-- ── 오른쪽 영역: 인증 상태별 UI ────────────── -->
@@ -70,11 +77,13 @@
       <!-- ── 모바일 메뉴 패널 ──────────────────────────
            햄버거 클릭 시 슬라이드 다운으로 열림 -->
       <div v-if="showMobileMenu" class="mobile-menu">
-        <RouterLink to="/quiz/start" class="mobile-menu-link" @click="closeMobileMenu">퀴즈 시작</RouterLink>
-        <RouterLink v-if="isLoggedIn" to="/me/history" class="mobile-menu-link" @click="closeMobileMenu">학습기록</RouterLink>
-        <RouterLink v-if="isLoggedIn" to="/quiz/wrong-answers" class="mobile-menu-link" @click="closeMobileMenu">오답노트</RouterLink>
-        <RouterLink v-if="isLoggedIn" to="/quiz/favorites" class="mobile-menu-link" @click="closeMobileMenu">즐겨찾기</RouterLink>
-        <RouterLink v-if="isAdmin" to="/admin" class="mobile-menu-link" @click="closeMobileMenu">관리자</RouterLink>
+        <template v-if="isLoggedIn">
+          <div class="mobile-menu-section">내 여권</div>
+          <RouterLink to="/me/history" class="mobile-menu-link" @click="closeMobileMenu">✈️ 여행 기록</RouterLink>
+          <RouterLink to="/quiz/wrong-answers" class="mobile-menu-link" @click="closeMobileMenu">🔥 미션 훈련소</RouterLink>
+          <RouterLink to="/quiz/favorites" class="mobile-menu-link" @click="closeMobileMenu">🛂 나의 여행 도장</RouterLink>
+        </template>
+        <RouterLink v-if="isAdmin" to="/admin" class="mobile-menu-link" @click="closeMobileMenu">⚙️ 관리자</RouterLink>
         <template v-if="!isLoggedIn">
           <RouterLink to="/login" class="mobile-menu-link" @click="closeMobileMenu">로그인</RouterLink>
           <RouterLink to="/signup" class="mobile-menu-link" @click="closeMobileMenu">회원가입</RouterLink>
@@ -192,9 +201,32 @@ function onLogout() {
 }
 
 /* ── 프로필 드롭다운 오버레이 — 외부 클릭 감지 ────── */
-.profile-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 99;
+/* ── 데스크탑 네비게이션 (텍스트+아이콘) ────── */
+.nav-text-link {
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  color: var(--text-muted);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 8px;
+}
+
+.nav-icon {
+  font-size: 16px;
+}
+
+.nav-text-link:hover {
+  color: var(--ocean);
+  background: rgba(126, 200, 227, 0.1);
+}
+
+.nav-text-link.router-link-active {
+  color: var(--ocean);
+  font-weight: 800;
+  background: rgba(126, 200, 227, 0.15);
 }
 </style>
