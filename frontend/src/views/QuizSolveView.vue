@@ -253,10 +253,78 @@
       <div class="grade-feedback-text">
         <p>{{ gradeResult.correct ? '정답입니다! 잘하셨어요!' : '아쉽지만 오답입니다.' }}</p>
         <p style="font-size: 13px; font-weight: 400; margin-top: 4px; opacity: 0.8;">
-          {{ gradeResult.correct ? '계속 이 조자로!' : '다음에 다시 도전해보세요!' }} ➡️ 다음 버튼을 눌러주세요
+          {{ gradeResult.feedbackMessage || (gradeResult.correct ? '계속 이 조자로!' : '다음에 다시 도전해보세요!') }} ➡️ 다음 버튼을 눌러주세요
         </p>
       </div>
     </div>
+
+    <section v-if="submissionDone && gradeResult" class="feedback-stage-panel">
+      <div class="feedback-stage-tabs">
+        <button class="stage-tab" :class="{ active: feedbackStage === 1 }" @click="setFeedbackStage(1)">
+          1단계 즉시 피드백
+        </button>
+        <button
+          class="stage-tab"
+          :class="{ active: feedbackStage === 2 }"
+          :disabled="feedbackStage < 2"
+          @click="setFeedbackStage(2)"
+        >
+          2단계 정답 공개
+        </button>
+        <button
+          class="stage-tab"
+          :class="{ active: feedbackStage === 3 }"
+          :disabled="feedbackStage < 3"
+          @click="setFeedbackStage(3)"
+        >
+          3단계 해설 공개
+        </button>
+      </div>
+
+      <div class="stage-body">
+        <div class="stage-block">
+          <h4>1단계</h4>
+          <p>{{ gradeResult.feedbackMessage || (gradeResult.correct ? "정답입니다!" : "오답입니다.") }}</p>
+        </div>
+
+        <div v-if="feedbackStage >= 2" class="stage-block">
+          <h4>2단계</h4>
+          <p><strong>정답:</strong> {{ stageCorrect?.jpText || "정답 정보가 없습니다." }}</p>
+          <p><strong>해석:</strong> {{ stageCorrect?.koMeaning || "해석 정보가 없습니다." }}</p>
+
+          <template v-if="isSentenceMode && stageSentence">
+            <p><strong>정답 토큰:</strong> {{ stageSentence.correctTokens?.join(" → ") || "-" }}</p>
+            <p v-if="stageSentence.diffHint"><strong>비교 힌트:</strong> {{ stageSentence.diffHint }}</p>
+          </template>
+        </div>
+
+        <div v-if="feedbackStage >= 3" class="stage-block">
+          <h4>3단계</h4>
+          <p><strong>한 줄 해설:</strong> {{ stageExplanation?.oneLiner || "해설이 없습니다." }}</p>
+          <p><strong>추가 설명:</strong> {{ stageExplanation?.detail || "추가 설명이 없습니다." }}</p>
+
+          <template v-if="!isSentenceMode && stageChoices.length > 0">
+            <p class="stage-subtitle">보기별 뜻/설명</p>
+            <ul class="stage-choice-list">
+              <li v-for="choice in stageChoices" :key="choice.choiceId">
+                <strong>{{ choice.jpText }}</strong>
+                <span> - {{ choice.koMeaning || "뜻 정보 없음" }}</span>
+                <span v-if="choice.note"> ({{ choice.note }})</span>
+              </li>
+            </ul>
+          </template>
+        </div>
+      </div>
+
+      <button
+        v-if="feedbackStage < 3"
+        class="stage-next-btn"
+        type="button"
+        @click="feedbackStage = feedbackStage + 1"
+      >
+        다음 단계 보기
+      </button>
+    </section>
 
     <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
     <p v-if="reportSuccessMessage" class="muted">{{ reportSuccessMessage }}</p>
@@ -326,6 +394,8 @@ const errorMessage = ref("");
 
 const submissionDone = ref(false);
 const gradeResult = ref(null);
+const feedbackStage = ref(1);
+const stagePayload = ref(null);
 
 const showReportModal = ref(false);
 const reportType = ref("TYPO");
@@ -341,6 +411,16 @@ const progressPercent = computed(() => {
     return 0;
   }
   return Math.floor((question.value.seq / totalQuestions.value) * 100);
+});
+
+const stageCorrect = computed(() => stagePayload.value?.correct || null);
+const stageExplanation = computed(() => stagePayload.value?.explanation || null);
+const stageSentence = computed(() => stagePayload.value?.sentence || null);
+const stageChoices = computed(() => {
+  if (!Array.isArray(stagePayload.value?.choices)) {
+    return [];
+  }
+  return stagePayload.value.choices;
 });
 
 const sentenceTokenSource = computed(() => {
@@ -807,6 +887,16 @@ function dropOnPoolIndex(targetIndex) {
   dragItem.value = null;
 }
 
+function setFeedbackStage(targetStage) {
+  if (targetStage < 1 || targetStage > 3) {
+    return;
+  }
+  if (targetStage > feedbackStage.value) {
+    return;
+  }
+  feedbackStage.value = targetStage;
+}
+
 async function loadQuestion() {
   try {
     loading.value = true;
@@ -822,6 +912,8 @@ async function loadQuestion() {
     selectedChoiceId.value = null;
     submissionDone.value = false;
     gradeResult.value = null;
+    feedbackStage.value = 1;
+    stagePayload.value = null;
     isFavorited.value = false;
 
     if (isSentenceMode.value) {
@@ -886,8 +978,11 @@ async function submit() {
       correct: !!res.correct,
       selectedChoiceId: res.selectedChoiceId,
       // correctChoiceId: 서버가 정답 ID를 보내주면 오답 시 정답 카드 공개에 활용
-      correctChoiceId: res.correctChoiceId ?? null
+      correctChoiceId: res.correctChoiceId ?? null,
+      feedbackMessage: res.feedbackMessage || null
     };
+    stagePayload.value = res.stagePayload || null;
+    feedbackStage.value = 1;
 
     totalQuestions.value = res.totalQuestions;
     if (question.value?.questionId) {

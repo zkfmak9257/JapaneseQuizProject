@@ -61,6 +61,26 @@ public interface QuizCommandMapper {
             @Param("questionId") Long questionId
     );
 
+    Map<String, Object> findQuestionFeedbackMeta(
+            @Param("questionId") Long questionId
+    );
+
+    Map<String, Object> findCorrectChoicePayload(
+            @Param("questionId") Long questionId
+    );
+
+    List<Map<String, Object>> findChoicePayloads(
+            @Param("questionId") Long questionId
+    );
+
+    List<Long> findSentenceCorrectTokenIds(
+            @Param("questionId") Long questionId
+    );
+
+    String findSentenceCorrectText(
+            @Param("questionId") Long questionId
+    );
+
     int insertQuizAttemptAnswer(
             @Param("attemptId") Long attemptId,
             @Param("seq") int seq,

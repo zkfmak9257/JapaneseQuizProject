@@ -8,9 +8,29 @@ USE JPQuiz;
 ALTER TABLE quiz_choices
   ADD COLUMN IF NOT EXISTS is_correct TINYINT(1) NOT NULL DEFAULT 0;
 
+-- 1-a) quiz_choices: 보기별 뜻/설명 컬럼
+ALTER TABLE quiz_choices
+  ADD COLUMN IF NOT EXISTS meaning_ko VARCHAR(255) NULL AFTER choice_text;
+
+ALTER TABLE quiz_choices
+  ADD COLUMN IF NOT EXISTS note VARCHAR(255) NULL AFTER meaning_ko;
+
 -- 1-1) quiz_questions: 문제 타입(WORD/SENTENCE)
 ALTER TABLE quiz_questions
   ADD COLUMN IF NOT EXISTS question_type VARCHAR(20) NOT NULL DEFAULT 'WORD' AFTER scene_id;
+
+-- 1-1-a) quiz_questions: 3단계 피드백용 해설/해석 컬럼
+ALTER TABLE quiz_questions
+  ADD COLUMN IF NOT EXISTS translation_ko TEXT NULL AFTER question_text;
+
+ALTER TABLE quiz_questions
+  ADD COLUMN IF NOT EXISTS explanation TEXT NULL AFTER translation_ko;
+
+ALTER TABLE quiz_questions
+  ADD COLUMN IF NOT EXISTS tips TEXT NULL AFTER explanation;
+
+ALTER TABLE quiz_questions
+  ADD COLUMN IF NOT EXISTS correct_text_jp TEXT NULL AFTER tips;
 
 -- 1-1-1) quiz_questions: 활성/비활성 상태 컬럼
 ALTER TABLE quiz_questions

@@ -518,3 +518,43 @@
     - `frontend/src/api/statsApi.js`
     - `frontend/src/router/index.js`
     - `frontend/src/App.vue`
+
+## 최근 작업 로그 (2026-02-23)
+- [DONE] 3단계 피드백(오답 해설) 응답 구조 구현 (백엔드)
+  - 제출 API 응답(`POST /api/quiz/attempts/{attemptId}/answers`)에 아래 필드 추가
+    - `feedbackMessage`
+    - `stagePayload.correct` (`jpText`, `koMeaning`)
+    - `stagePayload.explanation` (`oneLiner`, `detail`)
+    - `stagePayload.choices[]` (WORD 전용: `choiceId`, `jpText`, `koMeaning`, `note`)
+    - `stagePayload.sentence` (SENTENCE 전용: `correctTokens`, `correctTextJp`, `diffHint`)
+  - 구현 파일:
+    - `src/main/java/com/team/jpquiz/quiz/dto/response/QuizAnswerResultResponse.java`
+    - `src/main/java/com/team/jpquiz/quiz/command/application/QuizCommandService.java`
+    - `src/main/java/com/team/jpquiz/quiz/command/infrastructure/QuizCommandMapper.java`
+    - `src/main/resources/mappers/quiz/QuizCommandMapper.xml`
+  - 정책 메모:
+    - 제출 전 조회 API(`GET /questions/{...}` 계열)에는 정답/해설 필드 비노출 유지
+    - 제출 결과 응답에서만 `stagePayload` 제공
+- [DONE] 3단계 피드백 UI 구현 (프론트)
+  - `QuizSolveView`에 단계형 패널 추가
+    - 1단계: 즉시 피드백(`feedbackMessage`)
+    - 2단계: 정답/해석 공개
+    - 3단계: 해설 공개 + WORD 보기별 뜻/설명
+  - 단계 진행 상태(`feedbackStage`)와 서버 payload(`stagePayload`) 연동
+  - 구현 파일:
+    - `frontend/src/views/QuizSolveView.vue`
+    - `frontend/src/styles.css`
+- [DONE] 3단계 피드백용 DB 스키마 컬럼 반영
+  - `quiz_questions`:
+    - `translation_ko`, `explanation`, `tips`, `correct_text_jp`
+  - `quiz_choices`:
+    - `meaning_ko`, `note`
+  - 반영 파일:
+    - `db/schema.sql`
+    - `db/schema_patch_quiz.sql`
+- [PASS] 검증 결과
+  - 백엔드: `./gradlew test` 성공
+  - 프론트: `cd frontend && npm run build` 성공
+- [TODO] 운영 반영 시 주의사항
+  - 배포 전 `db/schema_patch_quiz.sql` 선적용 필요
+  - 기존 시드 데이터는 신규 컬럼이 null일 수 있으므로 프론트 빈값 처리 유지
