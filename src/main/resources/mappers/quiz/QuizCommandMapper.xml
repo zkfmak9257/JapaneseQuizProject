@@ -158,6 +158,54 @@
         WHERE qst.question_id = #{questionId}
     </select>
 
+    <select id="findQuestionFeedbackMeta" resultType="map">
+        SELECT
+            qq.question_type AS questionType,
+            qq.question_text AS questionText,
+            qq.translation_ko AS translationKo,
+            qq.explanation AS explanation,
+            qq.tips AS tips,
+            qq.correct_text_jp AS correctTextJp
+        FROM quiz_questions qq
+        WHERE qq.question_id = #{questionId}
+    </select>
+
+    <select id="findCorrectChoicePayload" resultType="map">
+        SELECT
+            qc.choice_id AS choiceId,
+            qc.choice_text AS jpText,
+            qc.meaning_ko AS koMeaning,
+            qc.note AS note
+        FROM quiz_choices qc
+        WHERE qc.question_id = #{questionId}
+          AND qc.is_correct = 1
+        LIMIT 1
+    </select>
+
+    <select id="findChoicePayloads" resultType="map">
+        SELECT
+            qc.choice_id AS choiceId,
+            qc.choice_text AS jpText,
+            qc.meaning_ko AS koMeaning,
+            qc.note AS note
+        FROM quiz_choices qc
+        WHERE qc.question_id = #{questionId}
+        ORDER BY qc.choice_id ASC
+    </select>
+
+    <select id="findSentenceCorrectTokenIds" resultType="long">
+        SELECT qst.token_id
+        FROM quiz_sentence_tokens qst
+        WHERE qst.question_id = #{questionId}
+        ORDER BY qst.correct_order ASC
+    </select>
+
+    <select id="findSentenceCorrectText" resultType="string">
+        SELECT GROUP_CONCAT(qst.token_text ORDER BY qst.correct_order ASC SEPARATOR '')
+        FROM quiz_sentence_tokens qst
+        WHERE qst.question_id = #{questionId}
+    </select>
+
     <!-- 채점 결과 저장 -->
     <insert id="insertQuizAttemptAnswer">
         INSERT INTO quiz_attempt_answers (

@@ -1148,6 +1148,86 @@ button:active {
   transform: translateY(-1px);
 }
 
+/* ── 퀴즈 3단계 피드백 패널 ───────────────────────────── */
+.feedback-stage-panel {
+  margin-top: 16px;
+  border: 1px solid #dbe4ea;
+  border-radius: 12px;
+  background: #fff;
+  padding: 14px;
+}
+
+.feedback-stage-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.stage-tab {
+  border: 1px solid #cdd9e2;
+  background: #f8fbfe;
+  color: #334155;
+  padding: 6px 10px;
+  font-size: 13px;
+  border-radius: 999px;
+}
+
+.stage-tab.active {
+  border-color: #3a86b8;
+  background: #e8f4fb;
+  color: #1f5d85;
+}
+
+.stage-tab:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.stage-body {
+  display: grid;
+  gap: 10px;
+}
+
+.stage-block {
+  border: 1px solid #e6edf3;
+  border-radius: 10px;
+  padding: 10px;
+  background: #fcfdff;
+}
+
+.stage-block h4 {
+  margin: 0 0 6px;
+  font-size: 14px;
+  color: #1e293b;
+}
+
+.stage-block p {
+  margin: 0 0 4px;
+  color: #334155;
+  font-size: 14px;
+}
+
+.stage-subtitle {
+  margin-top: 8px;
+  font-weight: 700;
+}
+
+.stage-choice-list {
+  margin: 6px 0 0;
+  padding-left: 18px;
+}
+
+.stage-choice-list li {
+  margin-bottom: 4px;
+  font-size: 13px;
+}
+
+.stage-next-btn {
+  margin-top: 10px;
+  width: 100%;
+}
+
 .btn-link.secondary {
   background: var(--dark);
 }

@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -149,6 +150,12 @@ public class QuizCommandService {
         }
 
         int solvedCount = quizCommandMapper.countSolvedQuestions(attemptId);
+        String feedbackMessage = buildFeedbackMessage(correct);
+        QuizAnswerResultResponse.StagePayload stagePayload = buildStagePayload(
+                questionId,
+                questionType,
+                evaluationResult
+        );
 
         return QuizAnswerResultResponse.builder()
                 .attemptId(attemptId)
@@ -157,6 +164,8 @@ public class QuizCommandService {
                 .correct(correct)
                 .solvedCount(solvedCount)
                 .totalQuestions(totalQuestions)
+                .feedbackMessage(feedbackMessage)
+                .stagePayload(stagePayload)
                 .build();
     }
 
@@ -266,7 +275,7 @@ public class QuizCommandService {
             if (expected == null || expected.isBlank()) {
                 throw new CustomException(ErrorCode.INVALID_REQUEST);
             }
-            return new EvaluationResult(expected.equals(submitted), submitted);
+            return new EvaluationResult(expected.equals(submitted), submitted, expected);
         }
 
         if (request.getChoiceId() == null) {
@@ -276,7 +285,7 @@ public class QuizCommandService {
         if (correctFlag == null) {
             throw new CustomException(ErrorCode.INVALID_REQUEST);
         }
-        return new EvaluationResult(correctFlag == 1, null);
+        return new EvaluationResult(correctFlag == 1, null, null);
     }
 
     private String toCsv(List<Long> tokenIds) {
@@ -350,6 +359,123 @@ public class QuizCommandService {
         return ownerId.equals(currentUserId);
     }
 
-    private record EvaluationResult(boolean correct, String submittedTokenOrder) {
+    private String buildFeedbackMessage(boolean correct) {
+        return correct
+                ? "정답입니다! 잘하셨어요."
+                : "오답입니다. 정답과 해설을 확인해 보세요.";
+    }
+
+    private QuizAnswerResultResponse.StagePayload buildStagePayload(
+            Long questionId,
+            String questionType,
+            EvaluationResult evaluationResult
+    ) {
+        Map<String, Object> meta = quizCommandMapper.findQuestionFeedbackMeta(questionId);
+        Map<String, Object> correctChoice = quizCommandMapper.findCorrectChoicePayload(questionId);
+
+        String metaQuestionType = castToString(meta != null ? meta.get("questionType") : null);
+        String normalizedType = (questionType != null && !questionType.isBlank())
+                ? questionType
+                : metaQuestionType;
+        boolean sentenceMode = "SENTENCE".equalsIgnoreCase(normalizedType);
+
+        String translationKo = castToString(meta != null ? meta.get("translationKo") : null);
+        String explanation = castToString(meta != null ? meta.get("explanation") : null);
+        String tips = castToString(meta != null ? meta.get("tips") : null);
+
+        QuizAnswerResultResponse.CorrectPayload correctPayload = buildCorrectPayload(
+                questionId,
+                sentenceMode,
+                correctChoice,
+                translationKo,
+                meta
+        );
+
+        QuizAnswerResultResponse.ExplanationPayload explanationPayload = QuizAnswerResultResponse.ExplanationPayload
+                .builder()
+                .oneLiner(explanation)
+                .detail(tips)
+                .build();
+
+        List<QuizAnswerResultResponse.ChoicePayload> choicesPayload = new ArrayList<>();
+        if (!sentenceMode) {
+            List<Map<String, Object>> choices = quizCommandMapper.findChoicePayloads(questionId);
+            if (choices != null) {
+                choicesPayload = choices.stream()
+                        .map(choice -> QuizAnswerResultResponse.ChoicePayload.builder()
+                                .choiceId(castToLong(choice.get("choiceId")))
+                                .jpText(castToString(choice.get("jpText")))
+                                .koMeaning(castToString(choice.get("koMeaning")))
+                                .note(castToString(choice.get("note")))
+                                .build())
+                        .collect(Collectors.toList());
+            }
+        }
+
+        QuizAnswerResultResponse.SentencePayload sentencePayload = null;
+        if (sentenceMode) {
+            List<Long> correctTokens = quizCommandMapper.findSentenceCorrectTokenIds(questionId);
+            String correctTextJp = castToString(meta != null ? meta.get("correctTextJp") : null);
+            if (correctTextJp == null || correctTextJp.isBlank()) {
+                correctTextJp = quizCommandMapper.findSentenceCorrectText(questionId);
+            }
+
+            String diffHint = null;
+            if (!evaluationResult.correct()
+                    && evaluationResult.expectedTokenOrder() != null
+                    && evaluationResult.submittedTokenOrder() != null) {
+                diffHint = String.format(
+                        "제출 순서: %s / 정답 순서: %s",
+                        evaluationResult.submittedTokenOrder(),
+                        evaluationResult.expectedTokenOrder()
+                );
+            }
+
+            sentencePayload = QuizAnswerResultResponse.SentencePayload.builder()
+                    .correctTokens(correctTokens != null ? correctTokens : List.of())
+                    .correctTextJp(correctTextJp)
+                    .diffHint(diffHint)
+                    .build();
+        }
+
+        return QuizAnswerResultResponse.StagePayload.builder()
+                .correct(correctPayload)
+                .explanation(explanationPayload)
+                .choices(choicesPayload)
+                .sentence(sentencePayload)
+                .build();
+    }
+
+    private QuizAnswerResultResponse.CorrectPayload buildCorrectPayload(
+            Long questionId,
+            boolean sentenceMode,
+            Map<String, Object> correctChoice,
+            String translationKo,
+            Map<String, Object> meta
+    ) {
+        if (sentenceMode) {
+            String jpText = castToString(meta != null ? meta.get("correctTextJp") : null);
+            if (jpText == null || jpText.isBlank()) {
+                jpText = quizCommandMapper.findSentenceCorrectText(questionId);
+            }
+            return QuizAnswerResultResponse.CorrectPayload.builder()
+                    .jpText(jpText)
+                    .koMeaning(translationKo)
+                    .build();
+        }
+
+        String jpText = castToString(correctChoice != null ? correctChoice.get("jpText") : null);
+        String koMeaning = castToString(correctChoice != null ? correctChoice.get("koMeaning") : null);
+        if (koMeaning == null || koMeaning.isBlank()) {
+            koMeaning = translationKo;
+        }
+
+        return QuizAnswerResultResponse.CorrectPayload.builder()
+                .jpText(jpText)
+                .koMeaning(koMeaning)
+                .build();
+    }
+
+    private record EvaluationResult(boolean correct, String submittedTokenOrder, String expectedTokenOrder) {
     }
 }
