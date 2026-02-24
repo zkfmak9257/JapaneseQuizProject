@@ -118,9 +118,19 @@
 
         <!-- 페이지네이션 -->
         <div v-if="totalPages > 1" class="pager">
-          <button class="pager-btn" :disabled="page <= 1" @click="changePage(page - 1)">이전</button>
+          <button class="pager-btn pager-edge" :disabled="page <= 1" @click="changePage(1)" title="첫 페이지">
+            <ChevronsLeft :size="22" :stroke-width="2.5" />
+          </button>
+          <button class="pager-btn" :disabled="page <= 1" @click="changePage(page - 1)" title="이전">
+            <ChevronLeft :size="22" :stroke-width="2.5" />
+          </button>
           <span class="pager-text">{{ page }} / {{ totalPages }}</span>
-          <button class="pager-btn" :disabled="page >= totalPages" @click="changePage(page + 1)">다음</button>
+          <button class="pager-btn" :disabled="page >= totalPages" @click="changePage(page + 1)" title="다음">
+            <ChevronRight :size="22" :stroke-width="2.5" />
+          </button>
+          <button class="pager-btn pager-edge" :disabled="page >= totalPages" @click="changePage(totalPages)" title="마지막 페이지">
+            <ChevronsRight :size="22" :stroke-width="2.5" />
+          </button>
         </div>
       </template>
 
@@ -131,6 +141,7 @@
 <script setup>
 import { onMounted, reactive, ref } from "vue";
 import { getAdminReports, updateReportStatus } from "../api/reportApi";
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-vue-next";
 
 const STATUS_TABS = [
   { value: null,        label: "전체" },
@@ -535,30 +546,21 @@ onMounted(loadItems);
 }
 
 /* 페이지네이션 */
-.pager {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  margin-top: 8px;
-}
+.pager { display: flex; align-items: center; justify-content: center; gap: 4px; margin-top: 8px; }
 .pager-btn {
-  background: white;
+  width: 40px; height: 40px;
+  border-radius: 8px;
   border: 1px solid #e2e8f0;
-  color: #475569;
-  padding: 8px 18px;
-  border-radius: 20px;
-  font-size: 13px;
-  font-weight: 700;
+  background: white;
+  color: #64748b;
+  display: flex; align-items: center; justify-content: center;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.18s;
 }
-.pager-btn:hover:not(:disabled) {
-  background: #f8fafc;
-  border-color: #94a3b8;
-}
-.pager-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-.pager-text { font-size: 14px; font-weight: 800; color: #334155; }
+.pager-btn:hover:not(:disabled) { background: #f1f5f9; color: #0f172a; border-color: #cbd5e1; }
+.pager-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.pager-btn.pager-edge { background: #f8fafc; }
+.pager-text { font-size: 14px; font-weight: 800; color: #334155; padding: 0 10px; }
 
 /* 상태 메시지 */
 .state-msg { text-align: center; padding: 40px; color: #64748b; font-weight: 600; }

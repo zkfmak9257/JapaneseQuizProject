@@ -85,9 +85,30 @@
 
         <!-- 페이지네이션 -->
         <div class="pager" v-if="totalPages > 1">
-          <button class="pager-btn" :disabled="page <= 1" @click="changePage(page - 1)">이전 페이지</button>
-          <span class="pager-text">{{ page }} / {{ totalPages }}</span>
-          <button class="pager-btn" :disabled="page >= totalPages" @click="changePage(page + 1)">다음 페이지</button>
+          <!-- 맨 처음으로 -->
+          <button class="pager-btn pager-edge" :disabled="page <= 1" @click="changePage(1)" title="첫 페이지">
+            <ChevronsLeft :size="22" :stroke-width="2.5" />
+          </button>
+          <!-- 이전 -->
+          <button class="pager-btn" :disabled="page <= 1" @click="changePage(page - 1)" title="이전">
+            <ChevronLeft :size="22" :stroke-width="2.5" />
+          </button>
+          <!-- 페이지 번호 -->
+          <button
+            v-for="p in visiblePages"
+            :key="p"
+            class="pager-num"
+            :class="{ active: p === page }"
+            @click="changePage(p)"
+          >{{ p }}</button>
+          <!-- 다음 -->
+          <button class="pager-btn" :disabled="page >= totalPages" @click="changePage(page + 1)" title="다음">
+            <ChevronRight :size="22" :stroke-width="2.5" />
+          </button>
+          <!-- 맨 끝으로 -->
+          <button class="pager-btn pager-edge" :disabled="page >= totalPages" @click="changePage(totalPages)" title="마지막 페이지">
+            <ChevronsRight :size="22" :stroke-width="2.5" />
+          </button>
         </div>
       </template>
 
@@ -96,9 +117,10 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { getFavorites, toggleFavorite } from "../api/favoriteApi";
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-vue-next";
 
 const router = useRouter();
 const items = ref([]);
@@ -108,6 +130,19 @@ const page = ref(1);
 const size = 10;
 const totalPages = ref(1);
 const totalElements = ref(0);
+
+// 화면에 표시할 페이지 번호 목록 (최대 10개)
+const visiblePages = computed(() => {
+  const total = totalPages.value;
+  const current = page.value;
+  const max = 10;
+  if (total <= max) return Array.from({ length: total }, (_, i) => i + 1);
+  let start = Math.max(1, current - Math.floor(max / 2));
+  let end = start + max - 1;
+  if (end > total) { end = total; start = Math.max(1, end - max + 1); }
+  return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+});
+
 const deletingId = ref(null);
 
 async function loadItems() {
@@ -440,9 +475,30 @@ onMounted(loadItems);
 .empty-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.8; }
 
 /* 페이지네이션 */
-.pager { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 40px; }
-.pager-btn { background: transparent; border: 1px solid #cbd5e1; color: #475569; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
-.pager-btn:hover:not(:disabled) { background: white; color: #0f172a; border-color: #eab308; }
-.pager-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-.pager-text { font-size: 14px; font-weight: 700; letter-spacing: 2px; color: #334155; font-family: ui-monospace, sans-serif; }
+.pager { display: flex; align-items: center; justify-content: center; gap: 4px; margin-top: 40px; }
+.pager-btn {
+  width: 40px; height: 40px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  background: white;
+  color: #64748b;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+.pager-btn:hover:not(:disabled) { background: #f1f5f9; color: #0f172a; border-color: #cbd5e1; }
+.pager-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.pager-btn.pager-edge { background: #f8fafc; }
+.pager-num {
+  min-width: 40px; height: 40px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #64748b;
+  font-size: 14px; font-weight: 600;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all 0.2s; padding: 0;
+}
+.pager-num:hover { background: #f1f5f9; color: #0f172a; }
+.pager-num.active { background: #eab308; color: white; font-weight: 800; border-color: #eab308; }
 </style>
