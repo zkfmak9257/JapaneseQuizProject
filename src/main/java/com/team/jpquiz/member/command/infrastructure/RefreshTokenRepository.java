@@ -1,9 +1,13 @@
 package com.team.jpquiz.member.command.infrastructure;
 
 import com.team.jpquiz.member.command.domain.RefreshToken;
+import jakarta.persistence.LockModeType;
+import jakarta.persistence.QueryHint;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
@@ -16,7 +20,12 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long
 
     /**
      * 토큰 해시값으로 유효한 토큰 조회 (폐기되지 않은 토큰만)
+     * 동시 갱신 요청으로 인한 Race Condition 방지를 위해 PESSIMISTIC_WRITE 락을 사용합니다.
+     * 첫 번째 트랜잭션이 커밋되면 두 번째 트랜잭션은 revoked=true 상태를 읽어 Optional.empty()를 반환하고,
+     * 서비스 계층에서 INVALID_REFRESH_TOKEN 예외로 처리됩니다.
      */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @QueryHints(@QueryHint(name = "jakarta.persistence.lock.timeout", value = "3000"))
     Optional<RefreshToken> findByRefreshTokenHashAndRevokedFalse(String refreshTokenHash);
 
     /**
