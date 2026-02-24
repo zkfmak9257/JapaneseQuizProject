@@ -1,4 +1,9 @@
 <template>
+  <!-- ── 상단 고정 토스트 에러 메시지 ── -->
+  <div v-if="errorMessage && !submissionDone" class="toast-error">
+    ⚠️ {{ errorMessage }}
+  </div>
+
   <section class="card" v-if="question">
     <div class="quiz-top">
       <div class="quiz-progress">
@@ -114,7 +119,7 @@
               <span class="stk-content">
                 <template v-if="hasRuby(token.tokenText)">
                   <ruby>
-                    <rb>{{ rubyBase(token.tokenText) }}</rb>
+                    <span class="ruby-base">{{ rubyBase(token.tokenText) }}</span>
                     <rt>{{ rubyReading(token.tokenText) }}</rt>
                   </ruby>
                 </template>
@@ -162,7 +167,7 @@
               <span class="stk-content">
                 <template v-if="hasRuby(token.tokenText)">
                   <ruby>
-                    <rb>{{ rubyBase(token.tokenText) }}</rb>
+                    <span class="ruby-base">{{ rubyBase(token.tokenText) }}</span>
                     <rt>{{ rubyReading(token.tokenText) }}</rt>
                   </ruby>
                 </template>
@@ -183,17 +188,8 @@
       </div>
     </template>
 
-    <!-- ── 카드형 선택지 그리드 (여행 티켓 스타일) ──────────
-         왜 카드형? → 터치 영역이 넓어 모바일 UX가 좋고,
-         시각적 피드백(hover/selected/correct/wrong)을
-         자연스럽게 적용할 수 있다.
-         
-         UX 흐름:
-         1️⃣ 카드 클릭 → selected 상태 (파란 강조 + 체크)
-         2️⃣ 제출 버튼 활성화
-         3️⃣ 제출 → correct/wrong 상태 표시
-         4️⃣ 다음 버튼 등장 -->
-    <div v-else class="choices-grid">
+    <!-- ── 카드형 선택지 그리드 (여행 티켓 스타일) ────────── -->
+    <div v-if="!isSentenceMode" class="choices-grid">
       <div
         v-for="choice in question.choices"
         :key="choice.choiceId"
@@ -215,7 +211,7 @@
           <span class="choice-text furigana-hover">
             <template v-if="hasRuby(choice.choiceText)">
               <ruby>
-                <rb>{{ rubyBase(choice.choiceText) }}</rb>
+                <span class="ruby-base">{{ rubyBase(choice.choiceText) }}</span>
                 <rt>{{ rubyReading(choice.choiceText) }}</rt>
               </ruby>
             </template>
@@ -224,131 +220,170 @@
         </div>
       </div>
     </div>
-
-    <!-- ── 제출 / 다음 버튼 영역 ──────────────────────────
-         제출 전: 제출 버튼만 활성, 다음 비활성
-         제출 후: 제출 비활성, 다음 활성 -->
-    <div class="quiz-actions">
+    <!-- ── 제출 버튼 영역 ────────────────────────── -->
+    <div v-if="!submissionDone" class="quiz-actions">
       <button
         class="btn-submit"
         @click="submit"
-        :disabled="!canSubmit || submitting || submissionDone"
+        :disabled="!canSubmit || submitting"
       >
         {{ submitting ? "⏳ 제출 중..." : "🎯 제출" }}
       </button>
-      <button
-        class="btn-next"
-        @click="goNext"
-        :disabled="!submissionDone || navigatingNext"
-      >
-        {{ question.seq < totalQuestions ? "➡️ 다음" : "📊 결과 보기" }}
-      </button>
+    </div>
+  </section>
+
+  <!-- ── 피드백 영역은 별개의 섹션 카드로 분리 ────────── 
+       결과 박스처럼 테두리/배경이 명확하게 구분되어 시선 집중 -->
+  <section v-if="submissionDone && gradeResult" class="card unified-feedback-card" :class="gradeResult.correct ? 'is-correct' : 'is-wrong'" ref="feedbackCardRef">
+    <div class="feedback-stepper">
+      <span class="step-pill" :class="{ active: feedbackStep >= 1 }">1. 결과 확인</span>
+      <span class="step-pill" :class="{ active: feedbackStep >= 2 }">2. 정답 확인</span>
+      <span class="step-pill" :class="{ active: feedbackStep >= 3 }">3. 해설 학습</span>
     </div>
 
-    <!-- ── 정답/오답 피드백 영역 ────────────────────────────
-         제출 후 결과를 큰 아이콘 + 텍스트로 표시.
-         fadeCheckIn 애니메이션으로 부드럽게 등장 -->
-    <div
-      v-if="submissionDone && gradeResult"
-      class="grade-feedback"
-      :class="gradeResult.correct ? 'is-correct' : 'is-wrong'"
-    >
-      <span class="grade-feedback-icon">
-        {{ gradeResult.correct ? '🎉' : '😣' }}
-      </span>
-      <div class="grade-feedback-text">
-        <p>{{ gradeResult.correct ? '정답입니다! 잘하셨어요!' : '아쉽지만 오답입니다.' }}</p>
-        <p style="font-size: 13px; font-weight: 400; margin-top: 4px; opacity: 0.8;">
-          {{ gradeResult.feedbackMessage || (gradeResult.correct ? '계속 이 조자로!' : '다음에 다시 도전해보세요!') }} ➡️ 다음 버튼을 눌러주세요
+    <div class="feedback-context guide-note">
+      <div class="guide-character">👩‍✈️</div>
+      <div class="guide-speech">
+        <p class="context-title">여행 가이드 노트</p>
+        <p class="context-desc">
+          {{ question?.sceneName || "일본어 여행 상황" }}에서 자주 쓰는 표현입니다.
+          <br>
+          {{ stageExplanation?.oneLiner || "왜 틀렸는지 확인하고 다음 문제로 이동하세요." }}
         </p>
       </div>
     </div>
 
-    <section v-if="submissionDone && gradeResult" class="feedback-stage-panel">
-      <div class="feedback-stage-tabs">
-        <button class="stage-tab" :class="{ active: feedbackStage === 1 }" @click="setFeedbackStage(1)">
-          1단계 즉시 피드백
-        </button>
-        <button
-          class="stage-tab"
-          :class="{ active: feedbackStage === 2 }"
-          :disabled="feedbackStage < 2"
-          @click="setFeedbackStage(2)"
-        >
-          2단계 정답 공개
-        </button>
-        <button
-          class="stage-tab"
-          :class="{ active: feedbackStage === 3 }"
-          :disabled="feedbackStage < 3"
-          @click="setFeedbackStage(3)"
-        >
-          3단계 해설 공개
-        </button>
+    <!-- 1. 오답 인지 및 상단 안내 -->
+    <div class="feedback-header ticket-header-result">
+      <div class="feedback-status-badge" :class="gradeResult.correct ? 'badge-clear' : 'badge-fail'">
+        {{ gradeResult.correct ? '🎉 MISSION CLEAR' : '⚠️ MISSION FAILED' }}
+      </div>
+      <div class="feedback-title">
+        <h3 class="feedback-title-text" :class="gradeResult.correct ? 'text-correct' : 'text-wrong'">
+          {{ gradeResult.correct ? '정답입니다!' : '오답입니다' }}
+        </h3>
+        <p class="feedback-subtitle">
+          {{ gradeResult.correct ? '실전에서 더 강해집니다!' : '해설을 확인하고 다시 도전하세요.' }}
+        </p>
+      </div>
+    </div>
+
+    <!-- 2. 정답/오답 확인 영역 -->
+    <div v-if="feedbackStep >= 2" class="feedback-answer-reveal">
+      <!-- 🟢 정답 영역 (항상 초록 배경) -->
+      <div class="answer-box">
+        <div class="answer-label">
+          <span class="answer-check-icon">✔️</span> 정답
+        </div>
+        <!-- 단어 모드 정답 -->
+        <h2 class="answer-jp-text" v-if="!isSentenceMode">
+          {{ stageCorrect?.jpText || "정답 정보 없음" }}
+        </h2>
+        <!-- 문장 모드 정답 -->
+        <div class="answer-sentence-tokens" v-if="isSentenceMode && stageSentence">
+           <template v-if="stageSentence.correctTokens && stageSentence.correctTokens.length > 0">
+              <span v-for="(txt, idx) in stageSentence.correctTokens" :key="idx" class="answer-token-item">
+                <template v-if="hasRuby(txt)">
+                  <ruby><span class="ruby-base">{{ rubyBase(txt) }}</span><rt>{{ rubyReading(txt) }}</rt></ruby>
+                </template>
+                <template v-else>{{ txt }}</template>
+              </span>
+           </template>
+           <template v-else>{{ stageCorrect?.jpText || "-" }}</template>
+        </div>
+        <p class="answer-ko-meaning">{{ stageCorrect?.koMeaning || "해석 정보가 없습니다." }}</p>
       </div>
 
-      <div class="stage-body">
-        <div class="stage-block">
-          <h4>1단계</h4>
-          <p>{{ gradeResult.feedbackMessage || (gradeResult.correct ? "정답입니다!" : "오답입니다.") }}</p>
+      <!-- 🔴 오답 영역 (틀린 경우에만 표시) -->
+      <div v-if="!gradeResult.correct" class="wrong-box">
+        <div class="wrong-label">
+           <span class="wrong-cross-icon">❌</span> 내가 고른 답
+        </div>
+        <!-- 단어 모드 오답 힌트 -->
+        <template v-if="!isSentenceMode && userSelectedChoice">
+          <p class="wrong-jp-text">{{ userSelectedChoice.jpText }}</p>
+          <p class="wrong-ko-meaning">{{ userSelectedChoice.koMeaning }}</p>
+        </template>
+        <!-- 문장 모드 대조 힌트 -->
+        <template v-if="isSentenceMode && stageSentence?.diffHint">
+           <p class="wrong-jp-text text-sm" style="font-size: 0.95rem; margin-top: 0.5rem; word-break: keep-all">{{ stageSentence.diffHint }}</p>
+        </template>
+      </div>
+    </div>
+
+    <!-- 3. 차이 설명(해설) 영역 -->
+    <div v-if="feedbackStep >= 3" class="feedback-explanation">
+      <button class="explanation-toggle-btn" @click="showExplanation = !showExplanation">
+        📘 해설 및 보기 뜻 {{ showExplanation ? "접기" : "펼치기" }} <span class="toggle-arrow">{{ showExplanation ? '▴' : '▾' }}</span>
+      </button>
+
+      <div v-show="showExplanation" class="explanation-content">
+        <div class="explanation-section" v-if="stageExplanation?.oneLiner || stageExplanation?.detail">
+           <h4 class="explanation-heading">📌 정답 해설</h4>
+           <div class="explanation-highlight-box" style="margin-bottom: 1.5rem; padding: 1rem; border-radius: 8px; background: rgba(52, 152, 219, 0.05); border-left: 3px solid var(--primary-color);">
+             <p class="explanation-highlight" v-if="stageExplanation?.oneLiner">💡 {{ stageExplanation.oneLiner }}</p>
+             <p class="explanation-detail" v-if="stageExplanation?.detail">{{ stageExplanation.detail }}</p>
+           </div>
         </div>
 
-        <div v-if="feedbackStage >= 2" class="stage-block">
-          <h4>2단계</h4>
-          <p><strong>정답:</strong> {{ stageCorrect?.jpText || "정답 정보가 없습니다." }}</p>
-          <p><strong>해석:</strong> {{ stageCorrect?.koMeaning || "해석 정보가 없습니다." }}</p>
-
-          <template v-if="isSentenceMode && stageSentence">
-            <p><strong>정답 토큰:</strong> 
-              <template v-if="stageSentence.correctTokens && stageSentence.correctTokens.length > 0">
-                <span v-for="(txt, idx) in stageSentence.correctTokens" :key="idx">
-                  <template v-if="hasRuby(txt)">
-                    <ruby><rb>{{ rubyBase(txt) }}</rb><rt>{{ rubyReading(txt) }}</rt></ruby>
-                  </template>
-                  <template v-else>{{ txt }}</template>
-                  <span v-if="idx < stageSentence.correctTokens.length - 1"> → </span>
-                </span>
-              </template>
-              <template v-else>-</template>
-            </p>
-            <p v-if="stageSentence.diffHint"><strong>비교 힌트:</strong> {{ stageSentence.diffHint }}</p>
-          </template>
+        <!-- 단어별 보기 뜻 리스트 (구조화) -->
+        <div class="explanation-section" v-if="!isSentenceMode && stageChoices.length > 0">
+          <h4 class="explanation-heading">📚 다른 보기 의미</h4>
+          <div class="vocab-comparison-grid">
+            <div class="vocab-comparison-header">
+               <span>보기</span>
+               <span>뜻</span>
+            </div>
+            <div v-for="choice in stageChoices" :key="choice.choiceId" class="vocab-item">
+              <div class="vocab-jp">{{ choice.jpText }}</div>
+              <div class="vocab-ko">{{ choice.koMeaning || "-" }}</div>
+              <div class="vocab-note" v-if="choice.note">({{ choice.note }})</div>
+            </div>
+          </div>
         </div>
+      </div>
+    </div>
 
-        <div v-if="feedbackStage >= 3" class="stage-block">
-          <h4>3단계</h4>
-          <p><strong>한 줄 해설:</strong> {{ stageExplanation?.oneLiner || "해설이 없습니다." }}</p>
-          <p><strong>추가 설명:</strong> {{ stageExplanation?.detail || "추가 설명이 없습니다." }}</p>
-
-          <template v-if="!isSentenceMode && stageChoices.length > 0">
-            <p class="stage-subtitle">보기별 뜻/설명</p>
-            <ul class="stage-choice-list">
-              <li v-for="choice in stageChoices" :key="choice.choiceId">
-                <strong>{{ choice.jpText }}</strong>
-                <span> - {{ choice.koMeaning || "뜻 정보 없음" }}</span>
-                <span v-if="choice.note"> ({{ choice.note }})</span>
-              </li>
-            </ul>
-          </template>
-        </div>
+    <!-- 4. 다음으로 이동 CTA -->
+    <div class="feedback-cta">
+      <div class="feedback-cta-secondary">
+        <button class="btn-action-secondary" type="button" @click="toggleFavoriteClick" :disabled="favoriteSubmitting">
+          {{ isFavorited ? "★ 표현 저장됨" : "☆ 이 표현 저장하기" }}
+        </button>
+        <button class="btn-action-secondary ghost" type="button" @click="goWrongNote">
+          🧠 오답노트로 이어서 복습
+        </button>
       </div>
 
       <button
-        v-if="feedbackStage < 3"
-        class="stage-next-btn"
+        v-if="feedbackStep === 1"
+        class="btn-action-secondary"
         type="button"
-        @click="feedbackStage = feedbackStage + 1"
+        @click="feedbackStep = 2"
       >
-        다음 단계 보기
+        {{ gradeResult.correct ? "정답 다시 확인하기" : "정답 확인하기" }}
       </button>
-    </section>
 
-    <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
-    <p v-if="reportSuccessMessage" class="muted">{{ reportSuccessMessage }}</p>
+      <button
+        v-else-if="feedbackStep === 2"
+        class="btn-action-secondary"
+        type="button"
+        @click="feedbackStep = 3; showExplanation = true"
+      >
+        왜 틀렸는지 해설 보기
+      </button>
+
+      <button
+        class="btn-action-primary btn-next-mission"
+        @click="goNext"
+        :disabled="navigatingNext"
+      >
+        {{ question.seq < totalQuestions ? "다음 여행지로 이동 ✈️" : "이번 여행 결과 보기 📊" }}
+      </button>
+    </div>
   </section>
 
   <section class="card" v-else-if="loading">
-    <p>문제를 불러오는 중입니다...</p>
   </section>
 
   <section class="card" v-else>
@@ -387,7 +422,7 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from "vue";
+import { computed, ref, watch, nextTick } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { completeAttempt, getAttemptQuestion, submitAnswer } from "../api/quizApi";
 import { createReport } from "../api/reportApi";
@@ -411,8 +446,10 @@ const errorMessage = ref("");
 
 const submissionDone = ref(false);
 const gradeResult = ref(null);
-const feedbackStage = ref(1);
+const feedbackStep = ref(1);
 const stagePayload = ref(null);
+const showExplanation = ref(false);
+const feedbackCardRef = ref(null);
 
 const showReportModal = ref(false);
 const reportType = ref("TYPO");
@@ -438,6 +475,11 @@ const stageChoices = computed(() => {
     return [];
   }
   return stagePayload.value.choices;
+});
+
+const userSelectedChoice = computed(() => {
+  if (!stageChoices.value || !selectedChoiceId.value) return null;
+  return stageChoices.value.find(c => c.choiceId === selectedChoiceId.value) || null;
 });
 
 const sentenceTokenSource = computed(() => {
@@ -674,19 +716,15 @@ function choiceCardClass(choiceId) {
   // 제출 후: 정답/오답/정답공개 시각 표시
   const isCorrect = gradeResult.value?.correct;
   const wasMyChoice = gradeResult.value?.selectedChoiceId === choiceId;
-  // correctChoiceId: 서버에서 정답 ID를 보내주면 활용.
-  // 없으면 내가 맞힌 카드만 correct 표시.
   const correctId = gradeResult.value?.correctChoiceId;
   const isTheCorrectCard = correctId != null && correctId === choiceId;
 
   return {
-    // ✅ 내가 고른 카드가 정답일 때: 초록 glow + pulse
-    correct: isCorrect && wasMyChoice,
-    // ❌ 내가 고른 카드가 오답일 때: 빨간 glow + shake
-    wrong: !isCorrect && wasMyChoice,
-    // 🟢 틀렸을 때 실제 정답 카드 공개: 초록 테두리 (딜레이 후 등장)
-    'correct-reveal': !isCorrect && !wasMyChoice && isTheCorrectCard,
-    // 제출 후 모든 카드 비활성화
+    // ✅ 내가 고른 카드가 정답이거나 틀렸을 때 실제 정답 카드일 때: is-correct-choice 적용 (초록)
+    'is-correct-choice': (isCorrect && wasMyChoice) || (!isCorrect && isTheCorrectCard),
+    // ❌ 내가 고른 카드가 오답일 때: is-wrong-choice 적용 (빨강)
+    'is-wrong-choice': !isCorrect && wasMyChoice,
+    // 정답/오답과 무관하게 모든 카드는 비활성화되어 hover 등 방지
     disabled: true
   };
 }
@@ -801,117 +839,10 @@ function shuffle(tokens) {
 }
 
 function resetSentenceBoard() {
-  // 셔플된 전체 토큰 목록을 initialPoolOrder에 저장
-  // allPoolTokens computed가 이걸 기반으로 _used 플래그를 계산한다
   initialPoolOrder.value = shuffle(sentenceBoardSource.value);
-  // 기존 tokenPool도 호환을 위해 동기화
   tokenPool.value = [...initialPoolOrder.value];
   answerTokens.value = [];
   dragItem.value = null;
-}
-
-function movePoolTokenToAnswer(index) {
-  if (submissionDone.value) {
-    return;
-  }
-  if (answerTokens.value.length >= requiredSentenceTokenCount.value) {
-    return;
-  }
-  const [token] = tokenPool.value.splice(index, 1);
-  if (token) {
-    answerTokens.value.push(token);
-  }
-}
-
-function moveAnswerTokenToPool(index) {
-  if (submissionDone.value) {
-    return;
-  }
-  // answerTokens에서 제거 (allPoolTokens computed가 자동으로 _used 해제)
-  answerTokens.value.splice(index, 1);
-}
-
-function startDrag(source, index) {
-  if (submissionDone.value) {
-    return;
-  }
-  dragItem.value = { source, index };
-}
-
-function dropToAnswer() {
-  if (!dragItem.value || submissionDone.value) {
-    return;
-  }
-  if (dragItem.value.source === "pool") {
-    if (answerTokens.value.length >= requiredSentenceTokenCount.value) {
-      dragItem.value = null;
-      return;
-    }
-    movePoolTokenToAnswer(dragItem.value.index);
-  }
-  dragItem.value = null;
-}
-
-function dropToPool() {
-  if (!dragItem.value || submissionDone.value) {
-    return;
-  }
-  if (dragItem.value.source === "answer") {
-    moveAnswerTokenToPool(dragItem.value.index);
-  }
-  dragItem.value = null;
-}
-
-function dropOnAnswerIndex(targetIndex) {
-  if (!dragItem.value || submissionDone.value) {
-    return;
-  }
-
-  if (dragItem.value.source === "pool") {
-    if (answerTokens.value.length >= requiredSentenceTokenCount.value) {
-      dragItem.value = null;
-      return;
-    }
-    const [token] = tokenPool.value.splice(dragItem.value.index, 1);
-    if (token) {
-      answerTokens.value.splice(targetIndex, 0, token);
-    }
-  } else {
-    const [token] = answerTokens.value.splice(dragItem.value.index, 1);
-    if (token) {
-      answerTokens.value.splice(targetIndex, 0, token);
-    }
-  }
-  dragItem.value = null;
-}
-
-function dropOnPoolIndex(targetIndex) {
-  if (!dragItem.value || submissionDone.value) {
-    return;
-  }
-
-  if (dragItem.value.source === "answer") {
-    const [token] = answerTokens.value.splice(dragItem.value.index, 1);
-    if (token) {
-      tokenPool.value.splice(targetIndex, 0, token);
-    }
-  } else {
-    const [token] = tokenPool.value.splice(dragItem.value.index, 1);
-    if (token) {
-      tokenPool.value.splice(targetIndex, 0, token);
-    }
-  }
-  dragItem.value = null;
-}
-
-function setFeedbackStage(targetStage) {
-  if (targetStage < 1 || targetStage > 3) {
-    return;
-  }
-  if (targetStage > feedbackStage.value) {
-    return;
-  }
-  feedbackStage.value = targetStage;
 }
 
 async function loadQuestion() {
@@ -929,8 +860,9 @@ async function loadQuestion() {
     selectedChoiceId.value = null;
     submissionDone.value = false;
     gradeResult.value = null;
-    feedbackStage.value = 1;
+    feedbackStep.value = 1;
     stagePayload.value = null;
+    showExplanation.value = false;
     isFavorited.value = false;
 
     if (isSentenceMode.value) {
@@ -991,6 +923,7 @@ async function submit() {
     const res = await submitAnswer(attemptId, payload);
 
     submissionDone.value = true;
+    errorMessage.value = "";
     gradeResult.value = {
       correct: !!res.correct,
       selectedChoiceId: res.selectedChoiceId,
@@ -999,13 +932,21 @@ async function submit() {
       feedbackMessage: res.feedbackMessage || null
     };
     stagePayload.value = res.stagePayload || null;
-    feedbackStage.value = 1;
+    feedbackStep.value = 1;
+    showExplanation.value = false;
 
     totalQuestions.value = res.totalQuestions;
     if (question.value?.questionId) {
       quizStore.setSubmitResult(question.value.questionId, res);
     }
     quizStore.setSubmitted(seq, true);
+
+    nextTick(() => {
+      if (feedbackCardRef.value) {
+        // 부드럽게 스크롤하여 피드백 영역이 5~10% 정도 패딩을 갖도록 상단에 맞춤
+        feedbackCardRef.value.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
   } catch (error) {
     const status = error?.response?.status;
     if (status === 400) {
@@ -1072,6 +1013,10 @@ async function goNext() {
   } finally {
     navigatingNext.value = false;
   }
+}
+
+function goWrongNote() {
+  router.push("/quiz/wrong-answers");
 }
 
 function openReportModal() {
@@ -1158,3 +1103,446 @@ async function submitReport() {
   }
 }
 </script>
+
+/* ========================================================= */
+/*  Phase 12: Unified Learning-Centric Feedback Card Styles  */
+/* ========================================================= */
+
+.unified-feedback-card {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  border-radius: 16px;
+  background: var(--bg-card);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  transition: all 0.3s ease;
+  overflow: hidden;
+  position: relative;
+}
+
+.unified-feedback-card::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; width: 6px; height: 100%;
+}
+
+.unified-feedback-card.is-correct::before { background-color: var(--success); }
+.unified-feedback-card.is-wrong::before   { background-color: var(--danger); }
+
+.unified-feedback-card.is-correct { background-color: rgba(46, 204, 113, 0.03); }
+.unified-feedback-card.is-wrong   { background-color: rgba(231, 76, 60, 0.03); }
+
+/* 상단 미션 결과 헤더 (티켓/여권 배지 스타일) */
+.ticket-header-result {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.8rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px dashed var(--border-color);
+  margin-bottom: 1rem;
+}
+.feedback-status-badge {
+  padding: 0.4rem 1.2rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: white;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+.badge-clear { background: linear-gradient(135deg, #27ae60, #2ecc71); }
+.badge-fail { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+
+.feedback-title {
+  text-align: center;
+}
+.feedback-title-text {
+  margin: 0;
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.text-correct { color: var(--success); }
+.text-wrong { color: var(--danger); }
+
+.feedback-subtitle {
+  margin: 0.4rem 0 0 0;
+  font-size: 0.95rem;
+  color: var(--text-muted);
+}
+
+/* 정답/오답 대조 영역 */
+.feedback-answer-reveal {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.answer-label, .wrong-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+.answer-label { color: var(--success-dark, #27ae60); }
+.wrong-label  { color: var(--danger-dark, #c0392b); }
+
+.answer-jp-text {
+  margin: 0;
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--text-color);
+  letter-spacing: 0.02em;
+}
+.answer-sentence-tokens {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+.answer-token-item ruby rt {
+  font-size: 0.55em;
+  color: var(--text-muted);
+}
+.answer-ko-meaning {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--text-muted);
+}
+
+.wrong-choice-compare {
+  margin-top: 0.5rem;
+  padding: 1rem;
+  background-color: rgba(231, 76, 60, 0.05);
+  border-radius: 8px;
+  border-left: 3px solid var(--danger);
+}
+.wrong-jp-text {
+  margin: 0.5rem 0 0 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-color);
+}
+.wrong-ko-meaning {
+  font-weight: 400;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+/* 해설 토글 영역 */
+.feedback-explanation {
+  background: var(--bg-body);
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+}
+.explanation-toggle-btn {
+  width: 100%;
+  text-align: left;
+  padding: 1rem;
+  background: transparent;
+  border: none;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--primary-color);
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background 0.2s ease;
+}
+.explanation-toggle-btn:hover {
+  background: rgba(0,0,0,0.02);
+}
+.explanation-content {
+  padding: 0 1rem 1rem 1rem;
+  border-top: 1px dashed var(--border-color);
+  margin-top: -0.5rem; /* 버튼 패딩과 부드럽게 이어지게 */
+  padding-top: 1rem;
+}
+.explanation-highlight {
+  margin: 0 0 0.5rem 0;
+  font-weight: 600;
+  color: var(--text-color);
+}
+.explanation-detail {
+  margin: 0 0 1rem 0;
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* 어휘 비교 그리드 (미니 단어장) */
+.vocab-comparison-grid {
+  display: grid;
+  gap: 0.5rem;
+}
+.vocab-comparison-header {
+  display: grid;
+  grid-template-columns: 2fr 3fr auto;
+  gap: 1rem;
+  padding: 0 0.75rem 0.5rem 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  border-bottom: 2px solid var(--border-color);
+  margin-bottom: 0.5rem;
+}
+.vocab-item {
+  display: grid;
+  grid-template-columns: 2fr 3fr auto;
+  gap: 1rem;
+  padding: 0.75rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  align-items: center;
+  font-size: 0.9rem;
+}
+.vocab-jp {
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+.vocab-ko {
+  color: var(--text-color);
+}
+.vocab-note {
+  font-size: 0.8rem;
+  color: var(--text-light);
+  font-style: italic;
+  justify-self: end;
+}
+@media (max-width: 600px) {
+  .vocab-item {
+    grid-template-columns: 1fr;
+    gap: 0.2rem;
+  }
+  .vocab-note {
+    justify-self: start;
+  }
+}
+
+/* 단일 CTA (다음 버튼) */
+.feedback-cta {
+  margin-top: 0.5rem;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.feedback-cta-secondary {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.btn-action-secondary {
+  flex: 1;
+  padding: 0.8rem 1rem;
+  border: 1px solid var(--border-color);
+  background: #fff;
+  color: var(--text-color);
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.btn-action-secondary:hover:not(:disabled) {
+  background: rgba(0,0,0,0.02);
+  border-color: #94a3b8;
+}
+
+.btn-action-secondary.ghost {
+  background: rgba(52, 152, 219, 0.05);
+  border-color: transparent;
+  color: var(--primary-color);
+}
+
+.btn-action-secondary.ghost:hover {
+  background: rgba(52, 152, 219, 0.1);
+}
+
+.btn-next-mission {
+  width: 100%;
+  background: #0f172a !important; /* 네이비 */
+  color: #fbbf24 !important; /* 골드 */
+  padding: 1.2rem;
+  font-size: 1.15rem;
+  font-weight: 800;
+  border-radius: 14px;
+  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.25) !important;
+  margin-top: 0.5rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.btn-next-mission:hover:not(:disabled) {
+  background: #1e293b !important;
+  transform: translateY(-3px) scale(1.02) !important;
+  box-shadow: 0 8px 25px rgba(15, 23, 42, 0.35) !important;
+}
+
+.btn-next-mission:disabled {
+  background: var(--border-color) !important;
+  color: var(--text-muted) !important;
+  cursor: not-allowed;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.feedback-stepper {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.6rem;
+}
+
+.step-pill {
+  font-size: 0.78rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-color);
+  padding: 0.25rem 0.55rem;
+  color: var(--text-muted);
+  background: #fff;
+}
+
+.step-pill.active {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+  background: rgba(52, 152, 219, 0.08);
+  font-weight: 700;
+}
+
+/* ── 미션 가이드 노트 (말풍선) ── */
+.guide-note {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+  padding: 1.2rem;
+  background: #e0f2fe; /* 하늘색 배경 */
+  border: 1px solid #bae6fd;
+  border-radius: 12px;
+}
+.guide-character {
+  font-size: 2.2rem;
+  background: white;
+  width: 50px;
+  height: 50px;
+  min-width: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.guide-speech { flex-grow: 1; }
+.guide-speech .context-title {
+  margin: 0 0 0.4rem 0; font-size: 0.9rem; font-weight: 800; color: #0369a1;
+}
+.guide-speech .context-desc {
+  margin: 0; font-size: 0.95rem; color: #0f172a; line-height: 1.5;
+}
+
+/* ========================================================= */
+/*  Phase 13: Advanced Feedback Polish & In-place highlight  */
+/* ========================================================= */
+
+/* 정답/오답 컬러박스 분리 */
+.answer-box {
+  background-color: rgba(46, 204, 113, 0.08); /* 밝고 깨끗한 초록 배경 */
+  border: 1px solid rgba(46, 204, 113, 0.3);
+  border-radius: 8px;
+  padding: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.wrong-box {
+  background-color: rgba(231, 76, 60, 0.05); /* 연한 빨강 배경 */
+  border: 1px solid rgba(231, 76, 60, 0.3);
+  border-radius: 8px;
+  padding: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+/* 선택지 카드 애니메이션 강화 (여행 티켓 호버 적용) */
+.choice-card:hover:not(.disabled) {
+  transform: translateY(-3px) scale(1.01) !important;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08) !important;
+}
+
+.choice-card.is-correct-choice {
+  border-color: var(--success) !important;
+  background-color: rgba(46, 204, 113, 0.05) !important;
+  box-shadow: 0 0 0 2px var(--success) !important;
+  animation: correctCardScale 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes correctCardScale {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+
+.choice-card.is-correct-choice .choice-check {
+  display: flex !important;
+  color: var(--success);
+  font-weight: bold;
+}
+
+.choice-card.is-wrong-choice {
+  border-color: var(--danger) !important;
+  background-color: rgba(231, 76, 60, 0.05) !important;
+  animation: wrongCardShake 0.4s ease-in-out;
+}
+@keyframes wrongCardShake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-4px); }
+  40%, 80% { transform: translateX(4px); }
+}
+
+.choice-card.is-wrong-choice .choice-check {
+  display: flex !important;
+  color: var(--danger);
+  font-weight: bold;
+}
+
+/* 상단 고정 토스트 에러 메시지 */
+.toast-error {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--danger);
+  color: white;
+  padding: 1rem 2rem;
+  border-radius: 30px;
+  box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
+  z-index: 9999;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  animation: slideDownFade 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes slideDownFade {
+  0% { top: -50px; opacity: 0; }
+  100% { top: 20px; opacity: 1; }
+}
+
+.explanation-heading {
+  margin: 0 0 0.8rem 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-color);
+  border-bottom: 2px solid var(--border-color);
+  padding-bottom: 0.4rem;
+}

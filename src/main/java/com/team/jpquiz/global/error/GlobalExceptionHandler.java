@@ -34,7 +34,7 @@ public class GlobalExceptionHandler {
             Exception ex,
             HttpServletRequest request
     ) {
-        ErrorCode errorCode = ErrorCode.INVALID_REQUEST;
+        ex.printStackTrace(); ErrorCode errorCode = ErrorCode.INVALID_REQUEST;
         ErrorResponse body = ErrorResponse.of(
                 errorCode.getCode(),
                 errorCode.getMessage(),
@@ -49,7 +49,7 @@ public class GlobalExceptionHandler {
             Exception ex,
             HttpServletRequest request
     ) {
-        ErrorCode errorCode = ErrorCode.INVALID_REQUEST;
+        ex.printStackTrace(); ErrorCode errorCode = ErrorCode.INVALID_REQUEST;
         ErrorResponse body = ErrorResponse.of(
                 errorCode.getCode(),
                 errorCode.getMessage(),
