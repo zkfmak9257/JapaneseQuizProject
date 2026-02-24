@@ -159,14 +159,14 @@ CREATE TABLE IF NOT EXISTS quiz_attempt_answers (
 -- 9) 즐겨찾기
 CREATE TABLE IF NOT EXISTS favorites (
   id BIGINT NOT NULL AUTO_INCREMENT,
-  member_id BIGINT NOT NULL,
+  user_id BIGINT NOT NULL,
   question_id BIGINT NOT NULL,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
-  UNIQUE KEY uk_favorites_member_question (member_id, question_id),
+  UNIQUE KEY uk_favorites_user_question (user_id, question_id),
   KEY idx_favorites_question_id (question_id),
-  CONSTRAINT fk_favorites_member
-    FOREIGN KEY (member_id) REFERENCES users (user_id),
+  CONSTRAINT fk_favorites_user
+    FOREIGN KEY (user_id) REFERENCES users (user_id),
   CONSTRAINT fk_favorites_question
     FOREIGN KEY (question_id) REFERENCES quiz_questions (question_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -174,17 +174,17 @@ CREATE TABLE IF NOT EXISTS favorites (
 -- 10) 오답노트
 CREATE TABLE IF NOT EXISTS wrong_answers (
   id BIGINT NOT NULL AUTO_INCREMENT,
-  member_id BIGINT NOT NULL,
+  user_id BIGINT NOT NULL,
   question_id BIGINT NOT NULL,
   wrong_count INT NOT NULL DEFAULT 1,
   last_wrong_at DATETIME NULL,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
-  UNIQUE KEY uk_wrong_answers_member_question (member_id, question_id),
-  KEY idx_wrong_answers_member_created (member_id, created_at),
+  UNIQUE KEY uk_wrong_answers_user_question (user_id, question_id),
+  KEY idx_wrong_answers_user_created (user_id, created_at),
   KEY idx_wrong_answers_question_id (question_id),
-  CONSTRAINT fk_wrong_answers_member
-    FOREIGN KEY (member_id) REFERENCES users (user_id),
+  CONSTRAINT fk_wrong_answers_user
+    FOREIGN KEY (user_id) REFERENCES users (user_id),
   CONSTRAINT fk_wrong_answers_question
     FOREIGN KEY (question_id) REFERENCES quiz_questions (question_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

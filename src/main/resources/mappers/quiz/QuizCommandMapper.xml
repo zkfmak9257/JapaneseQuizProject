@@ -56,7 +56,7 @@
         SELECT wa.question_id
         FROM wrong_answers wa
         JOIN quiz_questions qq ON qq.question_id = wa.question_id
-        WHERE wa.member_id = #{memberId}
+        WHERE wa.user_id = #{memberId}
           AND qq.is_active = 1
         ORDER BY COALESCE(wa.last_wrong_at, wa.created_at) DESC
         LIMIT #{limit}
@@ -121,6 +121,22 @@
             #{choiceOrder}
         )
     </insert>
+
+    <!-- 단일 문제 활성화 여부 확인 -->
+    <select id="countActiveQuestionById" resultType="int">
+        SELECT COUNT(*)
+        FROM quiz_questions
+        WHERE question_id = #{questionId}
+          AND is_active = 1
+    </select>
+
+    <!-- 회원의 오답노트에 해당 문제 존재 여부 확인 -->
+    <select id="countWrongAnswerByMemberAndQuestion" resultType="int">
+        SELECT COUNT(*)
+        FROM wrong_answers
+        WHERE user_id = #{memberId}
+          AND question_id = #{questionId}
+    </select>
 
     <!-- attempt 존재 여부 확인 -->
     <select id="countAttemptById" resultType="int">

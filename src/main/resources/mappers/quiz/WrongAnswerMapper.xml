@@ -14,7 +14,7 @@
         FROM wrong_answers wa
         JOIN quiz_questions qq ON qq.question_id = wa.question_id
         LEFT JOIN quiz_scenes qs ON qs.scene_id = qq.scene_id
-        WHERE wa.member_id = #{memberId}
+        WHERE wa.user_id = #{memberId}
         <if test="fromDateTime != null">
             AND COALESCE(wa.last_wrong_at, wa.created_at) &gt;= #{fromDateTime}
         </if>
@@ -34,7 +34,7 @@
         FROM wrong_answers wa
         JOIN quiz_questions qq ON qq.question_id = wa.question_id
         LEFT JOIN quiz_scenes qs ON qs.scene_id = qq.scene_id
-        WHERE wa.member_id = #{memberId}
+        WHERE wa.user_id = #{memberId}
         <if test="fromDateTime != null">
             AND COALESCE(wa.last_wrong_at, wa.created_at) &gt;= #{fromDateTime}
         </if>

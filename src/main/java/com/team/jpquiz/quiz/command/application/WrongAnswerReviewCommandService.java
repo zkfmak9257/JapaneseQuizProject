@@ -46,6 +46,20 @@ public class WrongAnswerReviewCommandService {
         return createAttempt(memberId, selectedQuestionIds);
     }
 
+    public QuizAttemptResponse createSingleQuestionAttempt(Long memberId, Long questionId) {
+        validateMember(memberId);
+
+        if (quizCommandMapper.countActiveQuestionById(questionId) == 0) {
+            throw new CustomException(ErrorCode.NOT_FOUND);
+        }
+
+        if (quizCommandMapper.countWrongAnswerByMemberAndQuestion(memberId, questionId) == 0) {
+            throw new CustomException(ErrorCode.FORBIDDEN);
+        }
+
+        return createAttempt(memberId, List.of(questionId));
+    }
+
     private QuizAttemptResponse createAttempt(Long memberId, List<Long> questionIds) {
         Map<String, Object> params = new HashMap<>();
         params.put("userId", memberId);

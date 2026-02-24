@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "wrong_answers", uniqueConstraints = {
-    @UniqueConstraint(columnNames = {"member_id", "question_id"})
+    @UniqueConstraint(columnNames = {"user_id", "question_id"})
 })
 // 회원별 문제 오답 이력과 누적 횟수를 저장하는 오답노트 엔티티입니다.
 public class WrongAnswer {
@@ -25,7 +25,7 @@ public class WrongAnswer {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @Column(name = "member_id", nullable = false)
+  @Column(name = "user_id", nullable = false)
   private Long memberId;
 
   @Column(name = "question_id", nullable = false)

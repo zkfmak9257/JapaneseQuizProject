@@ -23,9 +23,9 @@
           </div>
         </div>
 
-        <button class="cta-primary-btn" @click="startReviewSession" :disabled="items.length === 0">
+        <button class="cta-primary-btn" @click="startReviewSession" :disabled="items.length === 0 || reviewLoading">
           <span class="cta-icon">🔥</span>
-          오답 복습 시작 (10문제)
+          {{ reviewLoading ? '복습 세트 생성 중...' : '오답 복습 시작 (10문제)' }}
         </button>
       </section>
 
@@ -94,8 +94,13 @@
               </div>
 
               <div class="card-actions">
-                <button class="mission-btn primary" @click="solveAgain(item.questionId)">
-                  <span class="icon">🚀</span> 미션 다시 도전
+                <button
+                  class="mission-btn primary"
+                  @click="solveAgain(item.questionId)"
+                  :disabled="solveAgainLoadingId !== null"
+                >
+                  <span class="icon">🚀</span>
+                  {{ solveAgainLoadingId === item.questionId ? '세션 생성 중...' : '미션 다시 도전' }}
                 </button>
                 <button class="mission-btn ghost" @click="hideMission(item.questionId)">
                   <span class="icon">👁️‍🗨️</span> 리스트에서 숨기기
@@ -119,7 +124,10 @@
 
 <script setup>
 import { onMounted, ref } from "vue";
-import { getWrongAnswers, removeWrongAnswer } from "../api/wrongAnswerApi";
+import { useRouter } from "vue-router";
+import { getWrongAnswers, removeWrongAnswer, createReviewSet, createSingleQuestionAttempt } from "../api/wrongAnswerApi";
+
+const router = useRouter();
 
 const items = ref([]);
 const loading = ref(false);
@@ -181,14 +189,49 @@ async function changePage(nextPage) {
 }
 
 // 미션 재도전(개별)
-function solveAgain(questionId) {
-  alert("해당 문제 1개 다시 풀기 화면으로 이동합니다! (API / 라우터 연결 필요)");
-  // router.push(`/quiz/solve?questionId=${questionId}`)
+const solveAgainLoadingId = ref(null);
+
+async function solveAgain(questionId) {
+  if (solveAgainLoadingId.value !== null) return;
+  try {
+    solveAgainLoadingId.value = questionId;
+    const data = await createSingleQuestionAttempt(questionId);
+    router.push(`/quiz/attempts/${data.attemptId}/questions/1`);
+  } catch (error) {
+    const status = error?.response?.status;
+    if (status === 401) {
+      errorMessage.value = "로그인이 필요합니다.";
+    } else if (status === 403) {
+      errorMessage.value = "내 오답노트에 없는 문제입니다.";
+    } else if (status === 404) {
+      errorMessage.value = "문제를 찾을 수 없습니다.";
+    } else {
+      errorMessage.value = "재도전 세션 생성 중 문제가 발생했습니다. 다시 시도해 주세요.";
+    }
+  } finally {
+    solveAgainLoadingId.value = null;
+  }
 }
 
 // 오답 복습 시작 (10문제) - 가장 강력한 CTA
-function startReviewSession() {
-  alert("최근/위험 오답 우선으로 10문제를 뽑아 집중 복습을 시작합니다! 🔥 (API 연결 필요)");
+const reviewLoading = ref(false);
+
+async function startReviewSession() {
+  if (reviewLoading.value) return;
+  try {
+    reviewLoading.value = true;
+    const data = await createReviewSet();
+    router.push(`/quiz/attempts/${data.attemptId}/questions/1`);
+  } catch (error) {
+    const status = error?.response?.status;
+    if (status === 401) {
+      errorMessage.value = "로그인이 필요합니다.";
+    } else {
+      errorMessage.value = "복습 세트 생성 중 문제가 발생했습니다. 다시 시도해 주세요.";
+    }
+  } finally {
+    reviewLoading.value = false;
+  }
 }
 
 // 오답 리스트에서 숨기기

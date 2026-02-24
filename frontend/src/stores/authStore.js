@@ -5,6 +5,7 @@ import { getMyProfile } from "../api/memberApi";
 
 export const useAuthStore = defineStore("auth", () => {
   const accessToken = ref(localStorage.getItem("accessToken") || "");
+  const refreshToken = ref(localStorage.getItem("refreshToken") || "");
   const profile = ref(
     localStorage.getItem("authProfile") ? JSON.parse(localStorage.getItem("authProfile")) : null
   );
@@ -21,6 +22,15 @@ export const useAuthStore = defineStore("auth", () => {
     }
   }
 
+  function setRefreshToken(token) {
+    refreshToken.value = token || "";
+    if (refreshToken.value) {
+      localStorage.setItem("refreshToken", refreshToken.value);
+    } else {
+      localStorage.removeItem("refreshToken");
+    }
+  }
+
   function setProfile(nextProfile) {
     profile.value = nextProfile || null;
     if (profile.value) {
@@ -33,12 +43,14 @@ export const useAuthStore = defineStore("auth", () => {
   async function login(email, password) {
     const token = await loginApi({ email, password });
     setToken(token.accessToken);
+    setRefreshToken(token.refreshToken);
     await fetchMe();
   }
 
   async function register(email, nickname, password) {
     const token = await registerApi({ email, nickname, password });
     setToken(token.accessToken);
+    setRefreshToken(token.refreshToken);
     await fetchMe();
   }
 
@@ -59,11 +71,13 @@ export const useAuthStore = defineStore("auth", () => {
 
   function logout() {
     setToken("");
+    setRefreshToken("");
     setProfile(null);
   }
 
   return {
     accessToken,
+    refreshToken,
     profile,
     role,
     isAdmin,
@@ -73,6 +87,7 @@ export const useAuthStore = defineStore("auth", () => {
     fetchMe,
     logout,
     setToken,
+    setRefreshToken,
     setProfile
   };
 });
