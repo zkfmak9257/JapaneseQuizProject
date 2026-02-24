@@ -68,7 +68,7 @@ public interface QuizCommandMapper {
         List<Map<String, Object>> findChoicePayloads(
                         @Param("questionId") Long questionId);
 
-        List<String> findSentenceCorrectTokensText(
+        List<Map<String, Object>> findSentenceCorrectTokenDetails(
                         @Param("questionId") Long questionId);
 
         String findSentenceCorrectText(

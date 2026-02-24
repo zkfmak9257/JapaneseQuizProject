@@ -29,44 +29,16 @@
 
         <div class="dotted-line"></div>
 
-        <!-- DESTINATION: 카테고리 선택 -->
-        <div class="selector-block">
-          <span class="i-label">DESTINATION · 상황 선택</span>
-          <div class="scene-grid">
-            <button
-              v-for="scene in sceneOptions"
-              :key="scene.id"
-              class="scene-btn"
-              :class="{ active: selectedSceneId === scene.id }"
-              @click="toggleScene(scene.id)"
-            >
-              {{ scene.label }}
-            </button>
-          </div>
-        </div>
-
-        <div class="dotted-line"></div>
-
-        <!-- MODE: 문제 유형 선택 -->
-        <div class="selector-block">
-          <span class="i-label">MODE · 문제 유형</span>
-          <div class="mode-grid">
-            <button
-              v-for="mode in modeOptions"
-              :key="mode.value"
-              class="mode-btn"
-              :class="{ active: selectedQuestionType === mode.value }"
-              @click="toggleMode(mode.value)"
-            >
-              {{ mode.label }}
-            </button>
-          </div>
-        </div>
-
-        <div class="dotted-line"></div>
-
-        <!-- 선택 요약 -->
+        <!-- 3️⃣ 테이블이 아닌 카드식 정보 구조 -->
         <div class="flight-info-grid">
+          <div class="info-item full-width">
+            <span class="i-label">모드</span>
+            <span class="i-value">{{ modeLabel }}</span>
+          </div>
+          <div class="info-item full-width">
+            <span class="i-label">상황</span>
+            <span class="i-value">{{ sceneLabel }}</span>
+          </div>
           <div class="info-item full-width">
             <span class="i-label">예상 소요 시간</span>
             <span class="i-value time-val">약 3~5분</span>
@@ -102,7 +74,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { computed, ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { startQuiz } from "../api/quizApi";
 import { useQuizStore } from "../stores/quizStore";
@@ -115,46 +87,41 @@ const loading = ref(false);
 const errorMessage = ref("");
 const isDeparting = ref(false);
 
-// URL 쿼리 파라미터를 초기값으로 사용, 화면에서 직접 변경 가능
-const initSceneId = (() => {
+const selectedQuestionType = computed(() => {
+  const value = String(route.query.questionType || "").toUpperCase();
+  if (value === "WORD" || value === "SENTENCE") return value;
+  return null;
+});
+
+const selectedSceneId = computed(() => {
   const raw = route.query.sceneId;
   if (!raw) return null;
   const parsed = Number(raw);
   return Number.isNaN(parsed) || parsed <= 0 ? null : parsed;
-})();
-const initType = (() => {
-  const value = String(route.query.questionType || "").toUpperCase();
-  return (value === "WORD" || value === "SENTENCE") ? value : null;
-})();
+});
 
-const selectedSceneId = ref(initSceneId);
-const selectedQuestionType = ref(initType);
+const modeLabel = computed(() => {
+  return selectedQuestionType.value === "WORD" ? "📝 단어" :
+         selectedQuestionType.value === "SENTENCE" ? "💬 문장" : "단어";
+});
 
-const sceneOptions = [
-  { id: null,  label: "🗺️ 전체" },
-  { id: 1,     label: "✈️ 공항" },
-  { id: 2,     label: "🚉 교통" },
-  { id: 3,     label: "🏨 숙박" },
-  { id: 4,     label: "🍣 음식" },
-  { id: 5,     label: "🏪 쇼핑" },
-  { id: 6,     label: "🌙 야간" },
-  { id: 7,     label: "🚨 긴급" },
-  { id: 8,     label: "🏛️ 관광" },
-];
+const sceneMap = {
+  1: "✈️ 공항 / 입출국",
+  2: "🚉 교통 / 이동",
+  3: "🏨 숙박",
+  4: "🍣 음식 / 술",
+  5: "🏪 쇼핑 / 상점",
+  6: "🌙 야간 / 즐길거리",
+  7: "🚨 긴급 상황",
+  8: "🏛️ 관광지 / 명소"
+};
 
-const modeOptions = [
-  { value: null,       label: "🎲 혼합" },
-  { value: "WORD",     label: "📝 단어" },
-  { value: "SENTENCE", label: "💬 문장" },
-];
-
-function toggleScene(id) {
-  selectedSceneId.value = id;
-}
-
-function toggleMode(value) {
-  selectedQuestionType.value = value;
-}
+const sceneLabel = computed(() => {
+  if (selectedSceneId.value && sceneMap[selectedSceneId.value]) {
+    return sceneMap[selectedSceneId.value];
+  }
+  return "🗺️ 전체 (랜덤 출제)";
+});
 
 const missions = [
   "수하물을 맡기고 싶습니다.",
@@ -181,10 +148,15 @@ async function startBoarding() {
     errorMessage.value = "";
     
     const res = await startQuiz({
-      questionType: selectedQuestionType.value ?? undefined,
-      sceneId: selectedSceneId.value ?? undefined
+      questionType: selectedQuestionType.value || undefined,
+      sceneId: selectedSceneId.value || undefined
     });
-
+    
+    // 새 퀴즈 시작이므로 이전 attempt의 캐시(isSubmitted, submitResults 등)를 초기화
+    // 왜? 이전 attempt의 isSubmitted[seq=1] 등이 남아있으면
+    // QuizSolveView.loadQuestion에서 "이미 제출한 문제"로 오인함
+    quizStore.resetAttemptState();
+    
     quizStore.setStartOptions({
       questionType: selectedQuestionType.value,
       sceneId: selectedSceneId.value
@@ -436,64 +408,6 @@ async function startBoarding() {
   color: #f8fafc;
   line-height: 1.4;
   word-break: keep-all;
-}
-
-/* ── 카테고리 / 모드 선택 ── */
-.selector-block {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-.scene-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-.scene-btn {
-  padding: 7px 13px;
-  border-radius: 20px;
-  border: 1.5px solid #334155;
-  background: transparent;
-  color: #94a3b8;
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.18s;
-  white-space: nowrap;
-}
-.scene-btn:hover {
-  border-color: #64748b;
-  color: #f1f5f9;
-}
-.scene-btn.active {
-  background: #38bdf8;
-  border-color: #38bdf8;
-  color: #0f172a;
-}
-.mode-grid {
-  display: flex;
-  gap: 8px;
-}
-.mode-btn {
-  flex: 1;
-  padding: 10px;
-  border-radius: 8px;
-  border: 1.5px solid #334155;
-  background: transparent;
-  color: #94a3b8;
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.18s;
-}
-.mode-btn:hover {
-  border-color: #64748b;
-  color: #f1f5f9;
-}
-.mode-btn.active {
-  background: #fca5a5;
-  border-color: #fca5a5;
-  color: #0f172a;
 }
 
 .error-msg {
