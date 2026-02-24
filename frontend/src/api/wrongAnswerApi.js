@@ -10,7 +10,18 @@ export async function getWrongAnswers(page = 1, size = 10, sort = 'recent', cate
 }
 
 export async function removeWrongAnswer(questionId) {
-  // 실제 백엔드 지원 여부에 맞춰 조정 필요 (현재 DELETE 가정)
   const response = await http.delete(`/api/quiz/wrong-answers/${questionId}`);
+  return unwrap(response);
+}
+
+// 오답 복습 세트 생성 (최근/위험 오답 우선 10문제)
+export async function createReviewSet() {
+  const response = await http.post("/api/quiz/wrong-answers/review-set");
+  return unwrap(response);
+}
+
+// 단일 문제 재도전 attempt 생성
+export async function createSingleQuestionAttempt(questionId) {
+  const response = await http.post(`/api/quiz/wrong-answers/${questionId}/single-attempt`);
   return unwrap(response);
 }
