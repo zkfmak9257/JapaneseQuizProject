@@ -45,4 +45,13 @@ public class WrongAnswerCommandController {
     QuizAttemptResponse response = wrongAnswerReviewCommandService.createReviewSet(currentMemberId);
     return ApiResponse.ok(response);
   }
+
+  // 단일 문제 재도전 attempt 생성
+  @PostMapping("/{questionId}/single-attempt")
+  public ApiResponse<QuizAttemptResponse> createSingleQuestionAttempt(@PathVariable Long questionId) {
+    Long currentMemberId = SecurityUtil.getCurrentMemberId();
+
+    QuizAttemptResponse response = wrongAnswerReviewCommandService.createSingleQuestionAttempt(currentMemberId, questionId);
+    return ApiResponse.ok(response);
+  }
 }

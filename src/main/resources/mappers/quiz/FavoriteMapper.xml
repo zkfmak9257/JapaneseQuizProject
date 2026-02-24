@@ -12,7 +12,7 @@
         FROM favorites f
         JOIN quiz_questions qq ON qq.question_id = f.question_id
         LEFT JOIN quiz_scenes qs ON qs.scene_id = qq.scene_id
-        WHERE f.member_id = #{memberId}
+        WHERE f.user_id = #{memberId}
         <if test="category != null and category != ''">
             AND qs.name = #{category}
         </if>
@@ -25,7 +25,7 @@
         FROM favorites f
         JOIN quiz_questions qq ON qq.question_id = f.question_id
         LEFT JOIN quiz_scenes qs ON qs.scene_id = qq.scene_id
-        WHERE f.member_id = #{memberId}
+        WHERE f.user_id = #{memberId}
         <if test="category != null and category != ''">
             AND qs.name = #{category}
         </if>

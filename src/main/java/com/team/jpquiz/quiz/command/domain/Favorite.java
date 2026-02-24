@@ -26,7 +26,7 @@ import java.time.LocalDateTime;
     uniqueConstraints = {
         @UniqueConstraint(
             name = "uk_favorites_member_question",
-            columnNames = {"member_id", "question_id"}
+            columnNames = {"user_id", "question_id"}
         )
     }
 )
@@ -37,7 +37,7 @@ public class Favorite {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @Column(name = "member_id", nullable = false)
+  @Column(name = "user_id", nullable = false)
   private Long memberId;
 
   @Column(name = "question_id", nullable = false)
