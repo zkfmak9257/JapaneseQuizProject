@@ -111,11 +111,14 @@
               }"
               @click="moveAnswerTokenToPool(idx)"
             >
-              <!-- 한자(base) 텍스트 -->
-              <span>{{ rubyBase(token.tokenText) }}</span>
-              <!-- 후리가나(reading) — 있으면 아래에 작게 표시 -->
-              <span v-if="hasRuby(token.tokenText)" class="stk-reading">
-                {{ rubyReading(token.tokenText) }}
+              <span class="stk-content">
+                <template v-if="hasRuby(token.tokenText)">
+                  <ruby>
+                    <rb>{{ rubyBase(token.tokenText) }}</rb>
+                    <rt>{{ rubyReading(token.tokenText) }}</rt>
+                  </ruby>
+                </template>
+                <template v-else>{{ token.tokenText }}</template>
               </span>
             </div>
 
@@ -156,11 +159,14 @@
               }"
               @click="handlePoolTokenClick(token, idx)"
             >
-              <!-- 한자(base) 텍스트 -->
-              <span>{{ rubyBase(token.tokenText) }}</span>
-              <!-- 후리가나(reading) — 있으면 아래에 작게 표시 -->
-              <span v-if="hasRuby(token.tokenText)" class="stk-reading">
-                {{ rubyReading(token.tokenText) }}
+              <span class="stk-content">
+                <template v-if="hasRuby(token.tokenText)">
+                  <ruby>
+                    <rb>{{ rubyBase(token.tokenText) }}</rb>
+                    <rt>{{ rubyReading(token.tokenText) }}</rt>
+                  </ruby>
+                </template>
+                <template v-else>{{ token.tokenText }}</template>
               </span>
             </div>
           </div>
@@ -293,7 +299,18 @@
           <p><strong>해석:</strong> {{ stageCorrect?.koMeaning || "해석 정보가 없습니다." }}</p>
 
           <template v-if="isSentenceMode && stageSentence">
-            <p><strong>정답 토큰:</strong> {{ stageSentence.correctTokens?.join(" → ") || "-" }}</p>
+            <p><strong>정답 토큰:</strong> 
+              <template v-if="stageSentence.correctTokens && stageSentence.correctTokens.length > 0">
+                <span v-for="(txt, idx) in stageSentence.correctTokens" :key="idx">
+                  <template v-if="hasRuby(txt)">
+                    <ruby><rb>{{ rubyBase(txt) }}</rb><rt>{{ rubyReading(txt) }}</rt></ruby>
+                  </template>
+                  <template v-else>{{ txt }}</template>
+                  <span v-if="idx < stageSentence.correctTokens.length - 1"> → </span>
+                </span>
+              </template>
+              <template v-else>-</template>
+            </p>
             <p v-if="stageSentence.diffHint"><strong>비교 힌트:</strong> {{ stageSentence.diffHint }}</p>
           </template>
         </div>
