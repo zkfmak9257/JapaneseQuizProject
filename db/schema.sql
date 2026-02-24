@@ -8,6 +8,27 @@ CREATE DATABASE IF NOT EXISTS jpquiz
 
 USE jpquiz;
 
+/* ------------------------------------------------------------------
+ * [데이터베이스 마이그레이션] 
+ * 기존 member_id 를 user_id 로 변경하기 위한 구문입니다.
+ * 외래키(Foreign Key)가 연결되어 있어서 바로 변경이 불가능하므로,
+ * 제약조건 체크를 잠시 끄고 변경 후 다시 켭니다.
+ * ------------------------------------------------------------------ */
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- 만약 테이블 이름도 members 였다면 아래 주석을 풀고 함께 실행해주세요!
+-- RENAME TABLE members TO users;
+
+-- 1. 각각의 테이블에 존재하는 member_id를 user_id로 변경
+ALTER TABLE users CHANGE member_id user_id BIGINT NOT NULL AUTO_INCREMENT;
+ALTER TABLE auth_refresh_tokens CHANGE member_id user_id BIGINT NOT NULL;
+ALTER TABLE quiz_attempts CHANGE member_id user_id BIGINT NULL;
+ALTER TABLE favorites CHANGE member_id user_id BIGINT NOT NULL;
+ALTER TABLE wrong_answers CHANGE member_id user_id BIGINT NOT NULL;
+
+SET FOREIGN_KEY_CHECKS = 1;
+/* ------------------------------------------------------------------ */
+
 -- 1) 회원
 CREATE TABLE IF NOT EXISTS users (
   user_id BIGINT NOT NULL AUTO_INCREMENT,
