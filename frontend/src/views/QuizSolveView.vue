@@ -241,6 +241,7 @@
     :server-error="submissionDone ? '' : errorMessage"
     :guide-text="feedbackGuideText"
     :key-point="feedbackKeyPoint"
+    :next-label="feedbackNextLabel"
     @next="goNext"
     @toggle-favorite="toggleFavoriteClick"
     @go-wrong-note="goWrongNote"
@@ -385,6 +386,13 @@ const feedbackGuideText = computed(() => {
 
 const feedbackKeyPoint = computed(() => {
   return stageExplanation.value?.oneLiner || stageExplanation.value?.detail || "핵심 해설이 준비되지 않았습니다.";
+});
+
+const feedbackNextLabel = computed(() => {
+  if (!question.value) return "다음 여행지로 이동 ✈️";
+  return question.value.seq < totalQuestions.value
+    ? "다음 여행지로 이동 ✈️"
+    : "이번 여행 결과 보기 📊";
 });
 
 const sentenceTokenSource = computed(() => {
