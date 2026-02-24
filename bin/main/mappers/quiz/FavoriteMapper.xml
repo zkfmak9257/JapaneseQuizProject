@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.team.jpquiz.quiz.query.infrastructure.FavoriteMapper">
+
+    <select id="findFavorites" resultType="com.team.jpquiz.quiz.dto.response.FavoriteResponse">
+        SELECT
+            f.question_id AS questionId,
+            qq.question_text AS questionText,
+            qs.name AS category,
+            f.created_at AS createdAt
+        FROM favorites f
+        JOIN quiz_questions qq ON qq.question_id = f.question_id
+        LEFT JOIN quiz_scenes qs ON qs.scene_id = qq.scene_id
+        WHERE f.user_id = #{memberId}
+        <if test="category != null and category != ''">
+            AND qs.name LIKE CONCAT('%', #{category}, '%')
+        </if>
+        ORDER BY f.created_at DESC
+            LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="countFavorites" resultType="long">
+        SELECT COUNT(*)
+        FROM favorites f
+        JOIN quiz_questions qq ON qq.question_id = f.question_id
+        LEFT JOIN quiz_scenes qs ON qs.scene_id = qq.scene_id
+        WHERE f.user_id = #{memberId}
+        <if test="category != null and category != ''">
+            AND qs.name LIKE CONCAT('%', #{category}, '%')
+        </if>
+    </select>
+
+</mapper>

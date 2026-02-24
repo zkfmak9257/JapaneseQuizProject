@@ -70,8 +70,18 @@ public class QuizAnswerResultResponse {
     @AllArgsConstructor
     public static class SentencePayload {
         @Builder.Default
-        private List<String> correctTokens = new ArrayList<>();
+        private List<TokenDetail> correctTokens = new ArrayList<>();
         private String correctTextJp;
         private String diffHint;
+    }
+
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class TokenDetail {
+        private String tokenText;
+        private String meaningKo;
+        private String grammarRole;
     }
 }
