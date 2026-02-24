@@ -140,7 +140,7 @@ const items = ref([]);
 const loading = ref(false);
 const errorMessage = ref("");
 const page = ref(1);
-const size = 10;
+const size = 5;
 const totalPages = ref(1);
 const totalElements = ref(0);
 
@@ -270,11 +270,9 @@ onMounted(() => {
 /* ── 배경 및 헤더 (여권 테마 유지) ── */
 .passport-container {
   min-height: 100vh;
-  background-color: #fefce8;
-  background-image: radial-gradient(rgba(214, 211, 209, 0.2) 1px, transparent 1px);
-  background-size: 20px 20px;
+  background-color: #f8fafc;
   padding: 40px 16px 80px;
-  font-family: Pretendard, "Noto Sans KR", serif, sans-serif;
+  font-family: Pretendard, "Noto Sans KR", sans-serif;
   color: #1e293b;
 }
 
@@ -282,7 +280,7 @@ onMounted(() => {
 .header-icon { font-size: 36px; margin-bottom: 8px; }
 .header-title {
   font-size: 26px; font-weight: 900; color: #0f172a;
-  letter-spacing: 2px; margin: 0 0 8px; font-family: "Noto Serif", serif;
+  letter-spacing: 2px; margin: 0 0 8px;
 }
 .header-subtitle { font-size: 14px; font-weight: 600; color: #64748b; margin: 0 0 16px; }
 .gold-divider { width: 80px; height: 3px; background: #eab308; margin: 0 auto; border-radius: 2px; }
@@ -335,7 +333,7 @@ onMounted(() => {
   cursor: pointer;
   transition: all 0.18s;
 }
-.clear-filter-btn:hover { background: #fefce8; }
+.clear-filter-btn:hover { background: #f1f5f9; }
 
 .stamps-hint {
   font-size: 12px;
@@ -561,26 +559,20 @@ onMounted(() => {
 .pager-btn {
   width: 40px; height: 40px;
   border-radius: 8px;
-  border: 1px solid #e9d97a;
+  border: 1px solid #e2e8f0;
   background: white;
-  color: #92740a;
+  color: #64748b;
   display: flex; align-items: center; justify-content: center;
   cursor: pointer;
   transition: all 0.18s;
 }
-.pager-btn:hover:not(:disabled) { background: #fefce8; color: #713f12; border-color: #ca8a04; }
+.pager-btn:hover:not(:disabled) { background: #f1f5f9; color: #0f172a; border-color: #cbd5e1; }
 .pager-btn:disabled { opacity: 0.35; cursor: not-allowed; }
-.pager-btn.pager-edge {
-  background: #eab308;
-  border-color: #eab308;
-  color: white;
-}
-.pager-btn.pager-edge:hover:not(:disabled) { background: #ca8a04; border-color: #ca8a04; }
+.pager-btn.pager-edge { background: #f8fafc; }
+.pager-btn.pager-edge:hover:not(:disabled) { background: #f1f5f9; }
 .pager-text {
-  font-size: 14px; font-weight: 800;
-  color: #92740a;
-  padding: 0 12px;
-  font-family: "Noto Serif", serif;
-  letter-spacing: 0.5px;
+  font-size: 14px; font-weight: 700;
+  color: #334155;
+  padding: 0 10px;
 }
 </style>
