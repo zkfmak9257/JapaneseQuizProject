@@ -95,4 +95,9 @@ public interface QuizCommandMapper {
         Map<String, Object> findAttemptForResult(@Param("attemptId") Long attemptId);
 
         int countCorrectAnswers(@Param("attemptId") Long attemptId);
+
+        List<Long> findFavoriteQuestionIds(
+                        @Param("memberId") Long memberId,
+                        @Param("category") String category,
+                        @Param("limit") int limit);
 }
