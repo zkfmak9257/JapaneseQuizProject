@@ -58,10 +58,10 @@
 
             <!-- 드롭다운 메뉴 — 클릭 시 열림/닫힘 -->
             <div v-if="showProfileMenu" class="profile-menu">
-              <RouterLink to="/mypage" class="profile-menu-item" @click="closeProfileMenu">
+              <RouterLink to="/mypage" class="profile-menu-item" @click.stop="closeProfileMenu">
                 마이페이지
               </RouterLink>
-              <button class="profile-menu-item profile-menu-logout" @click="onLogout">
+              <button class="profile-menu-item profile-menu-logout" @click.stop="onLogout">
                 로그아웃
               </button>
             </div>
@@ -112,7 +112,7 @@
 
 <script setup>
 // Vue 반응형/라이프사이클 API
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 // Pinia의 storeToRefs: store state를 반응형으로 구독
 import { storeToRefs } from "pinia";
 // Vue Router 컴포넌트
@@ -153,6 +153,12 @@ const displayName = computed(() => {
   return "사용자";
 });
 
+
+// 라우트 변경 시 드롭다운/모바일 메뉴 자동 닫기
+watch(() => route.path, () => {
+  closeProfileMenu();
+  closeMobileMenu();
+});
 
 // 마운트 시: 로그인 상태지만 프로필이 없으면 서버에서 가져오기
 onMounted(async () => {
@@ -201,6 +207,11 @@ function onLogout() {
 }
 
 /* ── 프로필 드롭다운 오버레이 — 외부 클릭 감지 ────── */
+.profile-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99;
+}
 /* ── 데스크탑 네비게이션 (텍스트+아이콘) ────── */
 .nav-text-link {
   font-size: 14px;
