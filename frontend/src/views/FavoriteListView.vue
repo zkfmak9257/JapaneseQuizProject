@@ -9,30 +9,41 @@
     </header>
 
     <main class="passport-content">
-      
-      <!-- 2️⃣ 상단 요약: 여권 스탬프 컬렉션 (시각적 자극) -->
+
+      <!-- 2️⃣ 상단 요약: 카테고리별 도장 컬렉션 -->
       <section class="stamps-overview" v-if="!loading && !errorMessage">
         <div class="overview-header">
-          <h2 class="overview-title">🛂 모은 도장 <strong>{{ totalElements }}</strong>개</h2>
+          <h2 class="overview-title">
+            🛂 모은 도장 <strong>{{ allTotalElements }}</strong>개
+          </h2>
+          <button v-if="categoryFilter" class="clear-filter-btn" @click="setCategory(null)">
+            전체 보기
+          </button>
         </div>
-        
-        <div class="mini-stamps-box" v-if="items.length > 0">
+
+        <div class="mini-stamps-box" v-if="allCategories.length > 0">
+          <p class="stamps-hint">도장을 누르면 해당 카테고리만 볼 수 있어요</p>
           <div class="mini-stamps-grid">
-            <div 
-              v-for="(item, index) in items.slice(0, 10)" 
-              :key="'stamp-'+item.questionId"
+            <div
+              v-for="(cat, index) in allCategories"
+              :key="cat"
               class="mini-stamp"
-              :class="[getRotationClass(index), getCategoryColorClass(item.category)]"
+              :class="[
+                getRotationClass(index),
+                getCategoryColorClass(cat),
+                { 'stamp-active': categoryFilter === cat, 'stamp-inactive': categoryFilter && categoryFilter !== cat }
+              ]"
+              @click="setCategory(cat)"
+              :title="cat"
             >
-              {{ shortenCategory(item.category) }}
+              {{ cat }}
             </div>
-            <div v-if="totalElements > 10" class="mini-stamp-more">+{{ totalElements - 10 }}</div>
           </div>
         </div>
       </section>
 
-      <!-- 기능 버튼 영역 (추후 복습 세트 생성 기능 확장 대비) -->
-      <section class="action-bar" v-if="items.length > 0">
+      <!-- 기능 버튼 영역 -->
+      <section class="action-bar" v-if="allTotalElements > 0 && !loading && !errorMessage">
         <button class="review-btn" @click="startReviewSession" disabled>
           <span class="btn-icon">✈️</span>
           <span>이 도장들로 바로 복습하기 (준비중)</span>
@@ -42,18 +53,31 @@
       <!-- 로딩 및 에러 상태 처리 -->
       <div v-if="loading" class="state-msg">도장 기록을 펼치는 중입니다...</div>
       <div v-else-if="errorMessage" class="state-msg error">{{ errorMessage }}</div>
-      
+
       <!-- 빈 여권 처리 -->
-      <div v-else-if="items.length === 0" class="empty-state">
+      <div v-else-if="allTotalElements === 0" class="empty-state">
         <div class="empty-icon">📭</div>
         <p>아직 여권에 찍힌 도장이 없습니다.<br>퀴즈 여행을 떠나 유용한 표현을 스크랩해보세요!</p>
       </div>
 
-      <!-- 3️⃣ 하단 리스트: 학습용 카드 상세 뷰 (문제 풀이/기능 중심) -->
+      <!-- 3️⃣ 하단 리스트: 학습용 카드 상세 뷰 -->
       <template v-else>
-        <div class="study-cards-list">
-          <div 
-            v-for="item in items" 
+        <!-- 카테고리 필터 안내 -->
+        <div v-if="categoryFilter" class="filter-active-bar">
+          <span class="filter-active-label">
+            <span class="cat-dot" :class="getCategoryColorClass(categoryFilter)"></span>
+            {{ categoryFilter }} 카테고리 · {{ totalElements }}개
+          </span>
+        </div>
+
+        <div v-if="items.length === 0" class="empty-state">
+          <div class="empty-icon">🔍</div>
+          <p>해당 카테고리에 저장된 도장이 없습니다.</p>
+        </div>
+
+        <div v-else class="study-cards-list">
+          <div
+            v-for="item in items"
             :key="item.questionId"
             class="study-card"
             :class="{ 'is-deleting': deletingId === item.questionId }"
@@ -66,7 +90,7 @@
               <span class="date-text">{{ formatDate(item.createdAt) }} 저장</span>
             </div>
 
-            <!-- 카드 본문 (문제 텍스트 전체 노출) -->
+            <!-- 카드 본문 -->
             <div class="card-body">
               <p class="question-text">{{ item.questionText }}</p>
             </div>
@@ -120,13 +144,30 @@ const size = 10;
 const totalPages = ref(1);
 const totalElements = ref(0);
 
+// 카테고리 필터
+const categoryFilter = ref(null);
+const allCategories = ref([]);   // 도장용 unique 카테고리 목록
+const allTotalElements = ref(0); // 전체 즐겨찾기 개수 (필터 무관)
+
 const deletingId = ref(null);
+
+// 도장용: 필터 없이 전체 카테고리 목록 추출
+async function loadAllCategories() {
+  try {
+    const data = await getFavorites(1, 100, null);
+    const cats = (data?.content || []).map(i => i.category).filter(Boolean);
+    allCategories.value = [...new Set(cats)];
+    allTotalElements.value = data?.totalElements || 0;
+  } catch {
+    // 카테고리 로드 실패는 무시 (메인 로드에서 처리)
+  }
+}
 
 async function loadItems() {
   try {
     loading.value = true;
     errorMessage.value = "";
-    const data = await getFavorites(page.value, size);
+    const data = await getFavorites(page.value, size, categoryFilter.value);
     items.value = data?.content || [];
     totalPages.value = Math.max(data?.totalPages || 1, 1);
     totalElements.value = data?.totalElements || items.value.length;
@@ -137,6 +178,12 @@ async function loadItems() {
   }
 }
 
+function setCategory(cat) {
+  categoryFilter.value = categoryFilter.value === cat ? null : cat;
+  page.value = 1;
+  loadItems();
+}
+
 async function changePage(nextPage) {
   page.value = nextPage;
   await loadItems();
@@ -145,19 +192,19 @@ async function changePage(nextPage) {
 // 즐겨찾기 해제 (도장 지우기)
 async function removeStamp(questionId) {
   if (!confirm("이 표현을 도장 목록에서 지우시겠습니까?")) return;
-  
+
   try {
-    deletingId.value = questionId; 
+    deletingId.value = questionId;
     await toggleFavorite(questionId);
-    
-    // 애니메이션 후 리스트 반영
-    setTimeout(() => {
+
+    setTimeout(async () => {
       items.value = items.value.filter(item => item.questionId !== questionId);
       totalElements.value = Math.max(0, totalElements.value - 1);
       deletingId.value = null;
-      // 목록이 비면 이전 페이지로 돌리기 로직 생략 (단순화)
+      // 삭제 후 카테고리 목록 갱신 (도장이 사라질 수 있음)
+      await loadAllCategories();
     }, 300);
-    
+
   } catch (error) {
     alert("도장을 지우는 데 실패했습니다.");
     deletingId.value = null;
@@ -165,12 +212,10 @@ async function removeStamp(questionId) {
 }
 
 function solveAgain(questionId) {
-  // TODO: 단일 문제 풀이 페이지 or scene 기반 퀴즈로 라우팅 연동
   alert("해당 문제 다시 풀기 모드로 이동합니다. (API 및 라우팅 연결 필요)");
 }
 
 function startReviewSession() {
-  // TODO: 즐겨찾기 전체 리스트를 attempt 생성 API로 말아보내는 로직
   alert("수집한 도장들을 모아 새로운 여행(복습) 코스를 만듭니다. (API 연결 필요)");
 }
 
@@ -215,14 +260,17 @@ function getRotationClass(index) {
   return rotationClasses[index % rotationClasses.length];
 }
 
-onMounted(loadItems);
+onMounted(() => {
+  loadAllCategories();
+  loadItems();
+});
 </script>
 
 <style scoped>
 /* ── 배경 및 헤더 (여권 테마 유지) ── */
 .passport-container {
   min-height: 100vh;
-  background-color: #fefce8; 
+  background-color: #fefce8;
   background-image: radial-gradient(rgba(214, 211, 209, 0.2) 1px, transparent 1px);
   background-size: 20px 20px;
   padding: 40px 16px 80px;
@@ -247,7 +295,7 @@ onMounted(loadItems);
   gap: 24px;
 }
 
-/* ── 2️⃣ 상단 요약 (미니 스탬프 컬렉션 표면화) ── */
+/* ── 2️⃣ 상단 요약 (카테고리 도장 컬렉션) ── */
 .stamps-overview {
   background: white;
   border-radius: 20px;
@@ -258,71 +306,105 @@ onMounted(loadItems);
   flex-direction: column;
   align-items: center;
 }
+.overview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 4px;
+}
 .overview-title {
   font-size: 16px;
   font-weight: 600;
   color: #334155;
-  margin: 0 0 20px;
+  margin: 0;
 }
 .overview-title strong {
   font-size: 22px;
   color: #0f172a;
   margin: 0 4px;
 }
-.mini-stamps-box {
+.clear-filter-btn {
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1.5px solid #eab308;
+  background: white;
+  color: #92740a;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+.clear-filter-btn:hover { background: #fefce8; }
+
+.stamps-hint {
+  font-size: 12px;
+  color: #94a3b8;
+  font-weight: 500;
+  margin: 0 0 16px;
+  text-align: center;
   width: 100%;
 }
+.mini-stamps-box { width: 100%; }
 .mini-stamps-grid {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   gap: 12px;
 }
-/* 디자인 핵심: 진짜 미니 도장 느낌 */
+
+/* 도장 */
 .mini-stamp {
-  width: 48px;
-  height: 48px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
   border: 2px solid currentColor;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 900;
-  opacity: 0.8;
+  opacity: 0.75;
   mix-blend-mode: multiply;
   box-shadow: 0 1px 2px currentColor, inset 0 0 4px rgba(255,255,255,0.5);
-  cursor: default;
+  cursor: pointer;
+  transition: transform 0.2s, opacity 0.2s, box-shadow 0.2s;
+  word-break: keep-all;
+  text-align: center;
+  line-height: 1.2;
+  padding: 4px;
 }
-.mini-stamp-more {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: #f1f5f9;
-  color: #64748b;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  font-weight: 700;
+.mini-stamp:hover {
+  transform: scale(1.12) rotate(0deg) !important;
+  opacity: 1 !important;
+}
+.mini-stamp.stamp-active {
+  opacity: 1 !important;
+  transform: scale(1.18) rotate(0deg) !important;
+  box-shadow: 0 0 0 3px currentColor, 0 3px 10px rgba(0,0,0,0.12);
+  mix-blend-mode: normal;
+}
+.mini-stamp.stamp-inactive {
+  opacity: 0.3 !important;
+  mix-blend-mode: normal;
 }
 
-/* 색상 및 회전용 */
-.stamp-red    { color: #ef4444; } 
-.stamp-blue   { color: #3b82f6; } 
-.stamp-green  { color: #22c55e; } 
-.stamp-orange { color: #f97316; } 
-.stamp-purple { color: #a855f7; } 
-.stamp-gray   { color: #475569; } 
-.stamp-teal   { color: #14b8a6; } 
+/* 색상 */
+.stamp-red    { color: #ef4444; }
+.stamp-blue   { color: #3b82f6; }
+.stamp-green  { color: #22c55e; }
+.stamp-orange { color: #f97316; }
+.stamp-purple { color: #a855f7; }
+.stamp-gray   { color: #475569; }
+.stamp-teal   { color: #14b8a6; }
 
-.bg-red    { background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; } 
-.bg-blue   { background: #dbeafe; color: #2563eb; border: 1px solid #93c5fd; } 
-.bg-green  { background: #dcfce7; color: #16a34a; border: 1px solid #86efac; } 
-.bg-orange { background: #ffedd5; color: #ea580c; border: 1px solid #fdba74; } 
-.bg-purple { background: #f3e8ff; color: #9333ea; border: 1px solid #d8b4fe; } 
-.bg-gray   { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; } 
-.bg-teal   { background: #ccfbf1; color: #0d9488; border: 1px solid #5eead4; } 
+.bg-red    { background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; }
+.bg-blue   { background: #dbeafe; color: #2563eb; border: 1px solid #93c5fd; }
+.bg-green  { background: #dcfce7; color: #16a34a; border: 1px solid #86efac; }
+.bg-orange { background: #ffedd5; color: #ea580c; border: 1px solid #fdba74; }
+.bg-purple { background: #f3e8ff; color: #9333ea; border: 1px solid #d8b4fe; }
+.bg-gray   { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
+.bg-teal   { background: #ccfbf1; color: #0d9488; border: 1px solid #5eead4; }
 
 .rot-1 { transform: rotate(-6deg); }
 .rot-2 { transform: rotate(8deg); }
@@ -330,7 +412,32 @@ onMounted(loadItems);
 .rot-4 { transform: rotate(5deg); }
 .rot-5 { transform: rotate(-8deg); }
 
-/* ── 기능 버튼 ──────────────────────── */
+/* ── 카테고리 필터 활성 안내 바 ── */
+.filter-active-bar {
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
+  background: #fefce8;
+  border: 1.5px solid #eab308;
+  border-radius: 10px;
+}
+.filter-active-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #92740a;
+}
+.cat-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  flex-shrink: 0;
+}
+
+/* ── 기능 버튼 ── */
 .action-bar {
   display: flex;
   justify-content: center;
@@ -356,7 +463,7 @@ onMounted(loadItems);
 .review-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 12px rgba(15, 23, 42, 0.3); }
 .review-btn:disabled { background: #94a3b8; cursor: not-allowed; box-shadow: none; }
 
-/* ── 3️⃣ 하단 리스트: 실용적 학습 카드 ── */
+/* ── 3️⃣ 하단 리스트 ── */
 .study-cards-list {
   display: flex;
   flex-direction: column;
@@ -400,9 +507,7 @@ onMounted(loadItems);
   font-family: ui-monospace, sans-serif;
 }
 
-.card-body {
-  margin-bottom: 24px;
-}
+.card-body { margin-bottom: 24px; }
 .question-text {
   font-size: 17px;
   font-weight: 600;
