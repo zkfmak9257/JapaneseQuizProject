@@ -232,161 +232,26 @@
     </div>
   </section>
 
-  <!-- ── 피드백 영역은 별개의 섹션 카드로 분리 ────────── 
-       결과 박스처럼 테두리/배경이 명확하게 구분되어 시선 집중 -->
-  <section v-if="submissionDone && gradeResult" class="card unified-feedback-card" :class="gradeResult.correct ? 'is-correct' : 'is-wrong'" ref="feedbackCardRef">
-    <div class="feedback-stepper">
-      <span class="step-pill" :class="{ active: feedbackStep >= 1 }">1. 결과 확인</span>
-      <span class="step-pill" :class="{ active: feedbackStep >= 2 }">2. 정답 확인</span>
-      <span class="step-pill" :class="{ active: feedbackStep >= 3 }">3. 해설 학습</span>
-    </div>
+  <FeedbackPanel
+    :visible="submissionDone && !!gradeResult"
+    :is-correct="!!gradeResult?.correct"
+    :correct="feedbackCorrectItem"
+    :selected="feedbackSelectedItem"
+    :choices="feedbackChoices"
+    :server-error="submissionDone ? '' : errorMessage"
+    :guide-text="feedbackGuideText"
+    :key-point="feedbackKeyPoint"
+    @next="goNext"
+    @toggle-favorite="toggleFavoriteClick"
+    @go-wrong-note="goWrongNote"
+    @retry-submit="submit"
+    @dismiss-error="dismissFeedbackError"
+  />
 
-    <div class="feedback-context guide-note">
-      <div class="guide-character">👩‍✈️</div>
-      <div class="guide-speech">
-        <p class="context-title">여행 가이드 노트</p>
-        <p class="context-desc">
-          {{ question?.sceneName || "일본어 여행 상황" }}에서 자주 쓰는 표현입니다.
-          <br>
-          {{ stageExplanation?.oneLiner || "왜 틀렸는지 확인하고 다음 문제로 이동하세요." }}
-        </p>
-      </div>
-    </div>
-
-    <!-- 1. 오답 인지 및 상단 안내 -->
-    <div class="feedback-header ticket-header-result">
-      <div class="feedback-status-badge" :class="gradeResult.correct ? 'badge-clear' : 'badge-fail'">
-        {{ gradeResult.correct ? '🎉 MISSION CLEAR' : '⚠️ MISSION FAILED' }}
-      </div>
-      <div class="feedback-title">
-        <h3 class="feedback-title-text" :class="gradeResult.correct ? 'text-correct' : 'text-wrong'">
-          {{ gradeResult.correct ? '정답입니다!' : '오답입니다' }}
-        </h3>
-        <p class="feedback-subtitle">
-          {{ gradeResult.correct ? '실전에서 더 강해집니다!' : '해설을 확인하고 다시 도전하세요.' }}
-        </p>
-      </div>
-    </div>
-
-    <!-- 2. 정답/오답 확인 영역 -->
-    <div v-if="feedbackStep >= 2" class="feedback-answer-reveal">
-      <!-- 🟢 정답 영역 (항상 초록 배경) -->
-      <div class="answer-box">
-        <div class="answer-label">
-          <span class="answer-check-icon">✔️</span> 정답
-        </div>
-        <!-- 단어 모드 정답 -->
-        <h2 class="answer-jp-text" v-if="!isSentenceMode">
-          {{ stageCorrect?.jpText || "정답 정보 없음" }}
-        </h2>
-        <!-- 문장 모드 정답 -->
-        <div class="answer-sentence-tokens" v-if="isSentenceMode && stageSentence">
-           <template v-if="stageSentence.correctTokens && stageSentence.correctTokens.length > 0">
-              <span v-for="(txt, idx) in stageSentence.correctTokens" :key="idx" class="answer-token-item">
-                <template v-if="hasRuby(txt)">
-                  <ruby><span class="ruby-base">{{ rubyBase(txt) }}</span><rt>{{ rubyReading(txt) }}</rt></ruby>
-                </template>
-                <template v-else>{{ txt }}</template>
-              </span>
-           </template>
-           <template v-else>{{ stageCorrect?.jpText || "-" }}</template>
-        </div>
-        <p class="answer-ko-meaning">{{ stageCorrect?.koMeaning || "해석 정보가 없습니다." }}</p>
-      </div>
-
-      <!-- 🔴 오답 영역 (틀린 경우에만 표시) -->
-      <div v-if="!gradeResult.correct" class="wrong-box">
-        <div class="wrong-label">
-           <span class="wrong-cross-icon">❌</span> 내가 고른 답
-        </div>
-        <!-- 단어 모드 오답 힌트 -->
-        <template v-if="!isSentenceMode && userSelectedChoice">
-          <p class="wrong-jp-text">{{ userSelectedChoice.jpText }}</p>
-          <p class="wrong-ko-meaning">{{ userSelectedChoice.koMeaning }}</p>
-        </template>
-        <!-- 문장 모드 대조 힌트 -->
-        <template v-if="isSentenceMode && stageSentence?.diffHint">
-           <p class="wrong-jp-text text-sm" style="font-size: 0.95rem; margin-top: 0.5rem; word-break: keep-all">{{ stageSentence.diffHint }}</p>
-        </template>
-      </div>
-    </div>
-
-    <!-- 3. 차이 설명(해설) 영역 -->
-    <div v-if="feedbackStep >= 3" class="feedback-explanation">
-      <button class="explanation-toggle-btn" @click="showExplanation = !showExplanation">
-        📘 해설 및 보기 뜻 {{ showExplanation ? "접기" : "펼치기" }} <span class="toggle-arrow">{{ showExplanation ? '▴' : '▾' }}</span>
-      </button>
-
-      <div v-show="showExplanation" class="explanation-content">
-        <div class="explanation-section" v-if="stageExplanation?.oneLiner || stageExplanation?.detail">
-           <h4 class="explanation-heading">📌 정답 해설</h4>
-           <div class="explanation-highlight-box" style="margin-bottom: 1.5rem; padding: 1rem; border-radius: 8px; background: rgba(52, 152, 219, 0.05); border-left: 3px solid var(--primary-color);">
-             <p class="explanation-highlight" v-if="stageExplanation?.oneLiner">💡 {{ stageExplanation.oneLiner }}</p>
-             <p class="explanation-detail" v-if="stageExplanation?.detail">{{ stageExplanation.detail }}</p>
-           </div>
-        </div>
-
-        <!-- 단어별 보기 뜻 리스트 (구조화) -->
-        <div class="explanation-section" v-if="!isSentenceMode && stageChoices.length > 0">
-          <h4 class="explanation-heading">📚 다른 보기 의미</h4>
-          <div class="vocab-comparison-grid">
-            <div class="vocab-comparison-header">
-               <span>보기</span>
-               <span>뜻</span>
-            </div>
-            <div v-for="choice in stageChoices" :key="choice.choiceId" class="vocab-item">
-              <div class="vocab-jp">{{ choice.jpText }}</div>
-              <div class="vocab-ko">{{ choice.koMeaning || "-" }}</div>
-              <div class="vocab-note" v-if="choice.note">({{ choice.note }})</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 4. 다음으로 이동 CTA -->
-    <div class="feedback-cta">
-      <div class="feedback-cta-secondary">
-        <button class="btn-action-secondary" type="button" @click="toggleFavoriteClick" :disabled="favoriteSubmitting">
-          {{ isFavorited ? "★ 표현 저장됨" : "☆ 이 표현 저장하기" }}
-        </button>
-        <button class="btn-action-secondary ghost" type="button" @click="goWrongNote">
-          🧠 오답노트로 이어서 복습
-        </button>
-      </div>
-
-      <button
-        v-if="feedbackStep === 1"
-        class="btn-action-secondary"
-        type="button"
-        @click="feedbackStep = 2"
-      >
-        {{ gradeResult.correct ? "정답 다시 확인하기" : "정답 확인하기" }}
-      </button>
-
-      <button
-        v-else-if="feedbackStep === 2"
-        class="btn-action-secondary"
-        type="button"
-        @click="feedbackStep = 3; showExplanation = true"
-      >
-        왜 틀렸는지 해설 보기
-      </button>
-
-      <button
-        class="btn-action-primary btn-next-mission"
-        @click="goNext"
-        :disabled="navigatingNext"
-      >
-        {{ question.seq < totalQuestions ? "다음 여행지로 이동 ✈️" : "이번 여행 결과 보기 📊" }}
-      </button>
-    </div>
+  <section class="card" v-if="!question && loading">
   </section>
 
-  <section class="card" v-else-if="loading">
-  </section>
-
-  <section class="card" v-else>
+  <section class="card" v-if="!question && !loading">
     <p class="error">{{ errorMessage || "문제를 불러오지 못했습니다." }}</p>
   </section>
 
@@ -422,12 +287,13 @@
 </template>
 
 <script setup>
-import { computed, ref, watch, nextTick } from "vue";
+import { computed, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { completeAttempt, getAttemptQuestion, submitAnswer } from "../api/quizApi";
 import { createReport } from "../api/reportApi";
 import { toggleFavorite } from "../api/favoriteApi";
 import { useQuizStore } from "../stores/quizStore";
+import FeedbackPanel from "../components/quiz/FeedbackPanel.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -446,10 +312,7 @@ const errorMessage = ref("");
 
 const submissionDone = ref(false);
 const gradeResult = ref(null);
-const feedbackStep = ref(1);
 const stagePayload = ref(null);
-const showExplanation = ref(false);
-const feedbackCardRef = ref(null);
 
 const showReportModal = ref(false);
 const reportType = ref("TYPO");
@@ -477,9 +340,51 @@ const stageChoices = computed(() => {
   return stagePayload.value.choices;
 });
 
-const userSelectedChoice = computed(() => {
-  if (!stageChoices.value || !selectedChoiceId.value) return null;
-  return stageChoices.value.find(c => c.choiceId === selectedChoiceId.value) || null;
+const feedbackCorrectItem = computed(() => {
+  const jp = stageCorrect.value?.jpText || "정답 정보 없음";
+  return {
+    kanji: rubyBase(jp),
+    kana: rubyReading(jp) || "-",
+    meaning: stageCorrect.value?.koMeaning || "해석 정보가 없습니다."
+  };
+});
+
+const feedbackSelectedItem = computed(() => {
+  if (isSentenceMode.value) {
+    const joined = answerTokens.value.map((t) => t.tokenText).join("");
+    return {
+      kanji: rubyBase(joined || "내 제출 답안"),
+      kana: rubyReading(joined) || "-",
+      meaning: stageSentence.value?.diffHint || "문장 조합 답안"
+    };
+  }
+
+  const selected = stageChoices.value.find((c) => c.choiceId === selectedChoiceId.value);
+  if (!selected) {
+    return { kanji: "선택 정보 없음", kana: "-", meaning: "-" };
+  }
+  return {
+    kanji: rubyBase(selected.jpText || "선택 정보 없음"),
+    kana: rubyReading(selected.jpText || "") || "-",
+    meaning: selected.koMeaning || "-"
+  };
+});
+
+const feedbackChoices = computed(() => {
+  return stageChoices.value.map((c) => ({
+    kanji: rubyBase(c.jpText || "-"),
+    kana: rubyReading(c.jpText || "") || "-",
+    meaning: c.koMeaning || "-"
+  }));
+});
+
+const feedbackGuideText = computed(() => {
+  const scene = question.value?.sceneName || "여행";
+  return `${scene} 상황에서 자주 쓰는 표현입니다. 정답과 해설을 확인하고 다음 미션으로 이동하세요.`;
+});
+
+const feedbackKeyPoint = computed(() => {
+  return stageExplanation.value?.oneLiner || stageExplanation.value?.detail || "핵심 해설이 준비되지 않았습니다.";
 });
 
 const sentenceTokenSource = computed(() => {
@@ -877,9 +782,7 @@ async function loadQuestion() {
     selectedChoiceId.value = null;
     submissionDone.value = false;
     gradeResult.value = null;
-    feedbackStep.value = 1;
     stagePayload.value = null;
-    showExplanation.value = false;
     isFavorited.value = false;
 
     if (isSentenceMode.value) {
@@ -949,8 +852,6 @@ async function submit() {
       feedbackMessage: res.feedbackMessage || null
     };
     stagePayload.value = res.stagePayload || null;
-    feedbackStep.value = 1;
-    showExplanation.value = false;
 
     totalQuestions.value = res.totalQuestions;
     if (question.value?.questionId) {
@@ -958,12 +859,6 @@ async function submit() {
     }
     quizStore.setSubmitted(seq, true);
 
-    nextTick(() => {
-      if (feedbackCardRef.value) {
-        // 부드럽게 스크롤하여 피드백 영역이 5~10% 정도 패딩을 갖도록 상단에 맞춤
-        feedbackCardRef.value.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    });
   } catch (error) {
     const status = error?.response?.status;
     if (status === 400) {
@@ -1057,6 +952,10 @@ async function goNext() {
 
 function goWrongNote() {
   router.push("/quiz/wrong-answers");
+}
+
+function dismissFeedbackError() {
+  errorMessage.value = "";
 }
 
 function openReportModal() {
@@ -1303,7 +1202,7 @@ async function submitReport() {
 .explanation-content {
   padding: 0 1rem 1rem 1rem;
   border-top: 1px dashed var(--border-color);
-  margin-top: -0.5rem; /* 버튼 패딩과 부드럽게 이어지게 */
+  margin-top: -0.5rem;
   padding-top: 1rem;
 }
 .explanation-highlight {
@@ -1411,8 +1310,8 @@ async function submitReport() {
 
 .btn-next-mission {
   width: 100%;
-  background: #0f172a !important; /* 네이비 */
-  color: #fbbf24 !important; /* 골드 */
+  background: #0f172a !important;
+  color: #fbbf24 !important;
   padding: 1.2rem;
   font-size: 1.15rem;
   font-weight: 800;
@@ -1468,7 +1367,7 @@ async function submitReport() {
   align-items: flex-start;
   margin-bottom: 1.5rem;
   padding: 1.2rem;
-  background: #e0f2fe; /* 하늘색 배경 */
+  background: #e0f2fe;
   border: 1px solid #bae6fd;
   border-radius: 12px;
 }
@@ -1498,7 +1397,7 @@ async function submitReport() {
 
 /* 정답/오답 컬러박스 분리 */
 .answer-box {
-  background-color: rgba(46, 204, 113, 0.08); /* 밝고 깨끗한 초록 배경 */
+  background-color: rgba(46, 204, 113, 0.08);
   border: 1px solid rgba(46, 204, 113, 0.3);
   border-radius: 8px;
   padding: 1.25rem;
@@ -1506,7 +1405,7 @@ async function submitReport() {
 }
 
 .wrong-box {
-  background-color: rgba(231, 76, 60, 0.05); /* 연한 빨강 배경 */
+  background-color: rgba(231, 76, 60, 0.05);
   border: 1px solid rgba(231, 76, 60, 0.3);
   border-radius: 8px;
   padding: 1.25rem;
