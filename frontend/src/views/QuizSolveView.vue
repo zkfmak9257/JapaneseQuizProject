@@ -1263,7 +1263,7 @@ async function submitReport() {
 .explanation-content {
   padding: 0 1rem 1rem 1rem;
   border-top: 1px dashed var(--border-color);
-  margin-top: -0.5rem; /* 버튼 패딩과 부드럽게 이어지게 */
+  margin-top: -0.5rem;
   padding-top: 1rem;
 }
 .explanation-highlight {
@@ -1371,8 +1371,8 @@ async function submitReport() {
 
 .btn-next-mission {
   width: 100%;
-  background: #0f172a !important; /* 네이비 */
-  color: #fbbf24 !important; /* 골드 */
+  background: #0f172a !important;
+  color: #fbbf24 !important;
   padding: 1.2rem;
   font-size: 1.15rem;
   font-weight: 800;
@@ -1428,7 +1428,7 @@ async function submitReport() {
   align-items: flex-start;
   margin-bottom: 1.5rem;
   padding: 1.2rem;
-  background: #e0f2fe; /* 하늘색 배경 */
+  background: #e0f2fe;
   border: 1px solid #bae6fd;
   border-radius: 12px;
 }
@@ -1458,7 +1458,7 @@ async function submitReport() {
 
 /* 정답/오답 컬러박스 분리 */
 .answer-box {
-  background-color: rgba(46, 204, 113, 0.08); /* 밝고 깨끗한 초록 배경 */
+  background-color: rgba(46, 204, 113, 0.08);
   border: 1px solid rgba(46, 204, 113, 0.3);
   border-radius: 8px;
   padding: 1.25rem;
@@ -1466,7 +1466,7 @@ async function submitReport() {
 }
 
 .wrong-box {
-  background-color: rgba(231, 76, 60, 0.05); /* 연한 빨강 배경 */
+  background-color: rgba(231, 76, 60, 0.05);
   border: 1px solid rgba(231, 76, 60, 0.3);
   border-radius: 8px;
   padding: 1.25rem;

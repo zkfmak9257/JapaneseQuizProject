@@ -22,7 +22,7 @@
             AND qq.question_text LIKE CONCAT('%', #{keyword}, '%')
         </if>
         <if test="category != null and category != ''">
-            AND qs.name = #{category}
+            AND qs.name LIKE CONCAT('%', #{category}, '%')
         </if>
         ORDER BY COALESCE(wa.last_wrong_at, wa.created_at) DESC
             LIMIT #{limit} OFFSET #{offset}
@@ -42,7 +42,7 @@
             AND qq.question_text LIKE CONCAT('%', #{keyword}, '%')
         </if>
         <if test="category != null and category != ''">
-            AND qs.name = #{category}
+            AND qs.name LIKE CONCAT('%', #{category}, '%')
         </if>
     </select>
 
