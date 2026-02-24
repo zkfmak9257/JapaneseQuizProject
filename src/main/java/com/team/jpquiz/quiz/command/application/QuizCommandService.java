@@ -410,7 +410,17 @@ public class QuizCommandService {
 
         QuizAnswerResultResponse.SentencePayload sentencePayload = null;
         if (sentenceMode) {
-            List<String> correctTokens = quizCommandMapper.findSentenceCorrectTokensText(questionId);
+            List<Map<String, Object>> tokenDetails = quizCommandMapper.findSentenceCorrectTokenDetails(questionId);
+            List<QuizAnswerResultResponse.TokenDetail> correctTokens = new ArrayList<>();
+            if (tokenDetails != null) {
+                correctTokens = tokenDetails.stream()
+                        .map(token -> QuizAnswerResultResponse.TokenDetail.builder()
+                                .tokenText(castToString(token.get("tokenText")))
+                                .meaningKo(castToString(token.get("meaningKo")))
+                                .grammarRole(castToString(token.get("grammarRole")))
+                                .build())
+                        .collect(Collectors.toList());
+            }
             String correctTextJp = castToString(meta != null ? meta.get("correctTextJp") : null);
             if (correctTextJp == null || correctTextJp.isBlank()) {
                 correctTextJp = quizCommandMapper.findSentenceCorrectText(questionId);
@@ -427,7 +437,7 @@ public class QuizCommandService {
             }
 
             sentencePayload = QuizAnswerResultResponse.SentencePayload.builder()
-                    .correctTokens(correctTokens != null ? correctTokens : List.of())
+                    .correctTokens(correctTokens)
                     .correctTextJp(correctTextJp)
                     .diffHint(diffHint)
                     .build();

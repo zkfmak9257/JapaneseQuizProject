@@ -152,6 +152,11 @@ async function startBoarding() {
       sceneId: selectedSceneId.value || undefined
     });
     
+    // 새 퀴즈 시작이므로 이전 attempt의 캐시(isSubmitted, submitResults 등)를 초기화
+    // 왜? 이전 attempt의 isSubmitted[seq=1] 등이 남아있으면
+    // QuizSolveView.loadQuestion에서 "이미 제출한 문제"로 오인함
+    quizStore.resetAttemptState();
+    
     quizStore.setStartOptions({
       questionType: selectedQuestionType.value,
       sceneId: selectedSceneId.value
