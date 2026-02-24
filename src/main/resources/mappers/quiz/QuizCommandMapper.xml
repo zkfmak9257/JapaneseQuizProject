@@ -193,8 +193,8 @@
         ORDER BY qc.choice_id ASC
     </select>
 
-    <select id="findSentenceCorrectTokenIds" resultType="long">
-        SELECT qst.token_id
+    <select id="findSentenceCorrectTokensText" resultType="string">
+        SELECT qst.token_text
         FROM quiz_sentence_tokens qst
         WHERE qst.question_id = #{questionId}
         ORDER BY qst.correct_order ASC

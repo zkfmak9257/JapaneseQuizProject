@@ -66,8 +66,7 @@ public class QuizCommandService {
                     attemptId,
                     i + 1,
                     questionId,
-                    choiceOrder
-            );
+                    choiceOrder);
 
             if (inserted != 1) {
                 throw new CustomException(ErrorCode.INTERNAL_ERROR);
@@ -104,7 +103,8 @@ public class QuizCommandService {
     public QuizAnswerResultResponse submitAnswer(Long userId, Long attemptId, QuizSubmitRequest request) {
         validateSubmitInput(userId, attemptId, request);
 
-        Map<String, Object> attemptQuestion = quizCommandMapper.findAttemptQuestionForSubmit(attemptId, request.getSeq());
+        Map<String, Object> attemptQuestion = quizCommandMapper.findAttemptQuestionForSubmit(attemptId,
+                request.getSeq());
         if (attemptQuestion == null) {
             int attemptCount = quizCommandMapper.countAttemptById(attemptId);
             if (attemptCount == 0) {
@@ -139,8 +139,7 @@ public class QuizCommandService {
                 questionId,
                 request.getChoiceId(),
                 evaluationResult.submittedTokenOrder(),
-                correct
-        );
+                correct);
         if (inserted != 1) {
             throw new CustomException(ErrorCode.INTERNAL_ERROR);
         }
@@ -154,8 +153,7 @@ public class QuizCommandService {
         QuizAnswerResultResponse.StagePayload stagePayload = buildStagePayload(
                 questionId,
                 questionType,
-                evaluationResult
-        );
+                evaluationResult);
 
         return QuizAnswerResultResponse.builder()
                 .attemptId(attemptId)
@@ -368,8 +366,7 @@ public class QuizCommandService {
     private QuizAnswerResultResponse.StagePayload buildStagePayload(
             Long questionId,
             String questionType,
-            EvaluationResult evaluationResult
-    ) {
+            EvaluationResult evaluationResult) {
         Map<String, Object> meta = quizCommandMapper.findQuestionFeedbackMeta(questionId);
         Map<String, Object> correctChoice = quizCommandMapper.findCorrectChoicePayload(questionId);
 
@@ -388,8 +385,7 @@ public class QuizCommandService {
                 sentenceMode,
                 correctChoice,
                 translationKo,
-                meta
-        );
+                meta);
 
         QuizAnswerResultResponse.ExplanationPayload explanationPayload = QuizAnswerResultResponse.ExplanationPayload
                 .builder()
@@ -414,7 +410,7 @@ public class QuizCommandService {
 
         QuizAnswerResultResponse.SentencePayload sentencePayload = null;
         if (sentenceMode) {
-            List<Long> correctTokens = quizCommandMapper.findSentenceCorrectTokenIds(questionId);
+            List<String> correctTokens = quizCommandMapper.findSentenceCorrectTokensText(questionId);
             String correctTextJp = castToString(meta != null ? meta.get("correctTextJp") : null);
             if (correctTextJp == null || correctTextJp.isBlank()) {
                 correctTextJp = quizCommandMapper.findSentenceCorrectText(questionId);
@@ -427,8 +423,7 @@ public class QuizCommandService {
                 diffHint = String.format(
                         "제출 순서: %s / 정답 순서: %s",
                         evaluationResult.submittedTokenOrder(),
-                        evaluationResult.expectedTokenOrder()
-                );
+                        evaluationResult.expectedTokenOrder());
             }
 
             sentencePayload = QuizAnswerResultResponse.SentencePayload.builder()
@@ -451,8 +446,7 @@ public class QuizCommandService {
             boolean sentenceMode,
             Map<String, Object> correctChoice,
             String translationKo,
-            Map<String, Object> meta
-    ) {
+            Map<String, Object> meta) {
         if (sentenceMode) {
             String jpText = castToString(meta != null ? meta.get("correctTextJp") : null);
             if (jpText == null || jpText.isBlank()) {

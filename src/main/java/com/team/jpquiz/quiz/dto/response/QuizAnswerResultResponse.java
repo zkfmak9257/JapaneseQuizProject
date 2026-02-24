@@ -70,7 +70,7 @@ public class QuizAnswerResultResponse {
     @AllArgsConstructor
     public static class SentencePayload {
         @Builder.Default
-        private List<Long> correctTokens = new ArrayList<>();
+        private List<String> correctTokens = new ArrayList<>();
         private String correctTextJp;
         private String diffHint;
     }

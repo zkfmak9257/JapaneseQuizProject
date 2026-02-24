@@ -9,99 +9,84 @@ import java.util.Map;
 @Mapper
 public interface QuizCommandMapper {
 
-    int countAllQuestions();
+        int countAllQuestions();
 
-    int countQuestionsByFilter(
-            @Param("questionType") String questionType,
-            @Param("sceneId") Long sceneId
-    );
+        int countQuestionsByFilter(
+                        @Param("questionType") String questionType,
+                        @Param("sceneId") Long sceneId);
 
-    List<Long> findRandomQuestionIds(@Param("count") int count);
+        List<Long> findRandomQuestionIds(@Param("count") int count);
 
-    List<Long> findRandomQuestionIdsByFilter(
-            @Param("count") int count,
-            @Param("questionType") String questionType,
-            @Param("sceneId") Long sceneId
-    );
+        List<Long> findRandomQuestionIdsByFilter(
+                        @Param("count") int count,
+                        @Param("questionType") String questionType,
+                        @Param("sceneId") Long sceneId);
 
-    List<Long> findRecentWrongQuestionIds(
-            @Param("memberId") Long memberId,
-            @Param("limit") int limit
-    );
+        List<Long> findRecentWrongQuestionIds(
+                        @Param("memberId") Long memberId,
+                        @Param("limit") int limit);
 
-    List<Long> findRandomQuestionIdsExcept(
-            @Param("count") int count,
-            @Param("excludeIds") List<Long> excludeIds
-    );
+        List<Long> findRandomQuestionIdsExcept(
+                        @Param("count") int count,
+                        @Param("excludeIds") List<Long> excludeIds);
 
-    String findChoiceOrderCsv(@Param("questionId") Long questionId);
+        String findChoiceOrderCsv(@Param("questionId") Long questionId);
 
-    void insertQuizAttempt(Map<String, Object> params);
+        void insertQuizAttempt(Map<String, Object> params);
 
-    int insertQuizAttemptQuestion(
-            @Param("attemptId") Long attemptId,
-            @Param("seq") int seq,
-            @Param("questionId") Long questionId,
-            @Param("choiceOrder") String choiceOrder
-    );
+        int insertQuizAttemptQuestion(
+                        @Param("attemptId") Long attemptId,
+                        @Param("seq") int seq,
+                        @Param("questionId") Long questionId,
+                        @Param("choiceOrder") String choiceOrder);
 
-    int countAttemptById(@Param("attemptId") Long attemptId);
+        int countAttemptById(@Param("attemptId") Long attemptId);
 
-    Map<String, Object> findAttemptQuestionForSubmit(
-            @Param("attemptId") Long attemptId,
-            @Param("seq") int seq
-    );
+        Map<String, Object> findAttemptQuestionForSubmit(
+                        @Param("attemptId") Long attemptId,
+                        @Param("seq") int seq);
 
-    Integer findChoiceCorrectFlag(
-            @Param("questionId") Long questionId,
-            @Param("choiceId") Long choiceId
-    );
+        Integer findChoiceCorrectFlag(
+                        @Param("questionId") Long questionId,
+                        @Param("choiceId") Long choiceId);
 
-    String findSentenceTokenOrderCsv(
-            @Param("questionId") Long questionId
-    );
+        String findSentenceTokenOrderCsv(
+                        @Param("questionId") Long questionId);
 
-    Map<String, Object> findQuestionFeedbackMeta(
-            @Param("questionId") Long questionId
-    );
+        Map<String, Object> findQuestionFeedbackMeta(
+                        @Param("questionId") Long questionId);
 
-    Map<String, Object> findCorrectChoicePayload(
-            @Param("questionId") Long questionId
-    );
+        Map<String, Object> findCorrectChoicePayload(
+                        @Param("questionId") Long questionId);
 
-    List<Map<String, Object>> findChoicePayloads(
-            @Param("questionId") Long questionId
-    );
+        List<Map<String, Object>> findChoicePayloads(
+                        @Param("questionId") Long questionId);
 
-    List<Long> findSentenceCorrectTokenIds(
-            @Param("questionId") Long questionId
-    );
+        List<String> findSentenceCorrectTokensText(
+                        @Param("questionId") Long questionId);
 
-    String findSentenceCorrectText(
-            @Param("questionId") Long questionId
-    );
+        String findSentenceCorrectText(
+                        @Param("questionId") Long questionId);
 
-    int insertQuizAttemptAnswer(
-            @Param("attemptId") Long attemptId,
-            @Param("seq") int seq,
-            @Param("questionId") Long questionId,
-            @Param("selectedChoiceId") Long selectedChoiceId,
-            @Param("submittedTokenOrder") String submittedTokenOrder,
-            @Param("correct") boolean correct
-    );
+        int insertQuizAttemptAnswer(
+                        @Param("attemptId") Long attemptId,
+                        @Param("seq") int seq,
+                        @Param("questionId") Long questionId,
+                        @Param("selectedChoiceId") Long selectedChoiceId,
+                        @Param("submittedTokenOrder") String submittedTokenOrder,
+                        @Param("correct") boolean correct);
 
-    int countSubmittedAnswer(
-            @Param("attemptId") Long attemptId,
-            @Param("seq") int seq
-    );
+        int countSubmittedAnswer(
+                        @Param("attemptId") Long attemptId,
+                        @Param("seq") int seq);
 
-    int countSolvedQuestions(@Param("attemptId") Long attemptId);
+        int countSolvedQuestions(@Param("attemptId") Long attemptId);
 
-    Map<String, Object> findAttemptForComplete(@Param("attemptId") Long attemptId);
+        Map<String, Object> findAttemptForComplete(@Param("attemptId") Long attemptId);
 
-    int completeAttempt(@Param("attemptId") Long attemptId);
+        int completeAttempt(@Param("attemptId") Long attemptId);
 
-    Map<String, Object> findAttemptForResult(@Param("attemptId") Long attemptId);
+        Map<String, Object> findAttemptForResult(@Param("attemptId") Long attemptId);
 
-    int countCorrectAnswers(@Param("attemptId") Long attemptId);
+        int countCorrectAnswers(@Param("attemptId") Long attemptId);
 }
