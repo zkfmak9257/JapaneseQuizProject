@@ -857,6 +857,23 @@ async function loadQuestion() {
 
     question.value = response;
     totalQuestions.value = response.totalQuestions;
+
+    // ── 뒤로가기 방어: 이미 제출한 문제면 자동으로 다음 문제로 이동 ──
+    // 왜? 브라우저 뒤로가기 시 이전 문제 UI가 캐시 상태로 보이는데,
+    // 다시 제출하면 서버가 400을 돌려서 사용자가 막힘.
+    // router.replace를 쓰는 이유: push는 히스토리 스택에 쌓여 무한 루프 위험.
+    if (quizStore.isSubmitted[seq]) {
+      const nextSeq = seq + 1;
+      if (nextSeq <= response.totalQuestions) {
+        errorMessage.value = "이미 제출한 문제예요. 다음 문제로 이동합니다.";
+        router.replace(`/quiz/attempts/${attemptId}/questions/${nextSeq}`);
+      } else {
+        errorMessage.value = "모든 문제를 제출했어요. 결과 화면으로 이동합니다.";
+        router.replace(`/quiz/attempts/${attemptId}/result`);
+      }
+      return;
+    }
+
     selectedChoiceId.value = null;
     submissionDone.value = false;
     gradeResult.value = null;
@@ -950,7 +967,25 @@ async function submit() {
   } catch (error) {
     const status = error?.response?.status;
     if (status === 400) {
-      errorMessage.value = "이미 제출했거나 유효하지 않은 답안입니다.";
+      // ── 이미 제출된 문제: 에러만 보여주고 끝 → 복구 경로 제공 ──
+      // 해당 seq를 제출 완료로 마킹 후 1.2초 뒤 자동 이동.
+      // 왜 1.2초? 토스트 메시지를 읽을 시간을 주기 위해.
+      const attemptId = Number(route.params.attemptId);
+      const seq = Number(route.params.seq);
+      quizStore.setSubmitted(seq, true);
+
+      const nextSeq = seq + 1;
+      if (nextSeq <= totalQuestions.value) {
+        errorMessage.value = "이미 제출한 문제예요. 다음 문제로 이동합니다.";
+        setTimeout(() => {
+          router.replace(`/quiz/attempts/${attemptId}/questions/${nextSeq}`);
+        }, 1200);
+      } else {
+        errorMessage.value = "모든 문제를 제출했어요. 결과 화면으로 이동합니다.";
+        setTimeout(() => {
+          router.replace(`/quiz/attempts/${attemptId}/result`);
+        }, 1200);
+      }
       return;
     }
     if (status === 401) {
@@ -966,7 +1001,12 @@ async function submit() {
       return;
     }
     if (status === 409) {
-      errorMessage.value = "이미 완료된 퀴즈입니다. 결과 화면으로 이동해 주세요.";
+      // ── attempt가 이미 완료된 상태: 결과 페이지로 자동 이동 ──
+      const attemptId = Number(route.params.attemptId);
+      errorMessage.value = "이 퀴즈는 이미 완료되었어요. 결과 화면으로 이동합니다.";
+      setTimeout(() => {
+        router.replace(`/quiz/attempts/${attemptId}/result`);
+      }, 1200);
       return;
     }
     errorMessage.value = "답안 제출 중 오류가 발생했습니다.";
