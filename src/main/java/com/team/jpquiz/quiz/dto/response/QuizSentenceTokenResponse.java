@@ -13,5 +13,7 @@ public class QuizSentenceTokenResponse {
 
     private Long tokenId;
     private String tokenText;
+    private String meaningKo;
+    private String grammarRole;
     private Integer order;
 }

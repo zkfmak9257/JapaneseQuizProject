@@ -380,6 +380,49 @@ function hasKanji(text) {
   return /[\u4E00-\u9FFF]/.test(text);
 }
 
+function hasHangul(text) {
+  return /[ㄱ-ㅎㅏ-ㅣ가-힣]/.test(String(text || ''));
+}
+
+function resolveMeaning(token) {
+  const base = token?.base || '';
+  const dbMeaning = token?.meaning || '';
+  const dictMeaning = lookupMeaning(base);
+
+  // DB 뜻이 한국어면 우선 사용, 아니면 로컬 사전 뜻 우선.
+  if (dbMeaning && hasHangul(dbMeaning)) return dbMeaning;
+  if (dictMeaning) return dictMeaning;
+  if (dbMeaning) return dbMeaning;
+  return base;
+}
+
+function normalizePatternPart(token) {
+  const base = token?.base || '';
+  const rawRole = String(token?.role || lookupRole(base) || '').trim();
+
+  if (!rawRole) return base;
+  if (rawRole.includes('조사')) return base;
+  if (rawRole === '미분류') return base;
+
+  // 역할명이 너무 길거나 상세한 경우 학습 패턴용으로 단순화
+  if (rawRole.includes('명사')) return '[명사]';
+  if (rawRole.includes('동사')) return '[동사]';
+  if (rawRole.includes('형용사')) return '[형용사]';
+  if (rawRole.includes('형용동사')) return '[형용동사]';
+  if (rawRole.includes('의문사')) return '[의문사]';
+  if (rawRole.includes('연체사')) return '[연체사]';
+  if (rawRole.includes('수사')) return '[수량]';
+  if (rawRole.includes('지시대명사')) return '[지시어]';
+  if (rawRole.includes('요청')) return '[요청 표현]';
+  if (rawRole.includes('불가능')) return '[불가능 표현]';
+  if (rawRole.includes('가능')) return '[가능 표현]';
+  if (rawRole.includes('희망')) return '[희망 표현]';
+  if (rawRole.includes('감사')) return '[감사 표현]';
+  if (rawRole.includes('사과')) return '[사과 표현]';
+
+  return `[${rawRole}]`;
+}
+
 function tokenMatchClass(idx, tok) {
   if (props.isCorrect) return 'fb-token--match';
   const submitted = props.selectedTokens[idx];
@@ -410,8 +453,8 @@ const diffItems = computed(() => {
       const expectedReading = (cTok?.reading && hasKanji(expected)) ? cTok.reading : '';
       const gotReading = (sTok?.reading && hasKanji(got)) ? sTok.reading : '';
       // 짧은 문맥 힌트 생성
-      const gotMeaning = lookupMeaning(got);
-      const expectedMeaning = lookupMeaning(expected);
+      const gotMeaning = resolveMeaning(sTok);
+      const expectedMeaning = resolveMeaning(cTok);
       let hint = '';
       if (gotMeaning && expectedMeaning) {
         hint = `"${gotMeaning}" → "${expectedMeaning}"`;
@@ -427,13 +470,13 @@ const diffItems = computed(() => {
 /**
  * correctGlossary — 정답 토큰 전부 (뜻이 없어도 표시)
  * 왜 전부? 사용자가 "해설 펼쳤는데 일부만 있다"고 느끼지 않도록.
- * 사전에 없으면 meaning을 "(사전 미등록)" 으로 표시.
+ * 사전에 없으면 의미 영역이 비지 않도록 토큰 원문을 fallback으로 표시.
  */
 const correctGlossary = computed(() => {
   return props.correctTokens.map(tok => ({
     base: tok.base,
     reading: tok.reading,
-    meaning: tok.meaning || lookupMeaning(tok.base) || '(사전 미등록)',
+    meaning: resolveMeaning(tok),
     role: tok.role || lookupRole(tok.base) || ''
   }));
 });
@@ -456,8 +499,8 @@ const wrongOnlyGlossary = computed(() => {
     .map(tok => ({
       base: tok.base,
       reading: tok.reading,
-      meaning: lookupMeaning(tok.base) || '(사전 미등록)',
-      role: lookupRole(tok.base) || ''
+      meaning: resolveMeaning(tok),
+      role: tok.role || lookupRole(tok.base) || ''
     }));
 });
 
@@ -469,13 +512,7 @@ const wrongOnlyGlossary = computed(() => {
  */
 const patternHint = computed(() => {
   if (props.correctTokens.length === 0) return '';
-  const parts = props.correctTokens.map(tok => {
-    const role = tok.role || lookupRole(tok.base);
-    if (!role) return tok.base;
-    // 조사는 그대로, 나머지는 [역할] 형태로
-    if (role.includes('조사') || role.includes('종조사')) return tok.base;
-    return `[${role}]`;
-  });
+  const parts = props.correctTokens.map((tok) => normalizePatternPart(tok));
   return `이 문장의 패턴: ${parts.join(' + ')}`;
 });
 </script>

@@ -67,6 +67,45 @@
 
         <div class="dotted-line"></div>
 
+<<<<<<< feat/pcj/history-page-and-quiz-category
+=======
+        <!-- DESTINATION: 카테고리 선택 -->
+        <div class="selector-block">
+          <span class="i-label">DESTINATION · 상황 선택</span>
+          <div class="scene-grid">
+            <button
+              v-for="scene in sceneOptions"
+              :key="scene.id"
+              class="scene-btn"
+              :class="{ active: selectedSceneId === scene.id }"
+              @click="toggleScene(scene.id)"
+            >
+              {{ scene.label }}
+            </button>
+          </div>
+        </div>
+
+        <div class="dotted-line"></div>
+
+        <!-- MODE: 문제 유형 선택 -->
+        <div class="selector-block">
+          <span class="i-label">MODE · 문제 유형</span>
+          <div class="mode-grid">
+            <button
+              v-for="mode in modeOptions"
+              :key="mode.value"
+              class="mode-btn"
+              :class="{ active: selectedQuestionType === mode.value }"
+              @click="toggleMode(mode.value)"
+            >
+              {{ mode.label }}
+            </button>
+          </div>
+        </div>
+
+        <div class="dotted-line"></div>
+
+>>>>>>> main
         <!-- 선택 요약 -->
         <div class="flight-info-grid">
           <div class="info-item full-width">
@@ -117,9 +156,12 @@ const loading = ref(false);
 const errorMessage = ref("");
 const isDeparting = ref(false);
 
+<<<<<<< feat/pcj/history-page-and-quiz-category
 // 여행기록 페이지에서 진입 시에만 카테고리 선택 UI 표시
 const showCategorySelector = route.query.category === "true";
 
+=======
+>>>>>>> main
 // URL 쿼리 파라미터를 초기값으로 사용, 화면에서 직접 변경 가능
 const initSceneId = (() => {
   const raw = route.query.sceneId;
@@ -136,6 +178,7 @@ const selectedSceneId = ref(initSceneId);
 const selectedQuestionType = ref(initType);
 
 const sceneOptions = [
+<<<<<<< feat/pcj/history-page-and-quiz-category
   { id: null, label: "🗺️ 전체" },
   { id: 1,    label: "✈️ 공항" },
   { id: 2,    label: "🚉 교통" },
@@ -145,6 +188,17 @@ const sceneOptions = [
   { id: 6,    label: "🌙 야간" },
   { id: 7,    label: "🚨 긴급" },
   { id: 8,    label: "🏛️ 관광" },
+=======
+  { id: null,  label: "🗺️ 전체" },
+  { id: 1,     label: "✈️ 공항" },
+  { id: 2,     label: "🚉 교통" },
+  { id: 3,     label: "🏨 숙박" },
+  { id: 4,     label: "🍣 음식" },
+  { id: 5,     label: "🏪 쇼핑" },
+  { id: 6,     label: "🌙 야간" },
+  { id: 7,     label: "🚨 긴급" },
+  { id: 8,     label: "🏛️ 관광" },
+>>>>>>> main
 ];
 
 const modeOptions = [
@@ -189,9 +243,12 @@ async function startBoarding() {
       sceneId: selectedSceneId.value ?? undefined
     });
 
+<<<<<<< feat/pcj/history-page-and-quiz-category
     // 새 퀴즈 시작이므로 이전 attempt의 캐시(isSubmitted, submitResults 등)를 초기화
     quizStore.resetAttemptState();
 
+=======
+>>>>>>> main
     quizStore.setStartOptions({
       questionType: selectedQuestionType.value,
       sceneId: selectedSceneId.value
@@ -501,6 +558,64 @@ async function startBoarding() {
   color: #f8fafc;
   line-height: 1.4;
   word-break: keep-all;
+}
+
+/* ── 카테고리 / 모드 선택 ── */
+.selector-block {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.scene-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.scene-btn {
+  padding: 7px 13px;
+  border-radius: 20px;
+  border: 1.5px solid #334155;
+  background: transparent;
+  color: #94a3b8;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s;
+  white-space: nowrap;
+}
+.scene-btn:hover {
+  border-color: #64748b;
+  color: #f1f5f9;
+}
+.scene-btn.active {
+  background: #38bdf8;
+  border-color: #38bdf8;
+  color: #0f172a;
+}
+.mode-grid {
+  display: flex;
+  gap: 8px;
+}
+.mode-btn {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1.5px solid #334155;
+  background: transparent;
+  color: #94a3b8;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+.mode-btn:hover {
+  border-color: #64748b;
+  color: #f1f5f9;
+}
+.mode-btn.active {
+  background: #fca5a5;
+  border-color: #fca5a5;
+  color: #0f172a;
 }
 
 .error-msg {
