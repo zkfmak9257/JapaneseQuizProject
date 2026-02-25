@@ -27,8 +27,48 @@
           <span class="q-text">QUESTIONS</span>
         </div>
 
+        <template v-if="showCategorySelector">
+          <div class="dotted-line"></div>
+
+          <!-- DESTINATION: 카테고리 선택 -->
+          <div class="selector-block">
+            <span class="i-label">DESTINATION · 상황 선택</span>
+            <div class="scene-grid">
+              <button
+                v-for="scene in sceneOptions"
+                :key="scene.id"
+                class="scene-btn"
+                :class="{ active: selectedSceneId === scene.id }"
+                @click="toggleScene(scene.id)"
+              >
+                {{ scene.label }}
+              </button>
+            </div>
+          </div>
+
+          <div class="dotted-line"></div>
+
+          <!-- MODE: 문제 유형 선택 -->
+          <div class="selector-block">
+            <span class="i-label">MODE · 문제 유형</span>
+            <div class="mode-grid">
+              <button
+                v-for="mode in modeOptions"
+                :key="mode.value"
+                class="mode-btn"
+                :class="{ active: selectedQuestionType === mode.value }"
+                @click="toggleMode(mode.value)"
+              >
+                {{ mode.label }}
+              </button>
+            </div>
+          </div>
+        </template>
+
         <div class="dotted-line"></div>
 
+<<<<<<< feat/pcj/history-page-and-quiz-category
+=======
         <!-- DESTINATION: 카테고리 선택 -->
         <div class="selector-block">
           <span class="i-label">DESTINATION · 상황 선택</span>
@@ -65,6 +105,7 @@
 
         <div class="dotted-line"></div>
 
+>>>>>>> main
         <!-- 선택 요약 -->
         <div class="flight-info-grid">
           <div class="info-item full-width">
@@ -75,10 +116,10 @@
 
         <div class="dotted-line"></div>
 
-        <!-- 4️⃣ 오늘의 미션 박스화 -->
+        <!-- 오늘의 미션 박스화 -->
         <div class="mission-box">
           <div class="m-badge">오늘의 미션 미리보기</div>
-          <div class="m-text">“{{ randomMission }}”</div>
+          <div class="m-text">"{{ randomMission }}"</div>
         </div>
 
         <div v-if="errorMessage" class="error-msg">
@@ -86,7 +127,7 @@
         </div>
       </div>
 
-      <!-- 5️⃣ 가장 강렬한 하단 분리형 CTA 영역 -->
+      <!-- 가장 강렬한 하단 분리형 CTA 영역 -->
       <div class="ticket-bottom">
         <button class="depart-btn" @click="startBoarding" :disabled="loading || isDeparting">
           <span v-if="loading" class="btn-loader"></span>
@@ -115,6 +156,12 @@ const loading = ref(false);
 const errorMessage = ref("");
 const isDeparting = ref(false);
 
+<<<<<<< feat/pcj/history-page-and-quiz-category
+// 여행기록 페이지에서 진입 시에만 카테고리 선택 UI 표시
+const showCategorySelector = route.query.category === "true";
+
+=======
+>>>>>>> main
 // URL 쿼리 파라미터를 초기값으로 사용, 화면에서 직접 변경 가능
 const initSceneId = (() => {
   const raw = route.query.sceneId;
@@ -131,6 +178,17 @@ const selectedSceneId = ref(initSceneId);
 const selectedQuestionType = ref(initType);
 
 const sceneOptions = [
+<<<<<<< feat/pcj/history-page-and-quiz-category
+  { id: null, label: "🗺️ 전체" },
+  { id: 1,    label: "✈️ 공항" },
+  { id: 2,    label: "🚉 교통" },
+  { id: 3,    label: "🏨 숙박" },
+  { id: 4,    label: "🍣 음식" },
+  { id: 5,    label: "🏪 쇼핑" },
+  { id: 6,    label: "🌙 야간" },
+  { id: 7,    label: "🚨 긴급" },
+  { id: 8,    label: "🏛️ 관광" },
+=======
   { id: null,  label: "🗺️ 전체" },
   { id: 1,     label: "✈️ 공항" },
   { id: 2,     label: "🚉 교통" },
@@ -140,6 +198,7 @@ const sceneOptions = [
   { id: 6,     label: "🌙 야간" },
   { id: 7,     label: "🚨 긴급" },
   { id: 8,     label: "🏛️ 관광" },
+>>>>>>> main
 ];
 
 const modeOptions = [
@@ -170,7 +229,6 @@ const missions = [
 const randomMission = ref("");
 
 onMounted(() => {
-  // 실제 앱 레이아웃(헤더 등)을 덮어버리기 위한 임시 꼼수 (CSS fixed)
   const idx = Math.floor(Math.random() * missions.length);
   randomMission.value = missions[idx];
 });
@@ -179,21 +237,27 @@ async function startBoarding() {
   try {
     loading.value = true;
     errorMessage.value = "";
-    
+
     const res = await startQuiz({
       questionType: selectedQuestionType.value ?? undefined,
       sceneId: selectedSceneId.value ?? undefined
     });
 
+<<<<<<< feat/pcj/history-page-and-quiz-category
+    // 새 퀴즈 시작이므로 이전 attempt의 캐시(isSubmitted, submitResults 등)를 초기화
+    quizStore.resetAttemptState();
+
+=======
+>>>>>>> main
     quizStore.setStartOptions({
       questionType: selectedQuestionType.value,
       sceneId: selectedSceneId.value
     });
     quizStore.setCurrentAttempt(res.attemptId);
-    
+
     isDeparting.value = true;
-    
-    // 1.5초의 이륙 시간 대기 
+
+    // 1.5초의 이륙 시간 대기
     setTimeout(() => {
       router.push(`/quiz/attempts/${res.attemptId}/questions/1`);
     }, 1500);
@@ -202,7 +266,7 @@ async function startBoarding() {
     loading.value = false;
     const status = error?.response?.status;
     const code = error?.response?.data?.code;
-    
+
     if (status === 400) errorMessage.value = "이용할 수 없는 노선입니다.";
     else if (status === 401) errorMessage.value = "여권 등 인증이 만료되었습니다. 다시 로그인해 주세요.";
     else if (status === 403 && code === "GUEST_QUIZ_LIMIT_EXCEEDED") errorMessage.value = "여행 제한 구역입니다. 로그인 후 입장해주세요.";
@@ -216,15 +280,14 @@ async function startBoarding() {
 <style scoped>
 /* ── 공항 보딩 패스 느낌 극대화 ── */
 .boarding-page {
-  /* 글로벌 App.vue 헤더를 덮어버리는 효과를 주기 위해 화면 전체 고정 */
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
-  z-index: 1000; /* 네비게이션 무시 */
+  z-index: 1000;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: #0f172a; /* 공항 밤하늘 네이비 */
+  background: #0f172a;
   padding: 24px;
   overflow-y: auto;
   font-family: Pretendard, "Noto Sans KR", sans-serif;
@@ -240,6 +303,7 @@ async function startBoarding() {
   align-items: center;
   z-index: 10;
 }
+
 /* ── 비행기 이륙 애니메이션 오버레이 ── */
 .takeoff-overlay {
   position: fixed;
@@ -256,11 +320,10 @@ async function startBoarding() {
 
 @keyframes bgFadeIn {
   0% { background: rgba(15, 23, 42, 0); }
-  50% { background: rgba(56, 189, 248, 0.4); } /* 구름층 파란 하늘 느낌 */
-  100% { background: #0f172a; } /* 완전 암전 후 넘어감 */
+  50% { background: rgba(56, 189, 248, 0.4); }
+  100% { background: #0f172a; }
 }
 
-/* 비행기 본체 */
 .airplane {
   position: absolute;
   font-size: 120px;
@@ -276,7 +339,6 @@ async function startBoarding() {
   100% { transform: translate(100vw, -80vh) rotate(45deg) scale(1.5); opacity: 0; }
 }
 
-/* 구름 효과 */
 .clouds-fx {
   position: absolute;
   font-size: 200px;
@@ -293,10 +355,10 @@ async function startBoarding() {
   100% { transform: scale(8) translateY(-20%); opacity: 0; }
 }
 
-
-/* ── 비행기 티켓/디스플레이 하이브리드 카드 ── */
+/* ── 티켓 카드 ── */
 .ticket-card {
   width: min(440px, 100%);
+  max-height: calc(100vh - 64px);
   background: #1e293b;
   border-radius: 16px;
   box-shadow: 0 32px 64px rgba(0, 0, 0, 0.6);
@@ -313,7 +375,6 @@ async function startBoarding() {
   100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-/* 상단 타이틀 영역 (시각적 분리) */
 .ticket-top {
   background: #0f172a;
   padding: 32px 24px 24px 24px;
@@ -321,7 +382,6 @@ async function startBoarding() {
   border-bottom: 2px dashed #475569;
   position: relative;
 }
-/* 티켓 잘린 느낌의 좌우 반원 홈 */
 .ticket-top::before, .ticket-top::after {
   content: ''; position: absolute; bottom: -12px;
   width: 24px; height: 24px; background: #0f172a; border-radius: 50%;
@@ -346,17 +406,23 @@ async function startBoarding() {
   letter-spacing: 2px;
 }
 
-
-/* 본문 (정보 및 미션 영역) */
 .ticket-middle {
-  padding: 32px 32px 24px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 24px 32px;
   background: #1e293b;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 18px;
+  /* 다크 테마 스크롤바 */
+  scrollbar-width: thin;
+  scrollbar-color: #334155 transparent;
 }
+.ticket-middle::-webkit-scrollbar { width: 4px; }
+.ticket-middle::-webkit-scrollbar-track { background: transparent; }
+.ticket-middle::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
 
-/* 6️⃣ 문제 수 고정 -> 10을 거대하게 하이라이트 */
 .question-count-block {
   text-align: center;
   display: flex;
@@ -369,7 +435,7 @@ async function startBoarding() {
   font-size: 80px;
   font-weight: 900;
   line-height: 1;
-  color: #fca5a5; /* 티켓의 붉은 스탬프 포인트 느낌 */
+  color: #fca5a5;
   text-shadow: 0 4px 20px rgba(248, 113, 113, 0.2);
   font-family: ui-monospace, sans-serif;
 }
@@ -379,6 +445,64 @@ async function startBoarding() {
   letter-spacing: 4px;
   color: #94a3b8;
   margin-top: 4px;
+}
+
+/* ── 카테고리 / 모드 선택 ── */
+.selector-block {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.scene-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.scene-btn {
+  padding: 7px 13px;
+  border-radius: 20px;
+  border: 1.5px solid #334155;
+  background: transparent;
+  color: #94a3b8;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s;
+  white-space: nowrap;
+}
+.scene-btn:hover {
+  border-color: #64748b;
+  color: #f1f5f9;
+}
+.scene-btn.active {
+  background: #38bdf8;
+  border-color: #38bdf8;
+  color: #0f172a;
+}
+.mode-grid {
+  display: flex;
+  gap: 8px;
+}
+.mode-btn {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1.5px solid #334155;
+  background: transparent;
+  color: #94a3b8;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+.mode-btn:hover {
+  border-color: #64748b;
+  color: #f1f5f9;
+}
+.mode-btn.active {
+  background: #fca5a5;
+  border-color: #fca5a5;
+  color: #0f172a;
 }
 
 /* 카드식 정보 그리드 */
@@ -404,14 +528,12 @@ async function startBoarding() {
   color: #f1f5f9;
 }
 .time-val { color: #cbd5e1; font-weight: 500; }
-.highlight { color: #fca5a5; font-size: 18px; }
 
 .dotted-line {
   border-top: 2px dotted #334155;
   width: 100%;
 }
 
-/* 4️⃣ 오늘의 미션 박스화 강조 */
 .mission-box {
   background: rgba(56, 189, 248, 0.05);
   border: 1px solid rgba(56, 189, 248, 0.2);
@@ -500,8 +622,7 @@ async function startBoarding() {
   color: #fca5a5; font-size: 13px; text-align: center; font-weight: 600;
 }
 
-
-/* 5️⃣ 강렬한 CTA 구역 (하단 분리형) */
+/* ── CTA 구역 ── */
 .ticket-bottom {
   background: #0f172a;
   padding: 24px 32px 32px;
@@ -512,7 +633,7 @@ async function startBoarding() {
 
 .depart-btn {
   width: 100%;
-  background: #fca5a5; /* 빨간색 포인트 유지 */
+  background: #fca5a5;
   color: #0f172a;
   border: none;
   padding: 20px;
@@ -524,25 +645,25 @@ async function startBoarding() {
   align-items: center;
   justify-content: center;
 }
-.btn-text-group { 
-  display: flex; 
-  flex-direction: column; 
-  align-items: center; 
+.btn-text-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
   gap: 4px;
 }
-.btn-main { 
-  font-size: 20px; 
-  font-weight: 900; 
-  letter-spacing: 1px; 
-  white-space: nowrap; /* 줄바꿈 방지 */
+.btn-main {
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  white-space: nowrap;
 }
-.btn-sub { 
-  font-size: 12px; 
-  font-weight: 800; 
-  letter-spacing: 3px; 
-  opacity: 0.8; 
-  white-space: nowrap; /* 줄바꿈 방지 */
+.btn-sub {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 3px;
+  opacity: 0.8;
+  white-space: nowrap;
 }
 
 .depart-btn:hover:not(:disabled) {
