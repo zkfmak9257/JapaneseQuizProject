@@ -9,3 +9,15 @@ application-local.yml
 application-dev.yml
 frontend/dist/
 bin/
+
+# Frontend cache/dependencies
+frontend/node_modules/
+frontend/.vite/
+
+# OS/Editor
+.DS_Store
+.vscode/
+*.swp
+
+# Logs
+logs/
