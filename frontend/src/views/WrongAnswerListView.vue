@@ -2,8 +2,8 @@
   <div class="training-container">
     <!-- A. 상단: 상태 요약 + 1개 핵심 CTA -->
     <header class="training-header">
-      <div class="header-icon">🔥</div>
-      <h1 class="header-title">다시 도전할 여행 미션</h1>
+      <div class="header-icon">📚</div>
+      <h1 class="header-title">오답노트</h1>
       <p class="header-subtitle">내가 약한 상황을 빠르게 발견하고 다시 풀어서 통과시키는 곳</p>
       <div class="red-divider"></div>
     </header>
@@ -35,8 +35,8 @@
           <!-- 정렬 드롭다운 -->
           <div class="sort-toggle">
             <select v-model="sortType" @change="onFilterChange" class="sort-select">
-              <option value="recent">최근 실수순</option>
-              <option value="frequent">실수 많은 순 (🔴위험 우선)</option>
+              <option value="recent">최근 오답순</option>
+              <option value="frequent">중복 오답순</option>
             </select>
             <span class="dropdown-arrow">▼</span>
           </div>
