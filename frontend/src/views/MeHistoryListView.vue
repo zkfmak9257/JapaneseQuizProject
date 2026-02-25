@@ -3,18 +3,11 @@
 
     <!-- 헤더 -->
     <header class="journal-header">
-<<<<<<< feat/pcj/history-page-and-quiz-category
       <div class="header-bg-overlay"></div>
       <div class="header-text">
         <h1 class="header-title">나의 여행 기록</h1>
         <p class="header-subtitle">일본어 여행을 통해 쌓아온 나의 발자취</p>
       </div>
-=======
-      <div class="header-icon">🗺️</div>
-      <h1 class="header-title">나의 여행 기록</h1>
-      <p class="header-subtitle">일본어 여행을 통해 쌓아온 나의 발자취</p>
-      <div class="teal-divider"></div>
->>>>>>> main
     </header>
 
     <main class="journal-content">
@@ -138,11 +131,7 @@
         <section class="quick-nav">
           <h3 class="section-title">🧭 여행 이어가기</h3>
           <div class="nav-grid">
-<<<<<<< feat/pcj/history-page-and-quiz-category
             <button class="nav-card" @click="router.push('/quiz/start?category=true')">
-=======
-            <button class="nav-card" @click="router.push('/quiz/start')">
->>>>>>> main
               <span class="nav-icon">✈️</span>
               <span class="nav-label">새 퀴즈 출발</span>
               <span class="nav-arrow">→</span>
@@ -320,7 +309,6 @@ onUnmounted(() => {
 
 /* ── 헤더 ── */
 .journal-header {
-<<<<<<< feat/pcj/history-page-and-quiz-category
   position: relative;
   width: calc(100% + 32px);
   margin: -40px -16px 36px;
@@ -357,18 +345,6 @@ onUnmounted(() => {
   margin: 0;
   text-shadow: 0 1px 4px rgba(0,0,0,0.4);
 }
-=======
-  text-align: center;
-  margin-bottom: 36px;
-}
-.header-icon { font-size: 36px; margin-bottom: 8px; }
-.header-title {
-  font-size: 26px; font-weight: 900; color: #0f172a;
-  letter-spacing: 2px; margin: 0 0 8px;
-}
-.header-subtitle { font-size: 14px; font-weight: 600; color: #64748b; margin: 0 0 16px; }
-.teal-divider { width: 80px; height: 3px; background: #14b8a6; margin: 0 auto; border-radius: 2px; }
->>>>>>> main
 
 /* ── 콘텐츠 래퍼 ── */
 .journal-content {
