@@ -120,13 +120,13 @@
               <span class="nav-arrow">→</span>
             </button>
             <button class="nav-card" @click="router.push('/quiz/wrong-answers')">
-              <span class="nav-icon">🔥</span>
-              <span class="nav-label">미션 훈련소</span>
+              <span class="nav-icon">📚</span>
+              <span class="nav-label">오답노트</span>
               <span class="nav-arrow">→</span>
             </button>
             <button class="nav-card" @click="router.push('/quiz/favorites')">
-              <span class="nav-icon">🛂</span>
-              <span class="nav-label">나의 도장첩</span>
+              <span class="nav-icon">🔖</span>
+              <span class="nav-label">북마크</span>
               <span class="nav-arrow">→</span>
             </button>
             <button class="nav-card" @click="router.push('/me/stats')">

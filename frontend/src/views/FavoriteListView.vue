@@ -2,9 +2,9 @@
   <div class="passport-container">
     <!-- 1️⃣ 상단 영역: 여권 컨셉 헤더 -->
     <header class="passport-header">
-      <div class="header-icon">🛂</div>
-      <h1 class="header-title">나의 여행 도장</h1>
-      <p class="header-subtitle">마음에 든 표현을 모아둔 여권 페이지</p>
+      <div class="header-icon">🔖</div>
+      <h1 class="header-title">북마크</h1>
+      <p class="header-subtitle">마음에 든 표현을 모아둔 페이지</p>
       <div class="gold-divider"></div>
     </header>
 

@@ -28,10 +28,10 @@
             <span class="nav-icon">✈️</span> 여행 기록
           </RouterLink>
           <RouterLink to="/quiz/wrong-answers" class="nav-text-link">
-            <span class="nav-icon">🔥</span> 미션 훈련소
+            <span class="nav-icon">📚</span> 오답노트
           </RouterLink>
           <RouterLink to="/quiz/favorites" class="nav-text-link">
-            <span class="nav-icon">🛂</span> 나의 여행 도장
+            <span class="nav-icon">🔖</span> 북마크
           </RouterLink>
           <RouterLink v-if="isAdmin" to="/admin" class="nav-text-link">
             <span class="nav-icon">⚙️</span> 관리자
