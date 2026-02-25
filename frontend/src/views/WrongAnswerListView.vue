@@ -103,7 +103,7 @@
                   {{ solveAgainLoadingId === item.questionId ? '세션 생성 중...' : '미션 다시 도전' }}
                 </button>
                 <button class="mission-btn ghost" @click="hideMission(item.questionId)">
-                  <span class="icon">👁️‍🗨️</span> 리스트에서 숨기기
+                  <span class="icon">👁️‍🗨️</span> 미션 제거
                 </button>
               </div>
             </div>
@@ -137,6 +137,9 @@ import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { getWrongAnswers, removeWrongAnswer, createReviewSet, createSingleQuestionAttempt } from "../api/wrongAnswerApi";
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-vue-next";
+import { useModal } from "../composables/useModal";
+
+const { showAlert, showConfirm } = useModal();
 
 const router = useRouter();
 
@@ -247,22 +250,21 @@ async function startReviewSession() {
 
 // 오답 리스트에서 숨기기
 async function hideMission(questionId) {
-  if (!confirm("이 미션을 리스트에서 뺄까요?")) return;
-  
+  const ok = await showConfirm("이 미션을 리스트에서 뺄까요?", "미션 제외");
+  if (!ok) return;
+
   try {
-    hidingId.value = questionId; 
+    hidingId.value = questionId;
     await removeWrongAnswer(questionId);
-    
+
     setTimeout(() => {
       items.value = items.value.filter(item => item.questionId !== questionId);
       totalElements.value = Math.max(0, totalElements.value - 1);
       hidingId.value = null;
     }, 300);
-    
+
   } catch (error) {
-    // API 404 등 오류가 발생해도 UX 차원에서 리스트에서 제거만 해주는 로직을 넣을 수도 있지만
-    // 일단은 에러 처리함
-    alert("오답노트 제외 기능이 아직 백엔드에 구현되지 않았을 수 있습니다. 화면에서만 임시로 제거합니다.");
+    await showAlert("오답노트 제외 기능이 아직 백엔드에 구현되지 않았을 수 있습니다. 화면에서만 임시로 제거합니다.", "안내");
     setTimeout(() => {
       items.value = items.value.filter(item => item.questionId !== questionId);
       totalElements.value = Math.max(0, totalElements.value - 1);
@@ -645,7 +647,7 @@ onMounted(loadItems);
   display: flex;
   gap: 10px;
 }
-.mission-btn {
+. mission-btn {
   flex: 1;
   display: flex;
   align-items: center;

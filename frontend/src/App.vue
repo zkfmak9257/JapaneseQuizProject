@@ -100,6 +100,9 @@
       <RouterView />
     </main>
 
+    <!-- 전역 모달 (alert/confirm 대체) -->
+    <AppModal />
+
     <!-- ── 푸터 ────────────────────────────────────── -->
     <footer class="site-footer">
       <p>© 2026 旅Quiz — 일본어를 여행처럼 배우다</p>
@@ -119,6 +122,7 @@ import { storeToRefs } from "pinia";
 import { RouterLink, RouterView, useRoute } from "vue-router";
 // 인증 상태 관리 스토어
 import { useAuthStore } from "./stores/authStore";
+import AppModal from "./components/ui/AppModal.vue";
 
 const authStore = useAuthStore();
 const route = useRoute();
