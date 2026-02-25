@@ -54,6 +54,7 @@ http.interceptors.response.use(
       return new Promise((resolve, reject) => {
         failedQueue.push({ resolve, reject });
       }).then((token) => {
+        originalRequest._retry = true; // 재시도 중복 방지
         originalRequest.headers.Authorization = `Bearer ${token}`;
         return http(originalRequest);
       });
@@ -70,6 +71,11 @@ http.interceptors.response.use(
 
       const newAccessToken = data?.data?.accessToken;
       const newRefreshToken = data?.data?.refreshToken;
+
+      // 토큰이 정상적으로 발급되지 않으면 로그아웃 처리
+      if (!newAccessToken) {
+        throw new Error("액세스 토큰 발급 실패");
+      }
 
       localStorage.setItem("accessToken", newAccessToken);
       if (newRefreshToken) {
