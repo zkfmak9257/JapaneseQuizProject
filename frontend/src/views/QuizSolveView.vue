@@ -413,10 +413,15 @@ const feedbackCorrectTokens = computed(() => {
 
 const feedbackSelectedTokens = computed(() => {
   if (!isSentenceMode.value) return [];
-  return answerTokens.value.map(t => ({
-    base: rubyBase(t.tokenText),
-    reading: rubyReading(t.tokenText) || ''
-  }));
+  return answerTokens.value.map((t) => {
+    const tokenMeta = sentenceTokenMetaMap.value.get(t.tokenText) || {};
+    return {
+      base: rubyBase(t.tokenText),
+      reading: rubyReading(t.tokenText) || '',
+      meaning: t.meaningKo || tokenMeta.meaning || null,
+      role: t.grammarRole || tokenMeta.role || null
+    };
+  });
 });
 
 const feedbackChoices = computed(() => {
@@ -451,14 +456,18 @@ const sentenceTokenSource = computed(() => {
   if (Array.isArray(question.value.sentenceTokens) && question.value.sentenceTokens.length > 0) {
     return question.value.sentenceTokens.map((token) => ({
       tokenId: Number(token.tokenId),
-      tokenText: token.tokenText
+      tokenText: token.tokenText,
+      meaningKo: token.meaningKo || null,
+      grammarRole: token.grammarRole || null
     }));
   }
   // sentenceTokens가 없을 때의 최소 호환 fallback
   if (Array.isArray(question.value.choices) && question.value.choices.length > 0) {
     return question.value.choices.map((choice) => ({
       tokenId: Number(choice.choiceId),
-      tokenText: choice.choiceText
+      tokenText: choice.choiceText,
+      meaningKo: choice.meaningKo || null,
+      grammarRole: null
     }));
   }
   return [];
@@ -470,8 +479,33 @@ const sentenceDistractorSource = computed(() => {
   }
   return question.value.choices.map((choice) => ({
     tokenId: Number(choice.choiceId),
-    tokenText: choice.choiceText
+    tokenText: choice.choiceText,
+    meaningKo: choice.meaningKo || null,
+    grammarRole: null
   }));
+});
+
+const sentenceTokenMetaMap = computed(() => {
+  const map = new Map();
+  if (Array.isArray(stageSentence.value?.correctTokens)) {
+    stageSentence.value.correctTokens.forEach((token) => {
+      if (!token || typeof token === "string") return;
+      if (!token.tokenText) return;
+      map.set(token.tokenText, {
+        meaning: token.meaningKo || null,
+        role: token.grammarRole || null
+      });
+    });
+  }
+  sentenceBoardSource.value.forEach((token) => {
+    if (!token?.tokenText) return;
+    if (map.has(token.tokenText)) return;
+    map.set(token.tokenText, {
+      meaning: token.meaningKo || null,
+      role: token.grammarRole || null
+    });
+  });
+  return map;
 });
 
 const sentenceBoardSource = computed(() => {
@@ -603,7 +637,9 @@ function handlePoolTokenClick(token) {
   // answerTokens에 추가 (원본 토큰 데이터만)
   answerTokens.value.push({
     tokenId: token.tokenId,
-    tokenText: token.tokenText
+    tokenText: token.tokenText,
+    meaningKo: token.meaningKo || null,
+    grammarRole: token.grammarRole || null
   });
 }
 
