@@ -100,7 +100,7 @@
               class="badge-item"
               :class="{ unlocked: badge.unlocked }"
             >
-              <div class="badge-icon">{{ badge.icon }}</div>
+              <div class="badge-icon" :data-tip="badge.desc">{{ badge.icon }}</div>
               <p class="badge-name">{{ badge.name }}</p>
               <p class="badge-progress-text">{{ badge.current }}{{ badge.unit }} / {{ badge.max }}{{ badge.unit }}</p>
               <div class="badge-progress-bar">
@@ -184,37 +184,37 @@ const badges = computed(() => {
   const pct = (cur, max) => Math.min(Math.round((cur / max) * 100), 100);
   return [
     {
-      icon: "🛫", name: "첫 출발",
+      icon: "🛫", name: "첫 출발", desc: "퀴즈를 1회 이상 시도하면 달성",
       current: Math.min(stats.totalAttempts, 1), max: 1, unit: "회",
       unlocked: stats.totalAttempts >= 1,
       pct: pct(stats.totalAttempts, 1),
     },
     {
-      icon: "🗺️", name: "탐험가",
+      icon: "🗺️", name: "탐험가", desc: "퀴즈를 5회 완료하면 달성",
       current: Math.min(stats.completedAttempts, 5), max: 5, unit: "회",
       unlocked: stats.completedAttempts >= 5,
       pct: pct(stats.completedAttempts, 5),
     },
     {
-      icon: "⭐", name: "언어 마스터",
+      icon: "⭐", name: "언어 마스터", desc: "전체 정답률 80% 이상 달성",
       current: Math.min(stats.accuracyRate, 80), max: 80, unit: "%",
       unlocked: stats.accuracyRate >= 80,
       pct: pct(stats.accuracyRate, 80),
     },
     {
-      icon: "🔥", name: "열혈 여행자",
+      icon: "🔥", name: "열혈 여행자", desc: "최근 7일 내 답변 30개 이상",
       current: Math.min(stats.recent7dAnswers, 30), max: 30, unit: "개",
       unlocked: stats.recent7dAnswers >= 30,
       pct: pct(stats.recent7dAnswers, 30),
     },
     {
-      icon: "🏆", name: "베테랑",
+      icon: "🏆", name: "베테랑", desc: "퀴즈를 20회 이상 시도하면 달성",
       current: Math.min(stats.totalAttempts, 20), max: 20, unit: "회",
       unlocked: stats.totalAttempts >= 20,
       pct: pct(stats.totalAttempts, 20),
     },
     {
-      icon: "💎", name: "완벽주의자",
+      icon: "💎", name: "완벽주의자", desc: "퀴즈 완료율 90% 이상 달성",
       current: Math.min(stats.completionRate, 90), max: 90, unit: "%",
       unlocked: stats.completionRate >= 90,
       pct: pct(stats.completionRate, 90),
@@ -505,7 +505,33 @@ onUnmounted(() => {
   background: linear-gradient(135deg, #fefce8 0%, #fff 100%);
   box-shadow: 0 2px 8px rgba(234,179,8,0.15);
 }
-.badge-icon { font-size: 28px; }
+.badge-icon {
+  font-size: 28px;
+  position: relative;
+  cursor: default;
+}
+.badge-icon[data-tip]::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1e293b;
+  color: #f8fafc;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  padding: 5px 10px;
+  border-radius: 8px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.18s;
+  z-index: 10;
+  font-family: Pretendard, "Noto Sans KR", sans-serif;
+}
+.badge-icon[data-tip]:hover::after {
+  opacity: 1;
+}
 .badge-name { font-size: 12px; font-weight: 800; color: #1e293b; margin: 0; text-align: center; }
 .badge-progress-text {
   font-size: 11px; font-weight: 700;
