@@ -11,3 +11,10 @@ export async function toggleFavorite(questionId) {
   const response = await http.post(`/api/favorites/${questionId}/toggle`);
   return unwrap(response);
 }
+
+export async function createFavoriteReviewSet(category) {
+  const response = await http.post("/api/favorites/review-set", null, {
+    params: { category: category || undefined }
+  });
+  return unwrap(response);
+}

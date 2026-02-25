@@ -44,9 +44,11 @@
 
       <!-- 기능 버튼 영역 -->
       <section class="action-bar" v-if="allTotalElements > 0 && !loading && !errorMessage">
-        <button class="review-btn" @click="startReviewSession" disabled>
+        <button class="review-btn" @click="startReviewSession" :disabled="reviewLoading">
           <span class="btn-icon">✈️</span>
-          <span>이 도장들로 바로 복습하기 (준비중)</span>
+          <span v-if="reviewLoading">복습 코스 준비 중...</span>
+          <span v-else-if="categoryFilter">{{ categoryFilter }} 도장으로 복습하기</span>
+          <span v-else>이 도장들로 바로 복습하기</span>
         </button>
       </section>
 
@@ -132,7 +134,7 @@
 <script setup>
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
-import { getFavorites, toggleFavorite } from "../api/favoriteApi";
+import { getFavorites, toggleFavorite, createFavoriteReviewSet } from "../api/favoriteApi";
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-vue-next";
 
 const router = useRouter();
@@ -150,6 +152,7 @@ const allCategories = ref([]);   // 도장용 unique 카테고리 목록
 const allTotalElements = ref(0); // 전체 즐겨찾기 개수 (필터 무관)
 
 const deletingId = ref(null);
+const reviewLoading = ref(false);
 
 // 도장용: 필터 없이 전체 카테고리 목록 추출
 async function loadAllCategories() {
@@ -215,8 +218,17 @@ function solveAgain(questionId) {
   alert("해당 문제 다시 풀기 모드로 이동합니다. (API 및 라우팅 연결 필요)");
 }
 
-function startReviewSession() {
-  alert("수집한 도장들을 모아 새로운 여행(복습) 코스를 만듭니다. (API 연결 필요)");
+async function startReviewSession() {
+  if (reviewLoading.value) return;
+  try {
+    reviewLoading.value = true;
+    const data = await createFavoriteReviewSet(categoryFilter.value);
+    router.push(`/quiz/attempts/${data.attemptId}/questions/1`);
+  } catch (error) {
+    alert("복습 세트를 만들지 못했습니다. 즐겨찾기된 문제가 있는지 확인해주세요.");
+  } finally {
+    reviewLoading.value = false;
+  }
 }
 
 /* ── UI 보조 함수 ──────────────────────────────────── */
