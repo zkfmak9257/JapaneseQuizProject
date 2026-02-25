@@ -18,3 +18,8 @@ export async function createFavoriteReviewSet(category) {
   });
   return unwrap(response);
 }
+
+export async function createSingleFavoriteAttempt(questionId) {
+  const response = await http.post(`/api/favorites/${questionId}/single-attempt`);
+  return unwrap(response);
+}

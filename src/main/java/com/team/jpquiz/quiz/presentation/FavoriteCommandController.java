@@ -40,6 +40,17 @@ public class FavoriteCommandController {
     return ResponseEntity.noContent().build();
   }
 
+  // 즐겨찾기 단일 문제 재도전 attempt를 생성합니다.
+  @PostMapping("/{questionId}/single-attempt")
+  public ApiResponse<QuizAttemptResponse> createSingleAttempt(
+      @AuthenticationPrincipal UserPrincipal userPrincipal,
+      @PathVariable Long questionId
+  ) {
+    QuizAttemptResponse response = favoriteReviewCommandService.createSingleAttempt(
+        userPrincipal.getUserId(), questionId);
+    return ApiResponse.ok(response);
+  }
+
   // 즐겨찾기 문제들로 복습 세트를 생성합니다.
   @PostMapping("/review-set")
   public ApiResponse<QuizAttemptResponse> createReviewSet(

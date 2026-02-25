@@ -302,6 +302,14 @@
           AND qaa.is_correct = 1
     </select>
 
+    <!-- 즐겨찾기 단일 문제 존재 여부 확인 -->
+    <select id="countFavoriteByMemberAndQuestion" resultType="int">
+        SELECT COUNT(*)
+        FROM favorites
+        WHERE user_id = #{memberId}
+          AND question_id = #{questionId}
+    </select>
+
     <!-- 즐겨찾기 문제 ID 조회 (카테고리 필터 옵션) -->
     <select id="findFavoriteQuestionIds" resultType="long">
         SELECT f.question_id

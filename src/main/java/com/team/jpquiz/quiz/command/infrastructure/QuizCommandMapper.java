@@ -100,4 +100,8 @@ public interface QuizCommandMapper {
                         @Param("memberId") Long memberId,
                         @Param("category") String category,
                         @Param("limit") int limit);
+
+        int countFavoriteByMemberAndQuestion(
+                        @Param("memberId") Long memberId,
+                        @Param("questionId") Long questionId);
 }

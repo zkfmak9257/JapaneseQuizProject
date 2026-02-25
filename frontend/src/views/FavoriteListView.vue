@@ -99,8 +99,13 @@
 
             <!-- 카드 하단 (액션 버튼) -->
             <div class="card-actions">
-              <button class="action-btn primary" @click="solveAgain(item.questionId)" disabled>
-                <span class="icon">🔄</span> 다시 풀기 (준비중)
+              <button
+                class="action-btn primary"
+                @click="solveAgain(item.questionId)"
+                :disabled="solveLoadingId !== null"
+              >
+                <span class="icon">🔄</span>
+                {{ solveLoadingId === item.questionId ? '세션 생성 중...' : '다시 풀기' }}
               </button>
               <button class="action-btn danger" @click="removeStamp(item.questionId)">
                 <span class="icon">🧽</span> 도장 지우기
@@ -134,7 +139,7 @@
 <script setup>
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
-import { getFavorites, toggleFavorite, createFavoriteReviewSet } from "../api/favoriteApi";
+import { getFavorites, toggleFavorite, createFavoriteReviewSet, createSingleFavoriteAttempt } from "../api/favoriteApi";
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-vue-next";
 import { useModal } from "../composables/useModal";
 
@@ -156,6 +161,7 @@ const allTotalElements = ref(0); // 전체 즐겨찾기 개수 (필터 무관)
 
 const deletingId = ref(null);
 const reviewLoading = ref(false);
+const solveLoadingId = ref(null);
 
 // 도장용: 필터 없이 전체 카테고리 목록 추출
 async function loadAllCategories() {
@@ -218,8 +224,21 @@ async function removeStamp(questionId) {
   }
 }
 
-function solveAgain(questionId) {
-  showAlert("해당 문제 다시 풀기 모드로 이동합니다. (API 및 라우팅 연결 필요)", "안내");
+async function solveAgain(questionId) {
+  if (solveLoadingId.value !== null) return;
+  try {
+    solveLoadingId.value = questionId;
+    const data = await createSingleFavoriteAttempt(questionId);
+    router.push(`/quiz/attempts/${data.attemptId}/questions/1`);
+  } catch (error) {
+    const status = error?.response?.status;
+    const msg = status === 404 ? "문제를 찾을 수 없습니다." :
+                status === 403 ? "즐겨찾기에 없는 문제입니다." :
+                "다시 풀기 세션 생성에 실패했습니다.";
+    await showAlert(msg, "오류");
+  } finally {
+    solveLoadingId.value = null;
+  }
 }
 
 async function startReviewSession() {
