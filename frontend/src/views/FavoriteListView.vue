@@ -136,6 +136,9 @@ import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { getFavorites, toggleFavorite, createFavoriteReviewSet } from "../api/favoriteApi";
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-vue-next";
+import { useModal } from "../composables/useModal";
+
+const { showAlert, showConfirm } = useModal();
 
 const router = useRouter();
 const items = ref([]);
@@ -194,7 +197,8 @@ async function changePage(nextPage) {
 
 // 즐겨찾기 해제 (도장 지우기)
 async function removeStamp(questionId) {
-  if (!confirm("이 표현을 도장 목록에서 지우시겠습니까?")) return;
+  const ok = await showConfirm("이 표현을 도장 목록에서 지우시겠습니까?", "도장 지우기");
+  if (!ok) return;
 
   try {
     deletingId.value = questionId;
@@ -209,13 +213,13 @@ async function removeStamp(questionId) {
     }, 300);
 
   } catch (error) {
-    alert("도장을 지우는 데 실패했습니다.");
+    await showAlert("도장을 지우는 데 실패했습니다.", "오류");
     deletingId.value = null;
   }
 }
 
 function solveAgain(questionId) {
-  alert("해당 문제 다시 풀기 모드로 이동합니다. (API 및 라우팅 연결 필요)");
+  showAlert("해당 문제 다시 풀기 모드로 이동합니다. (API 및 라우팅 연결 필요)", "안내");
 }
 
 async function startReviewSession() {
@@ -225,7 +229,7 @@ async function startReviewSession() {
     const data = await createFavoriteReviewSet(categoryFilter.value);
     router.push(`/quiz/attempts/${data.attemptId}/questions/1`);
   } catch (error) {
-    alert("복습 세트를 만들지 못했습니다. 즐겨찾기된 문제가 있는지 확인해주세요.");
+    await showAlert("복습 세트를 만들지 못했습니다. 즐겨찾기된 문제가 있는지 확인해주세요.", "오류");
   } finally {
     reviewLoading.value = false;
   }
