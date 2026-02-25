@@ -94,35 +94,18 @@
         <section class="badge-section">
           <h3 class="section-title">🏅 여행 훈장</h3>
           <div class="badge-grid">
-            <div class="badge-item" :class="{ unlocked: stats.totalAttempts >= 1 }">
-              <div class="badge-icon">🛫</div>
-              <p class="badge-name">첫 출발</p>
-              <p class="badge-desc">첫 퀴즈 도전</p>
-            </div>
-            <div class="badge-item" :class="{ unlocked: stats.completedAttempts >= 5 }">
-              <div class="badge-icon">🗺️</div>
-              <p class="badge-name">탐험가</p>
-              <p class="badge-desc">5회 완료</p>
-            </div>
-            <div class="badge-item" :class="{ unlocked: stats.accuracyRate >= 80 }">
-              <div class="badge-icon">⭐</div>
-              <p class="badge-name">언어 마스터</p>
-              <p class="badge-desc">정답률 80%↑</p>
-            </div>
-            <div class="badge-item" :class="{ unlocked: stats.recent7dAnswers >= 30 }">
-              <div class="badge-icon">🔥</div>
-              <p class="badge-name">열혈 여행자</p>
-              <p class="badge-desc">7일 30답변↑</p>
-            </div>
-            <div class="badge-item" :class="{ unlocked: stats.totalAttempts >= 20 }">
-              <div class="badge-icon">🏆</div>
-              <p class="badge-name">베테랑</p>
-              <p class="badge-desc">20회 도전</p>
-            </div>
-            <div class="badge-item" :class="{ unlocked: stats.completionRate >= 90 }">
-              <div class="badge-icon">💎</div>
-              <p class="badge-name">완벽주의자</p>
-              <p class="badge-desc">완료율 90%↑</p>
+            <div
+              v-for="badge in badges"
+              :key="badge.name"
+              class="badge-item"
+              :class="{ unlocked: badge.unlocked }"
+            >
+              <div class="badge-icon">{{ badge.icon }}</div>
+              <p class="badge-name">{{ badge.name }}</p>
+              <p class="badge-progress-text">{{ badge.current }}{{ badge.unit }} / {{ badge.max }}{{ badge.unit }}</p>
+              <div class="badge-progress-bar">
+                <div class="badge-progress-fill" :style="{ width: badge.pct + '%' }"></div>
+              </div>
             </div>
           </div>
         </section>
@@ -196,6 +179,48 @@ const incompletedAttempts = computed(() =>
 const isEmpty = computed(
   () => stats.totalAttempts === 0 && stats.totalAnswers === 0
 );
+
+const badges = computed(() => {
+  const pct = (cur, max) => Math.min(Math.round((cur / max) * 100), 100);
+  return [
+    {
+      icon: "🛫", name: "첫 출발",
+      current: Math.min(stats.totalAttempts, 1), max: 1, unit: "회",
+      unlocked: stats.totalAttempts >= 1,
+      pct: pct(stats.totalAttempts, 1),
+    },
+    {
+      icon: "🗺️", name: "탐험가",
+      current: Math.min(stats.completedAttempts, 5), max: 5, unit: "회",
+      unlocked: stats.completedAttempts >= 5,
+      pct: pct(stats.completedAttempts, 5),
+    },
+    {
+      icon: "⭐", name: "언어 마스터",
+      current: Math.min(stats.accuracyRate, 80), max: 80, unit: "%",
+      unlocked: stats.accuracyRate >= 80,
+      pct: pct(stats.accuracyRate, 80),
+    },
+    {
+      icon: "🔥", name: "열혈 여행자",
+      current: Math.min(stats.recent7dAnswers, 30), max: 30, unit: "개",
+      unlocked: stats.recent7dAnswers >= 30,
+      pct: pct(stats.recent7dAnswers, 30),
+    },
+    {
+      icon: "🏆", name: "베테랑",
+      current: Math.min(stats.totalAttempts, 20), max: 20, unit: "회",
+      unlocked: stats.totalAttempts >= 20,
+      pct: pct(stats.totalAttempts, 20),
+    },
+    {
+      icon: "💎", name: "완벽주의자",
+      current: Math.min(stats.completionRate, 90), max: 90, unit: "%",
+      unlocked: stats.completionRate >= 90,
+      pct: pct(stats.completionRate, 90),
+    },
+  ];
+});
 
 function buildCharts() {
   const PALETTE = {
@@ -457,19 +482,19 @@ onUnmounted(() => {
 .section-title { font-size: 15px; font-weight: 800; color: #334155; margin: 0 0 18px; }
 .badge-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
 }
 @media (min-width: 540px) {
-  .badge-grid { grid-template-columns: repeat(6, 1fr); }
+  .badge-grid { grid-template-columns: repeat(3, 1fr); }
 }
 .badge-item {
   display: flex; flex-direction: column; align-items: center; gap: 6px;
-  padding: 14px 8px;
+  padding: 16px 12px;
   border-radius: 14px;
   border: 1.5px dashed #e2e8f0;
   background: #f8fafc;
-  opacity: 0.4;
+  opacity: 0.45;
   filter: grayscale(1);
   transition: all 0.3s;
 }
@@ -480,9 +505,28 @@ onUnmounted(() => {
   background: linear-gradient(135deg, #fefce8 0%, #fff 100%);
   box-shadow: 0 2px 8px rgba(234,179,8,0.15);
 }
-.badge-icon { font-size: 26px; }
-.badge-name { font-size: 11px; font-weight: 800; color: #1e293b; margin: 0; text-align: center; }
-.badge-desc { font-size: 10px; color: #94a3b8; margin: 0; text-align: center; }
+.badge-icon { font-size: 28px; }
+.badge-name { font-size: 12px; font-weight: 800; color: #1e293b; margin: 0; text-align: center; }
+.badge-progress-text {
+  font-size: 11px; font-weight: 700;
+  color: #64748b; margin: 0; text-align: center;
+}
+.badge-item.unlocked .badge-progress-text { color: #92740a; }
+.badge-progress-bar {
+  width: 100%;
+  height: 5px;
+  background: #e2e8f0;
+  border-radius: 99px;
+  overflow: hidden;
+  margin-top: 2px;
+}
+.badge-progress-fill {
+  height: 100%;
+  background: #cbd5e1;
+  border-radius: 99px;
+  transition: width 0.6s ease;
+}
+.badge-item.unlocked .badge-progress-fill { background: #eab308; }
 
 /* ── 4. 빠른 이동 ── */
 .quick-nav {
