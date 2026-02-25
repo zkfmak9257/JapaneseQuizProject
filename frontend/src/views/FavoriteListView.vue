@@ -13,9 +13,17 @@
       <!-- 2️⃣ 상단 요약: 카테고리별 도장 컬렉션 -->
       <section class="stamps-overview" v-if="!loading && !errorMessage">
         <div class="overview-header">
-          <h2 class="overview-title">
-            🛂 모은 도장 <strong>{{ allTotalElements }}</strong>개
-          </h2>
+          <div class="stamp-counts">
+            <div class="stamp-count-item">
+              <span class="stamp-count-label">총 도장</span>
+              <span class="stamp-count-value">{{ allTotalElements }}<span class="stamp-count-unit">개</span></span>
+            </div>
+            <div class="stamp-count-divider"></div>
+            <div class="stamp-count-item">
+              <span class="stamp-count-label">현재 도장</span>
+              <span class="stamp-count-value accent">{{ totalElements }}<span class="stamp-count-unit">개</span></span>
+            </div>
+          </div>
           <button v-if="categoryFilter" class="clear-filter-btn" @click="setCategory(null)">
             전체 보기
           </button>
@@ -346,16 +354,41 @@ onMounted(() => {
   width: 100%;
   margin-bottom: 4px;
 }
-.overview-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: #334155;
-  margin: 0;
+.stamp-counts {
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
-.overview-title strong {
+.stamp-count-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+.stamp-count-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #94a3b8;
+  letter-spacing: 0.5px;
+}
+.stamp-count-value {
   font-size: 22px;
+  font-weight: 900;
   color: #0f172a;
-  margin: 0 4px;
+  line-height: 1;
+}
+.stamp-count-value.accent { color: #eab308; }
+.stamp-count-unit {
+  font-size: 13px;
+  font-weight: 600;
+  color: #64748b;
+  margin-left: 2px;
+}
+.stamp-count-divider {
+  width: 1px;
+  height: 32px;
+  background: #e2e8f0;
+  border-radius: 1px;
 }
 .clear-filter-btn {
   padding: 5px 12px;
