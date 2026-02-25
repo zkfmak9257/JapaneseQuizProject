@@ -7,3 +7,4 @@
 .env
 application-local.yml
 application-dev.yml
+frontend/dist/
