@@ -8,3 +8,4 @@
 application-local.yml
 application-dev.yml
 frontend/dist/
+bin/
