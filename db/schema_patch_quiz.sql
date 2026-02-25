@@ -61,6 +61,8 @@ CREATE TABLE IF NOT EXISTS quiz_sentence_tokens (
   token_id BIGINT NOT NULL AUTO_INCREMENT,
   question_id BIGINT NOT NULL,
   token_text VARCHAR(255) NOT NULL,
+  meaning_ko VARCHAR(100) NULL COMMENT '한국어 뜻 (예: 지갑, ~을/를)',
+  grammar_role VARCHAR(50) NULL COMMENT '문법 역할 (예: 명사, 목적격 조사, 동사·과거)',
   correct_order INT NOT NULL,
   PRIMARY KEY (token_id),
   KEY idx_sentence_tokens_question_id (question_id),
@@ -68,6 +70,26 @@ CREATE TABLE IF NOT EXISTS quiz_sentence_tokens (
   CONSTRAINT fk_sentence_tokens_question
     FOREIGN KEY (question_id) REFERENCES quiz_questions (question_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 1-2-a) SENTENCE 토큰 해설 컬럼 추가
+ALTER TABLE quiz_sentence_tokens
+  ADD COLUMN IF NOT EXISTS meaning_ko VARCHAR(100) NULL COMMENT '한국어 뜻 (예: 지갑, ~을/를)' AFTER token_text;
+
+ALTER TABLE quiz_sentence_tokens
+  ADD COLUMN IF NOT EXISTS grammar_role VARCHAR(50) NULL COMMENT '문법 역할 (예: 명사, 목적격 조사, 동사·과거)' AFTER meaning_ko;
+
+-- 1-2-b) 기존 토큰 데이터 기본값 채우기
+-- meaning_ko 기본값: token_text에서 후리가나 구분자(|) 앞부분
+UPDATE quiz_sentence_tokens
+SET
+  meaning_ko = CASE
+    WHEN meaning_ko IS NULL OR TRIM(meaning_ko) = '' THEN SUBSTRING_INDEX(token_text, '|', 1)
+    ELSE meaning_ko
+  END,
+  grammar_role = CASE
+    WHEN grammar_role IS NULL OR TRIM(grammar_role) = '' THEN '미분류'
+    ELSE grammar_role
+  END;
 
 -- 2) quiz_attempts: guest attempt support + completion column
 ALTER TABLE quiz_attempts

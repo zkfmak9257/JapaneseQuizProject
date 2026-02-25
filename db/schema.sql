@@ -98,6 +98,8 @@ CREATE TABLE IF NOT EXISTS quiz_sentence_tokens (
   token_id BIGINT NOT NULL AUTO_INCREMENT,
   question_id BIGINT NOT NULL,
   token_text VARCHAR(255) NOT NULL,
+  meaning_ko VARCHAR(100) NULL COMMENT '한국어 뜻 (예: 지갑, ~을/를)',
+  grammar_role VARCHAR(50) NULL COMMENT '문법 역할 (예: 명사, 목적격 조사, 동사·과거)',
   correct_order INT NOT NULL,
   PRIMARY KEY (token_id),
   KEY idx_sentence_tokens_question_id (question_id),

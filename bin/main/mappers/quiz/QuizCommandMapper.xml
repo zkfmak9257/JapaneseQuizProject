@@ -302,18 +302,4 @@
           AND qaa.is_correct = 1
     </select>
 
-    <!-- 즐겨찾기 문제 ID 조회 (카테고리 필터 옵션) -->
-    <select id="findFavoriteQuestionIds" resultType="long">
-        SELECT f.question_id
-        FROM favorites f
-        JOIN quiz_questions qq ON qq.question_id = f.question_id AND qq.is_active = 1
-        LEFT JOIN quiz_scenes qs ON qs.scene_id = qq.scene_id
-        WHERE f.user_id = #{memberId}
-        <if test="category != null and category != ''">
-            AND qs.name LIKE CONCAT('%', #{category}, '%')
-        </if>
-        ORDER BY f.created_at DESC
-        LIMIT #{limit}
-    </select>
-
 </mapper>
