@@ -1,19 +1,18 @@
 <template>
   <div class="mypage-container">
-    <!-- 4️⃣ 상단 영역: 나의 여행 기록 -->
+    <!-- 상단 헤더 -->
     <header class="mypage-header">
       <div class="header-icon">🧭</div>
-      <h1 class="header-title">나의 여행 기록</h1>
-      <p class="header-subtitle">“일본어를 여행처럼 배우다”</p>
+      <h1 class="header-title">나의 여행자 정보</h1>
+      <p class="header-subtitle">여행을 기록하고 이어가는 나의 공간</p>
       <div class="gold-divider"></div>
     </header>
 
     <main class="mypage-content">
-      
-      <!-- 1️⃣ 🎫 여행자 프로필 카드 (Passport 컨셉) -->
+
+      <!-- 1. 여행자 프로필 카드 -->
       <section class="passport-section">
         <div class="passport-card">
-          <!-- 배경 일본 도장 워터마크 -->
           <div class="passport-watermark">入国許可<br>旅Quiz</div>
 
           <div class="passport-header">
@@ -25,10 +24,10 @@
             <div class="info-group">
               <span class="info-label">여권 이름 (닉네임)</span>
               <div class="info-input-row" v-if="!profileLoading && !profileErrorMessage">
-                <input 
-                  type="text" 
-                  v-model="nickname" 
-                  class="passport-input" 
+                <input
+                  type="text"
+                  v-model="nickname"
+                  class="passport-input"
                   placeholder="예: 타비타로"
                   @keyup.enter="saveProfile"
                 />
@@ -49,38 +48,35 @@
               <span class="info-value date-value">2026.02.22</span>
             </div>
           </div>
-          
+
           <div v-if="profileErrorMessage" class="msg error-msg">⚠ {{ profileErrorMessage }}</div>
           <div v-if="profileSuccessMessage" class="msg success-msg">✓ {{ profileSuccessMessage }}</div>
         </div>
       </section>
 
-      <!-- 2️⃣ 🗺️ 나의 일본 여행 기록 (통계 4분할 그리드) -->
+      <!-- 2. 나의 여행 기록 (통계 그리드) -->
       <section class="record-section">
         <h2 class="section-title">🗺️ 나의 일본 여행 기록</h2>
-        
+
         <div v-if="statsLoading" class="loading-state">기록을 조회하고 있습니다...</div>
-        <div v-else-if="statsErrorMessage" class="msg error-msg">⚠ {{ statsErrorMessage }}</div>
-        
+        <div v-else-if="statsErrorMessage" class="msg-plain error-text">⚠ {{ statsErrorMessage }}</div>
+
         <div v-else class="stats-grid">
           <div class="stat-card">
             <div class="stat-icon">✈️</div>
             <div class="stat-data">{{ stats.totalAttempts }}<span class="stat-unit">회</span></div>
             <div class="stat-label">방문한 여행 횟수</div>
           </div>
-          
           <div class="stat-card">
             <div class="stat-icon">🏁</div>
             <div class="stat-data">{{ stats.completedAttempts }}<span class="stat-unit">회</span></div>
             <div class="stat-label">완주한 여행</div>
           </div>
-          
           <div class="stat-card">
             <div class="stat-icon">🎯</div>
             <div class="stat-data">{{ stats.correctAnswers }}<span class="stat-unit">개</span></div>
             <div class="stat-label">성공한 미션</div>
           </div>
-          
           <div class="stat-card">
             <div class="stat-icon">📊</div>
             <div class="stat-data">{{ stats.accuracyRate }}<span class="stat-unit">%</span></div>
@@ -89,11 +85,10 @@
         </div>
       </section>
 
-      <!-- ✨ 미친 디테일: Scene별 여행 지도 진행도 (UI 퍼블리싱) -->
+      <!-- 3. 여행 노선 달성도 -->
       <section class="map-progress-section">
         <h2 class="section-title">🗾 여행 노선 달성도</h2>
         <div class="progress-list">
-          <!-- 공항 -->
           <div class="progress-item completed">
             <div class="p-header">
               <span class="p-icon">✈️</span>
@@ -103,7 +98,6 @@
             <div class="p-bar-bg"><div class="p-bar-fill" style="width: 100%;"></div></div>
             <div class="p-text">100% 클리어</div>
           </div>
-          <!-- 교통 -->
           <div class="progress-item in-progress">
             <div class="p-header">
               <span class="p-icon">🚉</span>
@@ -113,7 +107,6 @@
             <div class="p-bar-bg"><div class="p-bar-fill" style="width: 65%;"></div></div>
             <div class="p-text">65% 진행 중</div>
           </div>
-          <!-- 숙박 -->
           <div class="progress-item not-started">
             <div class="p-header">
               <span class="p-icon">🏨</span>
@@ -126,38 +119,32 @@
         </div>
       </section>
 
-      <!-- 3️⃣ 🧳 오답노트 / 즐겨찾기 / 개인 통계 (여행 가방 메뉴) -->
+      <!-- 4. 나의 여행 가방 -->
       <section class="baggage-section">
         <h2 class="section-title">🧳 나의 여행 가방</h2>
         <div class="menu-list">
+          <RouterLink to="/me/history" class="menu-card">
+            <div class="menu-left">
+              <div class="menu-icon-wrap">✈️</div>
+              <span class="menu-text">여행 기록</span>
+            </div>
+            <span class="menu-arrow">→</span>
+          </RouterLink>
+
           <RouterLink to="/quiz/wrong-answers" class="menu-card">
             <div class="menu-left">
-              <div class="menu-icon-wrap">📓</div>
+              <div class="menu-icon-wrap">📚</div>
               <span class="menu-text">오답노트</span>
             </div>
-            <div class="menu-right">
-              <span class="menu-arrow">→</span>
-            </div>
+            <span class="menu-arrow">→</span>
           </RouterLink>
-          
+
           <RouterLink to="/quiz/favorites" class="menu-card">
             <div class="menu-left">
-              <div class="menu-icon-wrap">⭐</div>
-              <span class="menu-text">즐겨찾기</span>
+              <div class="menu-icon-wrap">🔖</div>
+              <span class="menu-text">북마크</span>
             </div>
-            <div class="menu-right">
-              <span class="menu-arrow">→</span>
-            </div>
-          </RouterLink>
-          
-          <RouterLink to="/me/stats" class="menu-card">
-            <div class="menu-left">
-              <div class="menu-icon-wrap">📊</div>
-              <span class="menu-text">개인 상세 통계</span>
-            </div>
-            <div class="menu-right">
-              <span class="menu-arrow">→</span>
-            </div>
+            <span class="menu-arrow">→</span>
           </RouterLink>
         </div>
       </section>
@@ -172,10 +159,7 @@ import { RouterLink } from "vue-router";
 import { getMyProfile, updateMyProfile } from "../api/memberApi";
 import { getMyStats } from "../api/statsApi";
 
-const profile = reactive({
-  email: "",
-  nickname: ""
-});
+const profile = reactive({ email: "", nickname: "" });
 const stats = reactive({
   totalAttempts: 0,
   completedAttempts: 0,
@@ -189,7 +173,6 @@ const profileLoading = ref(false);
 const profileErrorMessage = ref("");
 const profileSuccessMessage = ref("");
 const savingProfile = ref(false);
-
 const statsLoading = ref(false);
 const statsErrorMessage = ref("");
 
@@ -266,99 +249,83 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-/* ── 배경 및 전체 레이아웃 (오프화이트 & 골드네이비 톤) ── */
+/* ── 기본 레이아웃 ── */
 .mypage-container {
   min-height: 100vh;
-  /* 아주 연한 베이지에 미세한 도트 패턴을 넣어 종이 질감 연출 */
-  background-color: #fdfbf7;
-  background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
-  background-size: 20px 20px;
+  background-color: #f8fafc;
   padding: 40px 16px 80px;
-  font-family: Pretendard, "Noto Sans KR", serif, sans-serif;
+  font-family: Pretendard, "Noto Sans KR", sans-serif;
   color: #1e293b;
 }
 
-/* 4️⃣ 상단 영역: 나의 여행 기록 */
+/* ── 헤더 ── */
 .mypage-header {
   text-align: center;
-  margin-bottom: 40px;
+  margin-bottom: 36px;
 }
-.header-icon {
-  font-size: 36px;
-  margin-bottom: 8px;
-  animation: float 3s ease-in-out infinite;
-}
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-4px); }
-}
+.header-icon { font-size: 36px; margin-bottom: 8px; }
 .header-title {
   font-size: 26px;
-  font-weight: 800;
+  font-weight: 900;
   color: #0f172a;
-  letter-spacing: 1px;
+  letter-spacing: 2px;
   margin: 0 0 8px;
-  font-family: "Noto Serif", serif;
 }
 .header-subtitle {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   color: #64748b;
   margin: 0 0 16px;
 }
 .gold-divider {
-  width: 60px;
+  width: 80px;
   height: 3px;
-  background: #eab308; /* yellow-500 */
+  background: #eab308;
   margin: 0 auto;
   border-radius: 2px;
 }
 
+/* ── 콘텐츠 래퍼 ── */
 .mypage-content {
-  max-width: 600px;
+  max-width: 720px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 48px;
-}
-.section-title {
-  font-size: 19px;
-  font-weight: 800;
-  color: #0f172a;
-  margin-bottom: 20px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  gap: 28px;
 }
 
-/* 1️⃣ 여행자 프로필 카드 (Passport 컨셉) */
+.section-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: #334155;
+  margin: 0 0 18px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ── 1. 여행자 프로필 카드 ── */
 .passport-card {
   position: relative;
-  background: #0f172a; /* navy-900 */
-  border: 2px solid #eab308; /* yellow-500 */
-  border-radius: 16px;
+  background: #0f172a;
+  border: 2px solid #eab308;
+  border-radius: 20px;
   padding: 32px;
-  box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.2), 0 8px 10px -6px rgba(15, 23, 42, 0.1);
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.2);
   overflow: hidden;
   color: #f8fafc;
-  /* 부드러운 블러 효과 */
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
 }
 .passport-watermark {
   position: absolute;
-  top: 15%;
-  right: -5%;
+  top: 15%; right: -5%;
   font-size: 40px;
   font-weight: 900;
-  color: rgba(234, 179, 8, 0.08); /* 금색 도장 워터마크 */
+  color: rgba(234, 179, 8, 0.08);
   transform: rotate(-15deg);
   pointer-events: none;
-  font-family: "Noto Serif JP", serif;
   border: 3px double rgba(234, 179, 8, 0.08);
   border-radius: 50%;
-  width: 140px;
-  height: 140px;
+  width: 140px; height: 140px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -373,9 +340,7 @@ onMounted(async () => {
   border-bottom: 1px solid rgba(234, 179, 8, 0.3);
   padding-bottom: 16px;
 }
-.passport-flag {
-  font-size: 26px;
-}
+.passport-flag { font-size: 26px; }
 .passport-title {
   font-size: 18px;
   font-weight: 800;
@@ -383,7 +348,6 @@ onMounted(async () => {
   letter-spacing: 2px;
   font-family: ui-monospace, sans-serif;
 }
-
 .passport-body {
   display: flex;
   flex-direction: column;
@@ -391,31 +355,11 @@ onMounted(async () => {
   position: relative;
   z-index: 2;
 }
-.info-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.info-label {
-  font-size: 12px;
-  font-weight: 700;
-  color: #94a3b8;
-  letter-spacing: 1px;
-}
-.info-value {
-  font-size: 17px;
-  font-weight: 700;
-  color: #f1f5f9;
-}
-.date-value {
-  color: #cbd5e1;
-  font-family: ui-monospace, monospace;
-}
-.info-input-row {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-}
+.info-group { display: flex; flex-direction: column; gap: 8px; }
+.info-label { font-size: 12px; font-weight: 700; color: #94a3b8; letter-spacing: 1px; }
+.info-value { font-size: 17px; font-weight: 700; color: #f1f5f9; }
+.date-value { color: #cbd5e1; font-family: ui-monospace, monospace; }
+.info-input-row { display: flex; gap: 12px; align-items: center; }
 .passport-input {
   flex: 1;
   background: transparent;
@@ -429,18 +373,13 @@ onMounted(async () => {
   transition: border-color 0.2s;
   font-family: inherit;
 }
-.passport-input:focus {
-  border-bottom-color: #eab308;
-}
-.passport-input::placeholder {
-  color: #475569;
-  font-weight: 500;
-}
+.passport-input:focus { border-bottom-color: #eab308; }
+.passport-input::placeholder { color: #475569; font-weight: 500; }
 .save-btn {
   background: #eab308;
   color: #0f172a;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   padding: 8px 16px;
   font-size: 14px;
   font-weight: 800;
@@ -449,185 +388,134 @@ onMounted(async () => {
 }
 .save-btn:hover:not(:disabled) { background: #fde047; transform: translateY(-1px); }
 .save-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
 .msg {
   font-size: 13px;
   font-weight: 600;
   margin-top: 20px;
   padding: 12px;
-  border-radius: 6px;
+  border-radius: 8px;
   text-align: center;
 }
 .error-msg { background: rgba(248, 113, 113, 0.1); color: #fca5a5; }
 .success-msg { background: rgba(74, 222, 128, 0.1); color: #86efac; }
 
-
-/* 2️⃣ 🗺️ 나의 일본 여행 기록 (통계 그리드) */
+/* ── 2. 통계 그리드 ── */
+.record-section,
+.map-progress-section,
+.baggage-section {
+  background: white;
+  border-radius: 20px;
+  padding: 24px;
+  border: 1px solid #f1f5f9;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
+  gap: 14px;
 }
-@media (min-width: 600px) {
+@media (min-width: 540px) {
   .stats-grid { grid-template-columns: repeat(4, 1fr); }
 }
 .stat-card {
-  background: #ffffff;
-  border-radius: 16px;
-  padding: 24px 16px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  background: #f8fafc;
+  border-radius: 14px;
+  padding: 20px 12px;
   text-align: center;
-  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s;
   border: 1px solid #f1f5f9;
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 .stat-card:hover {
-  transform: translateY(-4px) scale(1.02);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  border-color: #e2e8f0;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.08);
 }
-.stat-icon {
-  font-size: 32px;
-  margin-bottom: 12px;
-}
-.stat-data {
-  font-size: 24px;
-  font-weight: 900;
-  color: #0f172a;
-  margin-bottom: 4px;
-}
-.stat-unit {
-  font-size: 14px;
-  font-weight: 600;
-  color: #64748b;
-  margin-left: 2px;
-}
-.stat-label {
-  font-size: 13px;
-  font-weight: 700;
-  color: #94a3b8;
-}
+.stat-icon { font-size: 28px; margin-bottom: 10px; }
+.stat-data { font-size: 22px; font-weight: 900; color: #0f172a; margin-bottom: 4px; }
+.stat-unit { font-size: 13px; font-weight: 600; color: #64748b; margin-left: 2px; }
+.stat-label { font-size: 11px; font-weight: 600; color: #94a3b8; }
+.msg-plain { font-size: 14px; font-weight: 600; }
+.error-text { color: #ef4444; }
 
-
-/* ✨ 미친 디테일: 여행 노선 달성도 progress UI */
-.progress-list {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
+/* ── 3. 여행 노선 달성도 ── */
+.progress-list { display: flex; flex-direction: column; gap: 14px; }
 .progress-item {
-  background: #ffffff;
+  background: #f8fafc;
   border-radius: 12px;
-  padding: 20px;
+  padding: 18px;
   border: 1px solid #f1f5f9;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
 }
-.p-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 12px;
-}
-.p-icon { font-size: 20px; }
-.p-name { font-size: 15px; font-weight: 700; color: #1e293b; flex: 1; }
-.p-status { font-size: 16px; }
-
+.p-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.p-icon { font-size: 18px; }
+.p-name { font-size: 14px; font-weight: 700; color: #1e293b; flex: 1; }
+.p-status { font-size: 15px; }
 .p-bar-bg {
-  height: 8px;
-  background: #f1f5f9;
+  height: 7px;
+  background: #e2e8f0;
   border-radius: 4px;
   overflow: hidden;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
-.p-bar-fill {
-  height: 100%;
-  border-radius: 4px;
-  transition: width 1s ease-out;
-}
-/* 상태별 프로그레스바 컬러 */
-.completed .p-bar-fill { background: #10b981; } /* 초록 */
-.completed .p-text { color: #10b981; }
-.in-progress .p-bar-fill { background: #3b82f6; } /* 파랑 */
-.in-progress .p-text { color: #3b82f6; }
-.not-started .p-bar-fill { background: #cbd5e1; } /* 회색 */
+.p-bar-fill { height: 100%; border-radius: 4px; transition: width 1s ease-out; }
+.completed .p-bar-fill { background: #22c55e; }
+.completed .p-text { color: #16a34a; }
+.in-progress .p-bar-fill { background: #3b82f6; }
+.in-progress .p-text { color: #2563eb; }
+.not-started .p-bar-fill { background: #cbd5e1; }
 .not-started .p-text { color: #94a3b8; }
+.p-text { font-size: 11px; font-weight: 700; text-align: right; }
 
-.p-text {
-  font-size: 12px;
-  font-weight: 700;
-  text-align: right;
-}
-
-
-/* 3️⃣ 🧳 가방 메뉴 리스트 */
-.menu-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
+/* ── 4. 나의 여행 가방 메뉴 ── */
+.menu-list { display: flex; flex-direction: column; gap: 10px; }
 .menu-card {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #ffffff;
-  border-radius: 16px;
-  padding: 24px;
+  background: #f8fafc;
+  border-radius: 14px;
+  padding: 16px 20px;
   text-decoration: none;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-  border: 1px solid #f1f5f9;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1.5px solid #e2e8f0;
+  transition: all 0.2s;
 }
 .menu-card:hover {
-  transform: translateY(-4px) scale(1.01);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
-  background: #f8fafc; /* 연한 블루그레이 빛 */
-  border-color: #e2e8f0;
+  background: #0f172a;
+  border-color: #0f172a;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(15,23,42,0.2);
 }
-.menu-left {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
+.menu-left { display: flex; align-items: center; gap: 14px; }
 .menu-icon-wrap {
-  width: 48px;
-  height: 48px;
-  background: #f1f5f9;
-  border-radius: 12px;
+  width: 42px; height: 42px;
+  background: white;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 24px;
-  transition: background 0.2s;
+  font-size: 22px;
+  border: 1px solid #e2e8f0;
+  transition: border-color 0.2s;
 }
-.menu-card:hover .menu-icon-wrap {
-  background: #e2e8f0;
-}
+.menu-card:hover .menu-icon-wrap { border-color: #334155; }
 .menu-text {
-  font-size: 17px;
-  font-weight: 800;
+  font-size: 15px;
+  font-weight: 700;
   color: #0f172a;
+  transition: color 0.2s;
 }
-
-/* 화살표 애니메이션 등장 */
+.menu-card:hover .menu-text { color: white; }
 .menu-arrow {
+  font-size: 18px;
   color: #94a3b8;
-  font-size: 24px;
-  font-weight: bold;
-  opacity: 0;
-  transform: translateX(-15px);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: color 0.2s, transform 0.2s;
 }
-.menu-card:hover .menu-arrow {
-  opacity: 1;
-  transform: translateX(0);
-  color: #3b82f6; /* 파란색 화살표 포인트 */
-}
+.menu-card:hover .menu-arrow { color: white; transform: translateX(3px); }
 
-/* 로딩 상태 */
+/* ── 로딩 ── */
 .loading-state {
   text-align: center;
-  padding: 40px;
+  padding: 32px;
   color: #64748b;
   font-weight: 600;
-  font-size: 15px;
+  font-size: 14px;
 }
 </style>

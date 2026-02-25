@@ -129,11 +129,6 @@
               <span class="nav-label">북마크</span>
               <span class="nav-arrow">→</span>
             </button>
-            <button class="nav-card" @click="router.push('/me/stats')">
-              <span class="nav-icon">📊</span>
-              <span class="nav-label">개인 통계</span>
-              <span class="nav-arrow">→</span>
-            </button>
           </div>
         </section>
 
@@ -564,7 +559,7 @@ onUnmounted(() => {
 }
 .nav-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 12px;
 }
 .nav-card {
