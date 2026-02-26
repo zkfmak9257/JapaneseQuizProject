@@ -160,18 +160,6 @@
     <!-- 가이드 힌트 (단어 모드 전용 — 문장 모드는 patternHint가 대체) -->
     <p class="fb-guide" v-if="!isSentenceMode && guideText">💬 {{ guideText }}</p>
 
-    <!-- ④ 보조 액션 -->
-    <div class="fb-secondary">
-      <button
-        class="fb-btn-outline"
-        :class="{ 'fb-btn-outline--saved': isFavorited }"
-        @click="handleFavorite"
-        :disabled="favoriteAnimating"
-      >
-        {{ isFavorited ? '★ 저장됨' : '☆ 표현 저장' }}
-      </button>
-      <button class="fb-btn-ghost" @click="$emit('go-wrong-note')">🧠 오답노트</button>
-    </div>
 
     <!-- ⑤ Primary CTA -->
     <button class="fb-btn-primary" @click="$emit('next')">다음 여행지로 이동 ✈️</button>
