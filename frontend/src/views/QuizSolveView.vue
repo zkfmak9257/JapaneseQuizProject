@@ -246,11 +246,13 @@
     :guide-text="feedbackGuideText"
     :key-point="feedbackKeyPoint"
     :next-label="feedbackNextLabel"
+    :show-retry="totalQuestions === 1"
     @next="goNext"
     @toggle-favorite="toggleFavoriteClick"
     @go-wrong-note="goWrongNote"
     @retry-submit="submit"
     @dismiss-error="dismissFeedbackError"
+    @retry="retryCurrentQuestion"
   />
 
   <section class="card" v-if="!question && loading">
@@ -295,6 +297,7 @@
 import { computed, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { completeAttempt, getAttemptQuestion, submitAnswer } from "../api/quizApi";
+import { createSingleQuestionAttempt } from "../api/wrongAnswerApi";
 import { createReport } from "../api/reportApi";
 import { toggleFavorite } from "../api/favoriteApi";
 import { useQuizStore } from "../stores/quizStore";
@@ -1093,6 +1096,24 @@ async function goNext() {
 
 function goWrongNote() {
   router.push("/quiz/wrong-answers");
+}
+
+async function retryCurrentQuestion() {
+  if (!question.value?.questionId) return;
+  try {
+    errorMessage.value = "";
+    const data = await createSingleQuestionAttempt(question.value.questionId);
+    router.push(`/quiz/attempts/${data.attemptId}/questions/1`);
+  } catch (error) {
+    const status = error?.response?.status;
+    if (status === 401) {
+      errorMessage.value = "로그인이 필요합니다.";
+    } else if (status === 403) {
+      errorMessage.value = "재도전 권한이 없습니다.";
+    } else {
+      errorMessage.value = "재도전 세션 생성 중 문제가 발생했습니다.";
+    }
+  }
 }
 
 function dismissFeedbackError() {

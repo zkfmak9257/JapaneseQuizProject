@@ -161,6 +161,15 @@
     <p class="fb-guide" v-if="!isSentenceMode && guideText">💬 {{ guideText }}</p>
 
 
+    <!-- ④.5 재도전 버튼 (오답 + 개별 문제 모드에서만 표시) -->
+    <button
+      v-if="!isCorrect && showRetry"
+      class="fb-btn-retry"
+      @click="$emit('retry')"
+    >
+      🔄 재도전
+    </button>
+
     <!-- ⑤ Primary CTA -->
     <button class="fb-btn-primary" @click="$emit('next')">다음 여행지로 이동 ✈️</button>
   </section>
@@ -190,7 +199,9 @@ const props = defineProps({
   choices: { type: Array, default: () => [] },
   serverError: { type: String, default: '' },
   guideText: { type: String, default: '' },
-  keyPoint: { type: String, default: '' }
+  keyPoint: { type: String, default: '' },
+  /** 오답노트 개별 재도전 모드에서 재도전 버튼 표시 여부 */
+  showRetry: { type: Boolean, default: false }
 });
 
 
@@ -212,7 +223,7 @@ function handleFavorite() {
   setTimeout(() => { favoriteAnimating.value = false; }, 600);
 }
 
-const emit = defineEmits(['next', 'toggle-favorite', 'go-wrong-note', 'retry-submit', 'dismiss-error']);
+const emit = defineEmits(['next', 'toggle-favorite', 'go-wrong-note', 'retry-submit', 'dismiss-error', 'retry']);
 
 watch(() => props.visible, (val) => {
   if (val) {
@@ -705,6 +716,17 @@ const patternHint = computed(() => {
 }
 .fb-btn-ghost { flex: 1; padding: 0.7rem; background: rgba(3,105,161,0.06); border: none; border-radius: 10px; font-size: 0.9rem; font-weight: 600; color: #0369a1; cursor: pointer; text-align: center; transition: all 0.15s; }
 .fb-btn-ghost:hover { background: rgba(3,105,161,0.1); }
+
+/* ── 재도전 버튼 ─────────────────── */
+.fb-btn-retry {
+  width: 100%; padding: 1rem; font-size: 1.05rem; font-weight: 800;
+  border: 2px solid #dc2626; border-radius: 14px;
+  background: #fff1f2; color: #dc2626;
+  cursor: pointer; transition: all 0.2s cubic-bezier(0.34,1.56,0.64,1);
+  margin-top: 0.5rem;
+}
+.fb-btn-retry:hover { background: #fee2e2; transform: translateY(-2px); box-shadow: 0 4px 14px rgba(220,38,38,0.2); }
+.fb-btn-retry:active { transform: translateY(0) scale(0.99); }
 
 /* ── ⑤ CTA ─────────────────────── */
 .fb-btn-primary {

@@ -190,7 +190,7 @@ const sceneMap = {
 const sceneName = computed(() => {
   const sid = quizStore.selectedSceneId;
   if (sid && sceneMap[sid]) return sceneMap[sid];
-  return "🗺️ 여행";
+  return "여행";
 });
 
 // ── 오답 수 ──
