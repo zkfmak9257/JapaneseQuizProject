@@ -25,7 +25,7 @@
 
         <button class="cta-primary-btn" @click="startReviewSession" :disabled="items.length === 0 || reviewLoading">
           <span class="cta-icon">🔥</span>
-          {{ reviewLoading ? '복습 세트 생성 중...' : '오답 복습 시작 (10문제)' }}
+          {{ reviewLoading ? '복습 세트 생성 중...' : reviewBtnLabel }}
         </button>
       </section>
 
@@ -133,7 +133,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { getWrongAnswers, removeWrongAnswer, createReviewSet, createSingleQuestionAttempt } from "../api/wrongAnswerApi";
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-vue-next";
@@ -227,19 +227,26 @@ async function solveAgain(questionId) {
   }
 }
 
-// 오답 복습 시작 (10문제) - 가장 강력한 CTA
+// 오답 복습 시작 - 가장 강력한 CTA
 const reviewLoading = ref(false);
+
+const reviewBtnLabel = computed(() => {
+  if (categoryFilter.value === 'ALL') return '오답 복습 시작 (10문제)';
+  return `${categoryFilter.value} 오답 전체 복습`;
+});
 
 async function startReviewSession() {
   if (reviewLoading.value) return;
   try {
     reviewLoading.value = true;
-    const data = await createReviewSet();
+    const data = await createReviewSet(categoryFilter.value);
     router.push(`/quiz/attempts/${data.attemptId}/questions/1`);
   } catch (error) {
     const status = error?.response?.status;
     if (status === 401) {
       errorMessage.value = "로그인이 필요합니다.";
+    } else if (status === 400) {
+      errorMessage.value = "해당 카테고리에 복습할 오답이 없습니다.";
     } else {
       errorMessage.value = "복습 세트 생성 중 문제가 발생했습니다. 다시 시도해 주세요.";
     }

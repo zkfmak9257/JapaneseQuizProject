@@ -26,6 +26,11 @@ public interface QuizCommandMapper {
                         @Param("memberId") Long memberId,
                         @Param("limit") int limit);
 
+        List<Long> findRecentWrongQuestionIdsByCategory(
+                        @Param("memberId") Long memberId,
+                        @Param("category") String category,
+                        @Param("limit") int limit);
+
         List<Long> findRandomQuestionIdsExcept(
                         @Param("count") int count,
                         @Param("excludeIds") List<Long> excludeIds);

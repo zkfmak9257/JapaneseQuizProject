@@ -21,9 +21,22 @@ public class WrongAnswerReviewCommandService {
 
     private final QuizCommandMapper quizCommandMapper;
 
-    public QuizAttemptResponse createReviewSet(Long memberId) {
+    public QuizAttemptResponse createReviewSet(Long memberId, String category) {
         validateMember(memberId);
 
+        boolean isFiltered = category != null && !category.isBlank() && !category.equals("ALL");
+
+        if (isFiltered) {
+            // 카테고리 필터: 해당 카테고리 오답만 사용, 10개 미만이어도 랜덤 보충 없음
+            List<Long> selectedQuestionIds =
+                    quizCommandMapper.findRecentWrongQuestionIdsByCategory(memberId, category, REVIEW_SET_SIZE);
+            if (selectedQuestionIds.isEmpty()) {
+                throw new CustomException(ErrorCode.INVALID_REQUEST);
+            }
+            return createAttempt(memberId, selectedQuestionIds);
+        }
+
+        // 전체 카테고리: 기존 로직 (10개 미만이면 랜덤 보충)
         int totalQuestions = quizCommandMapper.countAllQuestions();
         if (totalQuestions < REVIEW_SET_SIZE) {
             throw new CustomException(ErrorCode.INVALID_REQUEST);

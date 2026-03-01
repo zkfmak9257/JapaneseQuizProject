@@ -37,12 +37,13 @@ public class WrongAnswerCommandController {
     return ApiResponse.ok();
   }
 
-  // 오답노트 재학습 세트 생성 (10문제 고정, 부족분 랜덤 보충)
+  // 오답노트 재학습 세트 생성 (카테고리 필터 시 해당 오답만, 전체는 10문제 고정)
   @PostMapping("/review-set")
-  public ApiResponse<QuizAttemptResponse> createReviewSet() {
+  public ApiResponse<QuizAttemptResponse> createReviewSet(
+      @RequestParam(required = false, defaultValue = "ALL") String category) {
     Long currentMemberId = SecurityUtil.getCurrentMemberId();
 
-    QuizAttemptResponse response = wrongAnswerReviewCommandService.createReviewSet(currentMemberId);
+    QuizAttemptResponse response = wrongAnswerReviewCommandService.createReviewSet(currentMemberId, category);
     return ApiResponse.ok(response);
   }
 

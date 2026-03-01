@@ -62,6 +62,20 @@
         LIMIT #{limit}
     </select>
 
+    <!-- 오답노트 최신순 문제 ID 추출 (카테고리 필터 포함) -->
+    <select id="findRecentWrongQuestionIdsByCategory" resultType="long">
+        SELECT wa.question_id
+        FROM wrong_answers wa
+        JOIN quiz_questions qq ON qq.question_id = wa.question_id AND qq.is_active = 1
+        LEFT JOIN quiz_scenes qs ON qs.scene_id = qq.scene_id
+        WHERE wa.user_id = #{memberId}
+        <if test="category != null and category != '' and category != 'ALL'">
+            AND qs.name LIKE CONCAT('%', #{category}, '%')
+        </if>
+        ORDER BY COALESCE(wa.last_wrong_at, wa.created_at) DESC
+        LIMIT #{limit}
+    </select>
+
     <!-- 제외 목록을 뺀 랜덤 문제 ID 추출 -->
     <select id="findRandomQuestionIdsExcept" resultType="long">
         SELECT qq.question_id

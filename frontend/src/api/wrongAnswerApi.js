@@ -14,9 +14,11 @@ export async function removeWrongAnswer(questionId) {
   return unwrap(response);
 }
 
-// 오답 복습 세트 생성 (최근/위험 오답 우선 10문제)
-export async function createReviewSet() {
-  const response = await http.post("/api/quiz/wrong-answers/review-set");
+// 오답 복습 세트 생성 (카테고리 필터 시 해당 오답만, 전체는 10문제 고정)
+export async function createReviewSet(category = 'ALL') {
+  const response = await http.post("/api/quiz/wrong-answers/review-set", null, {
+    params: { category }
+  });
   return unwrap(response);
 }
 

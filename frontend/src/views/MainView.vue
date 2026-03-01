@@ -183,7 +183,24 @@
             </transition>
 
             <div class="scene-grid">
-              
+
+              <!-- 랜덤 모의고사 카드 (전체 탭일 때만, 항상 맨 첫 번째) -->
+              <button
+                v-if="activeGroupIndex === null && !searchQuery"
+                class="scene-card random-card"
+                @click="onStart"
+              >
+                <div class="scene-image random-image-area">
+                  <span class="random-big-icon">🎲</span>
+                  <div class="random-shimmer"></div>
+                </div>
+                <div class="scene-info">
+                  <div class="scene-badge random-badge">🌐 모든 카테고리</div>
+                  <strong class="scene-name">랜덤 모의고사</strong>
+                  <span class="scene-desc">어떤 상황이 나올지 모르는 서바이벌!</span>
+                </div>
+              </button>
+
               <!-- 상황 카드 렌더링 (클릭 시 선택 상태 토글) -->
               <button
                 class="scene-card"
@@ -204,22 +221,6 @@
                   </div>
                   <strong class="scene-name">{{ item.name }}</strong>
                   <span class="scene-desc" v-if="item.desc">{{ item.desc }}</span>
-                </div>
-              </button>
-              
-              <!-- '전체' 탭일 때만 보이는 무작위 챌린지 특별 카드 (맨 하단 배치) -->
-              <button 
-                v-if="activeGroupIndex === null && !searchQuery" 
-                class="scene-card random-card" 
-                @click="onStart"
-              >
-                <div class="random-content">
-                  <span class="random-emoji">🎲</span>
-                  <div class="random-text">
-                    <h3>🎲 무작위 챌린지 (전체 랜덤)</h3>
-                    <p>어떤 상황이 나올지 모르는 서바이벌 모드!</p>
-                  </div>
-                  <span class="random-arrow">→</span>
                 </div>
               </button>
 
@@ -1146,30 +1147,73 @@ function onStartTravel() {
   100% { opacity: 1; transform: translateY(0); }
 }
 
-/* ── 무작위 챌린지 특별 카드 ── */
+/* ── 랜덤 모의고사 카드 ── */
 .random-card {
-  grid-column: 1 / -1; /* 가로 전체 너비 확보 */
-  background: linear-gradient(135deg, var(--ocean), var(--train));
-  border: none;
-  padding: 0;
+  border: 2px dashed rgba(139, 92, 246, 0.45);
+  background: rgba(255, 255, 255, 0.95);
+  position: relative;
+  overflow: hidden;
 }
 .random-card:hover {
-  transform: translateY(-4px) scale(1.01);
-  box-shadow: 0 12px 30px rgba(58, 134, 184, 0.3);
+  border-color: #8b5cf6;
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(139, 92, 246, 0.25);
 }
-.random-content {
+
+/* 이미지 영역 대신 파스텔 그라데이션 배경 */
+.random-image-area {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
   display: flex;
   align-items: center;
-  padding: 24px;
-  gap: 16px;
-  color: white;
-  width: 100%;
+  justify-content: center;
+  overflow: hidden;
 }
-.random-emoji { font-size: 40px; animation: bounce-subtle 2s infinite; }
-.random-text { display: flex; flex-direction: column; flex: 1; text-align: left; }
-.random-text h3 { margin: 0; font-size: 20px; font-weight: 900; font-family: var(--font-display); letter-spacing: -0.5px; }
-.random-text p { margin: 4px 0 0; font-size: 13px; opacity: 0.9; }
-.random-arrow { font-size: 24px; font-weight: bold; background: rgba(255,255,255,0.2); width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
+
+/* 빛나는 shimmer 효과 */
+.random-shimmer {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.35) 50%,
+    transparent 60%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2.4s ease-in-out infinite;
+}
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* 중앙 주사위 아이콘 */
+.random-big-icon {
+  font-size: 52px;
+  position: relative;
+  z-index: 1;
+  filter: drop-shadow(0 4px 8px rgba(139, 92, 246, 0.3));
+  animation: dice-float 3s ease-in-out infinite;
+}
+@keyframes dice-float {
+  0%, 100% { transform: translateY(0) rotate(-5deg); }
+  50%       { transform: translateY(-6px) rotate(5deg); }
+}
+
+/* 배지 스타일 */
+.random-badge {
+  color: #7c3aed;
+  background-color: rgba(139, 92, 246, 0.12);
+  font-size: 11px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 4px;
+  width: fit-content;
+  margin-bottom: 2px;
+}
 
 .scene-card {
   background: rgba(255, 255, 255, 0.9);
