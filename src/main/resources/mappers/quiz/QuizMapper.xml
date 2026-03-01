@@ -61,7 +61,10 @@
         qc.choice_id AS choiceId,
         qc.choice_text AS choiceText,
         qc.meaning_ko AS meaningKo,
-        FIND_IN_SET(CAST(qc.choice_id AS CHAR), qaq.choice_order) AS `order`
+        FIND_IN_SET(
+          CAST(qc.choice_id AS CHAR) COLLATE utf8mb4_unicode_ci,
+          CONVERT(qaq.choice_order USING utf8mb4) COLLATE utf8mb4_unicode_ci
+        ) AS `order`
         FROM quiz_attempt_questions qaq
         JOIN quiz_choices qc ON qc.question_id = qaq.question_id
         WHERE qaq.attempt_id = #{attemptId}
@@ -69,8 +72,14 @@
         ORDER BY
         CASE
         WHEN qaq.choice_order IS NULL OR qaq.choice_order = '' THEN 999
-        WHEN FIND_IN_SET(CAST(qc.choice_id AS CHAR), qaq.choice_order) = 0 THEN 999
-        ELSE FIND_IN_SET(CAST(qc.choice_id AS CHAR), qaq.choice_order)
+        WHEN FIND_IN_SET(
+          CAST(qc.choice_id AS CHAR) COLLATE utf8mb4_unicode_ci,
+          CONVERT(qaq.choice_order USING utf8mb4) COLLATE utf8mb4_unicode_ci
+        ) = 0 THEN 999
+        ELSE FIND_IN_SET(
+          CAST(qc.choice_id AS CHAR) COLLATE utf8mb4_unicode_ci,
+          CONVERT(qaq.choice_order USING utf8mb4) COLLATE utf8mb4_unicode_ci
+        )
         END ASC,
         qc.choice_id ASC
     </select>

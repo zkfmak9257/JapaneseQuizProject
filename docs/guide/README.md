@@ -7,7 +7,7 @@
 - **ORM**: MyBatis, JPA (사용하는 것 명시)
 
 ## Erd Cloud
-![img.png](img.png)
+![img.png](../img.png)
 🔗 [ERDCloud에서 상세 구조 보기](https://www.erdcloud.com/d/TtTRJk6SyApqT24cu)
 
 ## 1. 개발 환경 (IDE)
