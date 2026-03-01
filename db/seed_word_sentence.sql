@@ -4,7 +4,7 @@
 -- 실행:
 --   mysql -h 127.0.0.1 -P 3306 -u jpquiz -p jpquiz < db/seed_word_sentence.sql
 
-USE JPQuiz;
+USE jpquiz;
 
 SET FOREIGN_KEY_CHECKS = 0;
 TRUNCATE TABLE auth_refresh_tokens;

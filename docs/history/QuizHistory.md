@@ -258,6 +258,19 @@
     - Read 조회 SQL에는 정답/해설/정오답 컬럼을 포함하지 않음
 - [CONFIRMED] 2-2. MyBatis Mapper/쿼리 설계 (Issue-3, 퀴즈 시작)
   - Mapper: `QuizCommandMapper`
+
+## 운영 이슈 복구 기록 (2026-03-01, 포트폴리오 요약)
+- 증상:
+  - `POST /api/quiz/attempts/start` 및 `GET /api/quiz/attempts/{attemptId}/questions/{seq}` 호출 시 500 발생.
+- 원인:
+  - `quiz_questions` 테이블 누락으로 초기 조회 실패.
+  - `FIND_IN_SET` 수행 시 `utf8mb4_uca1400_ai_ci`와 `utf8mb4_unicode_ci` 충돌.
+- 조치:
+  - `schema.sql`, `seed_word_sentence.sql` 재적재로 핵심 테이블/데이터 복구(`quiz_questions=160건` 확인).
+  - `QuizMapper.xml`의 `FIND_IN_SET` 비교 인자에 동일 collation을 명시해 충돌 제거.
+- 검증:
+  - 백엔드 기동 로그 정상, DB 커넥션 정상.
+  - 이슈 재현 로그 기준으로 `Illegal mix of collations` 원인 분리 및 대응 완료.
     - `countAllQuestions()`: 문제 pool 전체 수 조회
     - `findRandomQuestionIds(count)`: 시작 시점 랜덤 문제 ID 추출
     - `findChoiceOrderCsv(questionId)`: 문제별 보기 순서 CSV 생성

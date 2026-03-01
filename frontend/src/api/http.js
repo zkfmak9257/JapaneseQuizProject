@@ -1,7 +1,10 @@
 import axios from "axios";
 
+const configuredBaseUrl = import.meta.env.VITE_API_BASE_URL?.trim();
+
 const http = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:8080",
+  // Ingress 단일 진입점 기준 기본값은 /boot 를 사용합니다.
+  baseURL: configuredBaseUrl || "/boot",
   timeout: 10000
 });
 
@@ -64,10 +67,7 @@ http.interceptors.response.use(
     isRefreshing = true;
 
     try {
-      const { data } = await axios.post(
-        `${http.defaults.baseURL}/api/auth/refresh`,
-        { refreshToken }
-      );
+      const { data } = await http.post("/api/auth/refresh", { refreshToken });
 
       const newAccessToken = data?.data?.accessToken;
       const newRefreshToken = data?.data?.refreshToken;

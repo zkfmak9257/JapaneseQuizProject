@@ -15,4 +15,4 @@
 
 ## Notes
 - 백엔드 공통 응답 포맷(`ApiResponse`) 기준으로 `data.data`를 언랩합니다.
-- 기본 API 주소는 `VITE_API_BASE_URL`입니다.
+- 기본 API 주소는 `VITE_API_BASE_URL`이며, Kubernetes Ingress 환경 기본값은 `/boot`입니다.
