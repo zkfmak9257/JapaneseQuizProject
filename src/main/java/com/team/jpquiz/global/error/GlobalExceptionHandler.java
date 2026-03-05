@@ -2,6 +2,7 @@ package com.team.jpquiz.global.error;
 
 import com.team.jpquiz.common.dto.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
@@ -9,7 +10,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -34,7 +37,8 @@ public class GlobalExceptionHandler {
             Exception ex,
             HttpServletRequest request
     ) {
-        ex.printStackTrace(); ErrorCode errorCode = ErrorCode.INVALID_REQUEST;
+        log.warn("Validation error: path={}, message={}", request.getRequestURI(), ex.getMessage(), ex);
+        ErrorCode errorCode = ErrorCode.INVALID_REQUEST;
         ErrorResponse body = ErrorResponse.of(
                 errorCode.getCode(),
                 errorCode.getMessage(),
@@ -49,7 +53,23 @@ public class GlobalExceptionHandler {
             Exception ex,
             HttpServletRequest request
     ) {
-        ex.printStackTrace(); ErrorCode errorCode = ErrorCode.INVALID_REQUEST;
+        log.warn("Parsing error: path={}, message={}", request.getRequestURI(), ex.getMessage(), ex);
+        ErrorCode errorCode = ErrorCode.INVALID_REQUEST;
+        ErrorResponse body = ErrorResponse.of(
+                errorCode.getCode(),
+                errorCode.getMessage(),
+                errorCode.getStatus().value(),
+                request.getRequestURI()
+        );
+        return ResponseEntity.status(errorCode.getStatus()).body(body);
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNoResourceFoundException(
+            NoResourceFoundException ex,
+            HttpServletRequest request
+    ) {
+        ErrorCode errorCode = ErrorCode.NOT_FOUND;
         ErrorResponse body = ErrorResponse.of(
                 errorCode.getCode(),
                 errorCode.getMessage(),
@@ -64,6 +84,7 @@ public class GlobalExceptionHandler {
             Exception ex,
             HttpServletRequest request
     ) {
+        log.error("Unhandled error: path={}, message={}", request.getRequestURI(), ex.getMessage(), ex);
         ErrorCode errorCode = ErrorCode.INTERNAL_ERROR;
         ErrorResponse body = ErrorResponse.of(
                 errorCode.getCode(),

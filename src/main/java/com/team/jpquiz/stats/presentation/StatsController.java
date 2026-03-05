@@ -5,6 +5,8 @@ import com.team.jpquiz.common.dto.PageResponse;
 import com.team.jpquiz.common.util.SecurityUtil;
 import com.team.jpquiz.stats.dto.response.StatsResponse;
 import com.team.jpquiz.stats.query.application.StatsQueryService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api")
+@Tag(name = "Stats", description = "통계 API")
 public class StatsController {
 
     private final StatsQueryService statsQueryService;
@@ -29,6 +32,7 @@ public class StatsController {
 
     @GetMapping("/admin/stats/overview")
     @PreAuthorize("hasRole('ADMIN')")
+    @Operation(tags = {"Admin"})
     public ApiResponse<StatsResponse.AdminOverview> getAdminOverview() {
         StatsResponse.AdminOverview response = statsQueryService.getAdminOverview();
         return ApiResponse.ok(response);
@@ -36,6 +40,7 @@ public class StatsController {
 
     @GetMapping("/admin/stats/categories")
     @PreAuthorize("hasRole('ADMIN')")
+    @Operation(tags = {"Admin"})
     public ApiResponse<List<StatsResponse.CategoryAccuracy>> getCategoryAccuracy(
             @RequestParam(defaultValue = "latest") String basis
     ) {
@@ -45,6 +50,7 @@ public class StatsController {
 
     @GetMapping("/admin/stats/questions")
     @PreAuthorize("hasRole('ADMIN')")
+    @Operation(tags = {"Admin"})
     public ApiResponse<PageResponse<StatsResponse.QuestionStats>> getQuestionStats(
             @RequestParam(defaultValue = "first") String basis,
             @RequestParam(defaultValue = "1") int page,
@@ -57,6 +63,7 @@ public class StatsController {
 
     @GetMapping("/admin/stats/questions/top-wrong")
     @PreAuthorize("hasRole('ADMIN')")
+    @Operation(tags = {"Admin"})
     public ApiResponse<List<StatsResponse.TopWrongQuestion>> getTopWrongQuestions(
             @RequestParam(defaultValue = "10") int limit,
             @RequestParam(defaultValue = "latest") String basis

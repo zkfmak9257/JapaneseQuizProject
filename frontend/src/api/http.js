@@ -3,8 +3,8 @@ import axios from "axios";
 const configuredBaseUrl = import.meta.env.VITE_API_BASE_URL?.trim();
 
 const http = axios.create({
-  // Ingress 단일 진입점 기준 기본값은 /boot 를 사용합니다.
-  baseURL: configuredBaseUrl || "/boot",
+  // 로컬/도커 기본값은 /api(동일 오리진 프록시)로 사용합니다.
+  baseURL: configuredBaseUrl || "/api",
   timeout: 10000
 });
 
